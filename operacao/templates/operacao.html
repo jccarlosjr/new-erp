@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+{% load static %}
+{% block head %}
+<title>Operações</title>
+<style>
+    #list-banks {
+        margin-top: 50px;
+    }
+
+    .list-group-code {
+        min-width: 90px;
+    }
+
+    .list-group-name {
+        min-width: 300px;
+    }
+
+    #btn-add-operation {
+        margin-bottom: 5px;
+    }
+
+    .edit-icon{
+        text-decoration: none;
+    }
+
+    .bi-pencil-square {
+        color: green;
+        cursor: pointer;
+    }
+
+    .bi-trash {
+        color: red;
+        cursor: pointer;
+    }
+
+    .list-group {
+        margin-top: 5px;
+    }
+
+    .list-group-modal {
+        min-width: 400px;
+    }
+
+    .row {
+        margin-bottom: 5px;
+    }
+
+    .card-header {
+        text-align: right;
+    }
+
+    .card-text {
+        text-align: center;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active" aria-current="page">Operações</li>
+        </ol>
+    </nav>
+    <div id="list-banks">
+        <div class="row">
+            <div class="col">
+                <a class="btn btn-primary btn-sm ms-1" onclick="openCreateModal()">
+                    <i class="bi bi-bank"></i> Nova Operação
+                </a>
+            </div>
+        </div>
+
+        <div class="row">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="operacoes-table-body">
+                <!-- renderizado via JS -->
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="operacaoModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="operacaoModalTitle">Nova Operação</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="operacao-id">
+
+        <div class="mb-3">
+          <label class="form-label">Nome</label>
+          <input type="text" id="operacao-nome" class="form-control">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveOperacao()">Salvar</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="deleteOperacaoModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Excluir Operação</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body text-center">
+        <input type="hidden" id="delete-operacao-id">
+        <p>Tem certeza que deseja excluir a operação <strong id="delete-operacao-nome"></strong>?</p>
+        
+        <p class="text-danger">Esta operação nao pode ser desfeita</p>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-danger" onclick="deleteOperacao()">Excluir</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'js/utils.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    loadOperacoes()
+})
+
+function loadOperacoes() {
+    fetch('/api/operacoes/')
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== 'success') {
+                showToast('Erro ao carregar operacções')
+                return
+            }
+
+            const tbody = document.getElementById('operacoes-table-body')
+            tbody.innerHTML = ''
+
+            if (data.data.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="2" class="text-center text-muted">
+                            Nenhuma operção cadastrada
+                        </td>
+                    </tr>
+                `
+                return
+            }
+
+            data.data.forEach(element => {
+                const tr = document.createElement('tr')
+
+                tr.innerHTML = `
+                    <td>${element.nome}</td>
+                    <td>
+                        <a class="edit-icon" title="Editar Operação"
+                           onclick="openEditModal('${element.id}', '${element.nome}')">
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+                        <a class="edit-icon ms-2" title="Excluir Operação"
+                           onclick="openDeleteModal('${element.id}', '${element.nome}')">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </td>
+                `
+                tbody.appendChild(tr)
+            })
+        })
+        .catch(() => showToast('Erro de conexão com o servidor'))
+}
+
+
+let operacaoModal
+let deleteModal
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    operacaoModal = new bootstrap.Modal(
+        document.getElementById('operacaoModal')
+    )
+
+    deleteModal = new bootstrap.Modal(
+        document.getElementById('deleteOperacaoModal')
+    )
+})
+
+/* CREATE */
+function openCreateModal() {
+    document.getElementById('operacaoModalTitle').innerText = 'Novo Operação'
+    document.getElementById('operacao-id').value = ''
+    document.getElementById('operacao-nome').value = ''
+    operacaoModal.show()
+}
+
+/* EDIT */
+function openEditModal(id, nome) {
+    document.getElementById('operacaoModalTitle').innerText = 'Editar Operação'
+    document.getElementById('operacao-id').value = id
+    document.getElementById('operacao-nome').value = nome
+    operacaoModal.show()
+}
+
+/* SAVE */
+function saveOperacao() {
+    const id = document.getElementById('operacao-id').value
+    const nome = document.getElementById('operacao-nome').value
+
+    fetch('/api/operacoes/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({ id, nome })
+    })
+    .then(async res => {
+        const data = await res.json()
+        if (!res.ok || data.status === 'error') {
+            throw new Error(data.message || 'Erro inesperado')
+        }
+        return data
+    })
+    .then(() => {
+        operacaoModal.hide()
+        showToast('Operação atualizada com sucesso', 'success')
+        loadOperacoes()
+    })
+    .catch(err => showToast(err.message))
+}
+
+
+/* DELETE */
+function openDeleteModal(id, nome) {
+    document.getElementById('delete-operacao-id').value = id
+    document.getElementById('delete-operacao-nome').innerText = nome
+    deleteModal.show()
+}
+
+function deleteOperacao() {
+    const id = document.getElementById('delete-operacao-id').value
+
+    fetch('/api/operacoes/', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({ id })
+    })
+    .then(async res => {
+        const data = await res.json()
+        if (!res.ok || data.status === 'error') {
+            throw new Error(data.message || 'Erro ao excluir')
+        }
+        return data
+    })
+    .then(() => {
+        deleteModal.hide();
+        showToast('Operação excluido com sucesso', 'success')
+        loadOperacoes();
+    })
+    .catch(err => showToast(err.message))
+}
+</script>
+
+
+{% endblock %}

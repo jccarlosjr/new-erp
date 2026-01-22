@@ -42,7 +42,7 @@
           <div class="dropdown-menu">
           {% if user.is_staff %}
               <a href="{% url 'bancos' %}" class="dropdown-item"><i class="bi bi-bank"></i> Bancos</a>
-              <a href="#" class="dropdown-item"><i class="bi bi-collection"></i> Operações</a>
+              <a href="{% url 'operacoes' %}" class="dropdown-item"><i class="bi bi-collection"></i> Operações</a>
               <a href="#" class="dropdown-item"><i class="bi bi-card-list"></i> Tabelas</a>
               <a href="#" class="dropdown-item"><i class="bi bi-window-stack"></i> Salas</a>
             {% endif %}

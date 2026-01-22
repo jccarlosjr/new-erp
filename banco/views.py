@@ -1,18 +1,15 @@
 from django.views import View
-from django.http import JsonResponse, HttpResponseNotAllowed
-from django.views.generic import TemplateView, CreateView, UpdateView
+from django.http import JsonResponse
+from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
 from app.mixins import AdminRequiredMixin
 import json
 from .models import Banco
 
 
-class BancoListView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
+class BancoView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
     template_name = 'bancos.html'
-
 
 
 class BancoAPIView(LoginRequiredMixin, AdminRequiredMixin, View):
