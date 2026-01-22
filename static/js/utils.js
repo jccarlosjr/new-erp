@@ -24,3 +24,13 @@ function showToast(message, type = 'danger') {
 
     toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove())
 }
+
+function renderLoading(element) {
+    element.innerHTML = `
+        <div class="d-flex justify-content-center m-5">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Carregando...</span>
+            </div>
+        </div>
+    `
+}

@@ -152,6 +152,9 @@ document.addEventListener('DOMContentLoaded', function () {
 })
 
 function loadBancos() {
+    const tbody = document.getElementById('bancos-table-body')
+    renderLoading(tbody)
+
     fetch('/api/bancos/')
         .then(res => res.json())
         .then(data => {
@@ -160,7 +163,6 @@ function loadBancos() {
                 return
             }
 
-            const tbody = document.getElementById('bancos-table-body')
             tbody.innerHTML = ''
 
             if (data.data.length === 0) {

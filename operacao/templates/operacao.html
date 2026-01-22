@@ -147,6 +147,9 @@ document.addEventListener('DOMContentLoaded', function () {
 })
 
 function loadOperacoes() {
+    const tbody = document.getElementById('operacoes-table-body')
+    renderLoading(tbody)
+
     fetch('/api/operacoes/')
         .then(res => res.json())
         .then(data => {
@@ -155,7 +158,6 @@ function loadOperacoes() {
                 return
             }
 
-            const tbody = document.getElementById('operacoes-table-body')
             tbody.innerHTML = ''
 
             if (data.data.length === 0) {
