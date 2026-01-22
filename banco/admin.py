@@ -1,0 +1,7 @@
+from django.contrib import admin
+from .models import Banco
+
+@admin.register(Banco)
+class BancoAdmin(admin.ModelAdmin):
+    list_display = ('codigo', 'nome')
+    search_fields = ('codigo', 'nome')
