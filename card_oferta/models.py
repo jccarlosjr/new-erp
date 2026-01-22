@@ -7,7 +7,7 @@ from datetime import datetime
 
 def get_card_code(proposta):
     id = str(proposta.id).zfill(5)
-    codigo_interno = datetime.now().strftime(f"PRO-%y%m%d{id}")
+    codigo_interno = datetime.now().strftime(f"CARD-%y%m%d{id}")
     return codigo_interno
 
 
@@ -17,6 +17,9 @@ class CardOferta(models.Model):
     codigo_interno = models.CharField(max_length=100, unique=True, null=True, blank=True)
 
     def save(self, *args, **kwargs):
+        if not self.id:
+            super().save(*args, **kwargs) 
+
         if not self.codigo_interno:
             self.codigo_interno = get_card_code(self)
             kwargs['force_insert'] = False
@@ -28,5 +31,5 @@ class CardOferta(models.Model):
         return self.codigo_interno
 
     class Meta:
-        verbose_name = 'Cartão de Oferta'
-        verbose_name_plural = 'Cartões de Oferta'
+        verbose_name = 'Card de Ofertas'
+        verbose_name_plural = 'Cards de Ofertas'

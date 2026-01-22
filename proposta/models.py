@@ -32,7 +32,7 @@ class Status(models.Model):
 
 
 class Proposta(models.Model):
-    ade = models.CharField(max_length=100)
+    ade = models.CharField(max_length=100, null=True, blank=True)
     bloqueado = models.BooleanField(default=False)
     codigo_interno = models.CharField(max_length=100, unique=True, null=True, blank=True)
     obs = models.TextField(null=True, blank=True)

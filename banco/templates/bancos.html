@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+{% load static %}
+{% block head %}
+<title>Bancos</title>
+<style>
+    #list-banks {
+        margin-top: 50px;
+    }
+
+    .list-group-code {
+        min-width: 90px;
+    }
+
+    .list-group-name {
+        min-width: 300px;
+    }
+
+    #btn-add-operation {
+        margin-bottom: 5px;
+    }
+
+    .edit-icon{
+        text-decoration: none;
+    }
+
+    .bi-pencil-square {
+        color: green;
+        cursor: pointer;
+    }
+
+    .bi-trash {
+        color: red;
+        cursor: pointer;
+    }
+
+    .list-group {
+        margin-top: 5px;
+    }
+
+    .list-group-modal {
+        min-width: 400px;
+    }
+
+    .row {
+        margin-bottom: 5px;
+    }
+
+    .card-header {
+        text-align: right;
+    }
+
+    .card-text {
+        text-align: center;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active" aria-current="page">Bancos</li>
+        </ol>
+    </nav>
+    <div id="list-banks">
+        <div class="row">
+            <div class="col">
+                <a class="btn btn-primary btn-sm ms-1" onclick="openCreateModal()">
+                    <i class="bi bi-bank"></i> Novo Banco
+                </a>
+            </div>
+        </div>
+
+        <div class="row">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Banco</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="bancos-table-body">
+                <!-- renderizado via JS -->
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="bancoModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="bancoModalTitle">Novo Banco</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="banco-id">
+
+        <div class="mb-3">
+          <label class="form-label">Código</label>
+          <input type="number" id="banco-codigo" class="form-control">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Nome</label>
+          <input type="text" id="banco-nome" class="form-control">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveBanco()">Salvar</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="deleteBancoModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Excluir Banco</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body text-center">
+        <input type="hidden" id="delete-banco-id">
+        <p>Tem certeza que deseja excluir o banco <strong id="delete-banco-nome"></strong>?</p>
+        
+        <p class="text-danger">Esta operação nao pode ser desfeita</p>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-danger" onclick="deleteBanco()">Excluir</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'js/utils.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    loadBancos()
+})
+
+function loadBancos() {
+    fetch('/api/bancos/')
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== 'success') {
+                showToast('Erro ao carregar bancos')
+                return
+            }
+
+            const tbody = document.getElementById('bancos-table-body')
+            tbody.innerHTML = ''
+
+            if (data.data.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="2" class="text-center text-muted">
+                            Nenhum banco cadastrado
+                        </td>
+                    </tr>
+                `
+                return
+            }
+
+            data.data.forEach(banco => {
+                const tr = document.createElement('tr')
+
+                tr.innerHTML = `
+                    <td>${banco.codigo} - ${banco.nome}</td>
+                    <td>
+                        <a class="edit-icon" title="Editar Banco"
+                           onclick="openEditModal('${banco.id}','${banco.codigo}','${banco.nome}')">
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+                        <a class="edit-icon ms-2" title="Excluir Banco"
+                           onclick="openDeleteModal('${banco.id}','${banco.codigo} - ${banco.nome}')">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </td>
+                `
+                tbody.appendChild(tr)
+            })
+        })
+        .catch(() => showToast('Erro de conexão com o servidor'))
+}
+
+
+let bancoModal
+let deleteModal
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    bancoModal = new bootstrap.Modal(
+        document.getElementById('bancoModal')
+    )
+
+    deleteModal = new bootstrap.Modal(
+        document.getElementById('deleteBancoModal')
+    )
+})
+
+/* CREATE */
+function openCreateModal() {
+    document.getElementById('bancoModalTitle').innerText = 'Novo Banco'
+    document.getElementById('banco-id').value = ''
+    document.getElementById('banco-codigo').value = ''
+    document.getElementById('banco-nome').value = ''
+    bancoModal.show()
+}
+
+/* EDIT */
+function openEditModal(id, codigo, nome) {
+    document.getElementById('bancoModalTitle').innerText = 'Editar Banco'
+    document.getElementById('banco-id').value = id
+    document.getElementById('banco-codigo').value = codigo
+    document.getElementById('banco-nome').value = nome
+    bancoModal.show()
+}
+
+/* SAVE */
+function saveBanco() {
+    const id = document.getElementById('banco-id').value
+    const codigo = document.getElementById('banco-codigo').value
+    const nome = document.getElementById('banco-nome').value
+
+    fetch('/api/bancos/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({ id, codigo, nome })
+    })
+    .then(async res => {
+        const data = await res.json()
+        if (!res.ok || data.status === 'error') {
+            throw new Error(data.message || 'Erro inesperado')
+        }
+        return data
+    })
+    .then(() => {
+        bancoModal.hide()
+        showToast('Banco atualizado com sucesso', 'success')
+        loadBancos()
+    })
+    .catch(err => showToast(err.message))
+}
+
+
+/* DELETE */
+function openDeleteModal(id, nome) {
+    document.getElementById('delete-banco-id').value = id
+    document.getElementById('delete-banco-nome').innerText = nome
+    deleteModal.show()
+}
+
+function deleteBanco() {
+    const id = document.getElementById('delete-banco-id').value
+
+    fetch('/api/bancos/', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({ id })
+    })
+    .then(async res => {
+        const data = await res.json()
+        if (!res.ok || data.status === 'error') {
+            throw new Error(data.message || 'Erro ao excluir')
+        }
+        return data
+    })
+    .then(() => {
+        deleteModal.hide();
+        showToast('Banco excluido com sucesso', 'success')
+        loadBancos();
+    })
+    .catch(err => showToast(err.message))
+}
+</script>
+
+
+{% endblock %}
