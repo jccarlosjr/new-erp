@@ -283,7 +283,13 @@ function deleteOperacao() {
         showToast('Operação excluido com sucesso', 'success')
         loadOperacoes();
     })
-    .catch(err => showToast(err.message))
+    .catch(err => {
+        if(err.message.includes("Cannot delete some instances of model")){
+            showToast("Não é possível deletar uma operação com tabelas ativas", 'danger')
+        } else {
+            showToast(err.message)
+        }
+    })
 }
 </script>
 

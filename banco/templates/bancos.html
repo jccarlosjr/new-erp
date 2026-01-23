@@ -291,7 +291,13 @@ function deleteBanco() {
         showToast('Banco excluido com sucesso', 'success')
         loadBancos();
     })
-    .catch(err => showToast(err.message))
+    .catch(err => {
+        if(err.message.includes("Cannot delete some instances of model")){
+            showToast("Não é possível deletar um banco com tabelas ativas", 'danger')
+        } else {
+            showToast(err.message)
+        }
+    })
 }
 </script>
 

@@ -19,6 +19,7 @@ class TabelaAPIView(LoginRequiredMixin, AdminRequiredMixin, View):
     def get(self, request):
         banco_id = request.GET.get('banco')
         operacao_id = request.GET.get('operacao')
+        is_active = request.GET.get('ativo')
 
         tabelas = Tabela.objects.select_related('banco', 'operacao')
 
@@ -27,6 +28,9 @@ class TabelaAPIView(LoginRequiredMixin, AdminRequiredMixin, View):
         
         if operacao_id:
             tabelas = tabelas.filter(operacao_id=operacao_id)
+
+        if is_active:
+            tabelas = tabelas.filter(ativo=True)
 
         data = tabelas.values(
             'id',

@@ -46,6 +46,10 @@
                 <option value="">Todas as operações</option>
             </select>
         </div>
+        <div class="col-md-4">
+            <label for="" class="ms-1 me-1">Somente Tabelas Ativas</label>
+            <input id="filter-ativas" class="form-check-input" type="checkbox" checked>
+        </div>
     </div>
 
     <table class="table table-sm">
@@ -173,6 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 document.getElementById('filter-banco').addEventListener('change', () => loadTabelas())
 document.getElementById('filter-operacao').addEventListener('change', () => loadTabelas())
+document.getElementById('filter-ativas').addEventListener('change', () => loadTabelas())
 
 
 function loadBancoFilter() {
@@ -222,6 +227,7 @@ function loadOperacaoFilter() {
 function loadTabelas() {
     const bancoId = document.getElementById('filter-banco').value
     const operacaoId = document.getElementById('filter-operacao').value
+    const ativas = document.getElementById('filter-ativas').checked
     const tbody = document.getElementById('tabelas-table-body')
 
     renderLoading(tbody)
@@ -230,6 +236,7 @@ function loadTabelas() {
 
     if (bancoId) params.append('banco', bancoId)
     if (operacaoId) params.append('operacao', operacaoId)
+    if (ativas) params.append('ativo', 'true')
 
     let url = '/api/tabelas/'
 
@@ -347,6 +354,7 @@ function loadBancosSelect(selected = null) {
             })
         })
 }
+
 
 function loadOperacoesSelect(selected = null) {
     console.log(selected)
