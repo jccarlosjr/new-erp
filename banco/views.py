@@ -86,7 +86,6 @@ class BancoAPIView(LoginRequiredMixin, AdminRequiredMixin, View):
             }, status=400)
 
 
-
     def delete(self, request):
         try:
             body = json.loads(request.body)

@@ -22,6 +22,7 @@ def get_proposal_code(proposta):
 class Status(models.Model):
     codigo = models.IntegerField()
     nome = models.CharField(max_length=100)
+    color = models.CharField(max_length=15, default="secondary")
 
     def __str__(self):
         return self.nome

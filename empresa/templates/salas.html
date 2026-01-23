@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+<title>Salas</title>
+<style>
+    .edit-icon { text-decoration: none; }
+    .bi-pencil-square { color: green; cursor: pointer; }
+    .bi-trash { color: red; cursor: pointer; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active">Salas</li>
+        </ol>
+    </nav>
+
+    <div class="row mb-4">
+        <div class="col">
+            <button class="btn btn-primary btn-sm" onclick="openCreateModal()">
+                <i class="bi bi-plus-circle"></i> Nova Sala
+            </button>
+        </div>
+    </div>
+
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Empresa</th>
+                <th width="120">Ações</th>
+            </tr>
+        </thead>
+        <tbody id="salas-table-body">
+            <!-- render JS -->
+        </tbody>
+    </table>
+
+</div>
+
+
+<!-- MODAL CREATE / EDIT -->
+<div class="modal fade" id="salaModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 id="salaModalTitle">Nova Sala</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="sala-id">
+
+        <div class="mb-3">
+          <label class="form-label">Nome</label>
+          <input id="sala-nome" class="form-control">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveSala()">Salvar</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL DELETE -->
+<div class="modal fade" id="deleteSalaModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5>Excluir Sala</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body text-center">
+        <input type="hidden" id="delete-sala-id">
+        <p>Deseja excluir <strong id="delete-sala-nome"></strong>?</p>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-danger" onclick="deleteSala()">Excluir</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<script src="{% static 'js/utils.js' %}"></script>
+<script>
+let salaModal, deleteModal
+
+document.addEventListener('DOMContentLoaded', () => {
+    salaModal = new bootstrap.Modal(document.getElementById('salaModal'))
+    deleteModal = new bootstrap.Modal(document.getElementById('deleteSalaModal'))
+    loadSalas()
+})
+
+
+function loadSalas() {
+    const tbody = document.getElementById('salas-table-body')
+    renderLoading(tbody)
+
+    fetch('/api/salas/')
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== 'success') {
+                showToast('Erro ao carregar salas')
+                return
+            }
+
+            tbody.innerHTML = ''
+
+            if (!data.data.length) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="text-center text-muted">
+                            Nenhuma sala encontrada
+                        </td>
+                    </tr>
+                `
+                return
+            }
+
+            data.data.forEach(sala => {
+                const tr = document.createElement('tr')
+                tr.innerHTML = `
+                    <td>${sala.nome}</td>
+                    <td>${sala.empresa__nome}</td>
+                    <td>
+                        <a class="edit-icon"
+                           onclick='openEditModal(${JSON.stringify(sala)})'>
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+                        <a class="edit-icon ms-2"
+                           onclick="openDeleteModal('${sala.id}', '${sala.nome}')">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </td>
+                `
+                tbody.appendChild(tr)
+            })
+        })
+        .catch(() => showToast('Erro de conexão com o servidor'))
+}
+
+
+function openCreateModal() {
+    document.getElementById('salaModalTitle').innerText = 'Nova Sala'
+    document.getElementById('sala-id').value = ''
+    document.getElementById('sala-nome').value = ''
+    salaModal.show()
+}
+
+
+function openEditModal(sala) {
+    document.getElementById('salaModalTitle').innerText = 'Editar Sala'
+    document.getElementById('sala-id').value = sala.id
+    document.getElementById('sala-nome').value = sala.nome
+    salaModal.show()
+}
+
+
+function saveSala() {
+    const payload = {
+        id: document.getElementById('sala-id').value || null,
+        nome: document.getElementById('sala-nome').value
+    }
+
+    fetch('/api/salas/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(async res => {
+        const data = await res.json()
+        if (!res.ok || data.status === 'error') {
+            throw new Error(data.message)
+        }
+        return data
+    })
+    .then(() => {
+        salaModal.hide()
+        showToast('Sala salva com sucesso', 'success')
+        loadSalas()
+    })
+    .catch(err => showToast(err.message))
+}
+
+
+function openDeleteModal(id, nome) {
+    document.getElementById('delete-sala-id').value = id
+    document.getElementById('delete-sala-nome').innerText = nome
+    deleteModal.show()
+}
+
+
+function deleteSala() {
+    const id = document.getElementById('delete-sala-id').value
+
+    fetch('/api/salas/', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({ id })
+    })
+    .then(() => {
+        deleteModal.hide()
+        showToast('Sala excluída com sucesso', 'success')
+        loadSalas()
+    })
+    .catch(() => showToast('Erro ao excluir sala'))
+}
+</script>
+{% endblock %}

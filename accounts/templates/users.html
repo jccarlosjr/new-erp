@@ -1,0 +1,484 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+<title>Usuários</title>
+<style>
+    .edit-icon { text-decoration: none; }
+    .bi-pencil-square { color: green; cursor: pointer; }
+    .bi-trash { color: red; cursor: pointer; }
+    .bi-key-fill { color: #ffc107; cursor: pointer; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active">Usuários</li>
+        </ol>
+    </nav>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <button class="btn btn-primary btn-sm" onclick="openCreateModal()">
+                <i class="bi bi-plus-circle"></i> Novo Usuário
+            </button>
+        </div>
+    </div>
+
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>Usuário</th>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Sala</th>
+                <th>Função</th>
+                <th>Ativo</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="usuarios-table-body">
+            <!-- JS -->
+        </tbody>
+    </table>
+
+</div>
+
+
+<!-- MODAL CREATE / EDIT -->
+<div class="modal fade" id="usuarioModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 id="usuarioModalTitle">Novo Usuário</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="usuario-id">
+
+        <div class="row g-2">
+
+          <div class="col-md-4">
+            <label class="form-label">Username</label>
+            <input id="usuario-username" class="form-control">
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Nome</label>
+            <input id="usuario-first-name" class="form-control">
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Sobrenome</label>
+            <input id="usuario-last-name" class="form-control">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Email</label>
+            <input id="usuario-email" type="email" class="form-control">
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">CPF</label>
+            <input id="usuario-cpf" class="form-control">
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Senha</label>
+            <input id="usuario-password" type="password" class="form-control">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Sala</label>
+            <select id="usuario-sala" class="form-select"></select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Função</label>
+            <select id="usuario-funcao" class="form-select"></select>
+          </div>
+
+          <div class="col-md-3 d-flex align-items-center">
+            <div class="form-check mt-4">
+              <input class="form-check-input" type="checkbox" id="usuario-ativo" checked>
+              <label class="form-check-label">Ativo</label>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveUsuario()">Salvar</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL DELETE -->
+<div class="modal fade" id="deleteUsuarioModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5>Excluir Usuário</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body text-center">
+        <input type="hidden" id="delete-usuario-id">
+        <p>Deseja excluir <strong id="delete-usuario-nome"></strong>?</p>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-danger" onclick="deleteUsuario()">Excluir</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL RESET -->
+<div class="modal fade" id="resetSenhaModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5>Resetar Senha</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="reset-user-id">
+
+        <p class="text-muted text-center">
+            Definir nova senha para <strong id="reset-user-name"></strong>
+        </p>
+
+        <div class="mb-3">
+          <label class="form-label">Nova senha</label>
+          <input type="password" id="reset-password" class="form-control">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Confirmar senha</label>
+          <input type="password" id="reset-password-confirm" class="form-control">
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-warning" onclick="resetSenhaUsuario()">
+            Redefinir Senha
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'js/utils.js' %}"></script>
+
+<script>
+let usuarioModal, deleteModal, resetSenhaModal
+
+document.addEventListener('DOMContentLoaded', () => {
+    usuarioModal = new bootstrap.Modal(document.getElementById('usuarioModal'))
+    deleteModal = new bootstrap.Modal(document.getElementById('deleteUsuarioModal'))
+    resetSenhaModal = new bootstrap.Modal(document.getElementById('resetSenhaModal'))
+    loadUsuarios()
+    loadSalasSelect()
+    loadFuncoesSelect()
+})
+
+
+function loadSalasSelect(selectedId = null) {
+    const select = document.getElementById('usuario-sala')
+    select.innerHTML = `<option value="">Selecione</option>`
+
+    fetch('/api/salas/')
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== 'success') return
+
+            data.data.forEach(sala => {
+                const option = document.createElement('option')
+                option.value = sala.id
+                option.textContent = sala.nome
+
+                if (selectedId && sala.id === selectedId) {
+                    option.selected = true
+                }
+
+                select.appendChild(option)
+            })
+        })
+}
+
+
+function loadFuncoesSelect(selectedId = null) {
+    const select = document.getElementById('usuario-funcao')
+    select.innerHTML = `<option value="">Selecione</option>`
+
+    fetch('/api/funcoes/')
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== 'success') return
+
+            data.data.forEach(funcao => {
+                const option = document.createElement('option')
+                option.value = funcao.id
+                option.textContent = funcao.nome
+
+                if (selectedId && funcao.id === selectedId) {
+                    option.selected = true
+                }
+
+                select.appendChild(option)
+            })
+        })
+}
+
+
+function loadUsuarios() {
+    const tbody = document.getElementById('usuarios-table-body')
+    renderLoading(tbody)
+
+    fetch('/api/usuarios/')
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== 'success') {
+                showToast('Erro ao carregar usuários')
+                return
+            }
+
+            tbody.innerHTML = ''
+
+            data.data.forEach(user => {
+                const tr = document.createElement('tr')
+                tr.innerHTML = `
+                    <td>${user.username}</td>
+                    <td>${user.first_name} ${user.last_name}</td>
+                    <td>${user.email || '-'}</td>
+                    <td>${user.sala__nome || '-'}</td>
+                    <td>${user.funcao__nome || '-'}</td>
+                    <td class="text-center">
+                        <div class="form-check form-switch d-inline-flex">
+                            <input class="form-check-input"
+                                type="checkbox"
+                                ${user.is_active ? 'checked' : ''}
+                                onchange="toggleUsuarioAtivo('${user.id}', this.checked)">
+                        </div>
+                    </td>
+                    <td>
+                        <a class="edit-icon" onclick='openEditModal(${JSON.stringify(user)})'>
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+                        <a class="edit-icon ms-2" onclick="openResetPasswordModal('${user.id}', '${user.username}')">
+                            <i class="bi bi-key-fill text-warning"></i>
+                        </a>
+                        <a class="edit-icon ms-2" onclick="openDeleteModal('${user.id}','${user.username}')">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </td>
+                `
+                tbody.appendChild(tr)
+            })
+        })
+        .catch(() => showToast('Erro de conexão'))
+}
+
+
+function toggleUsuarioAtivo(id, ativo) {
+    fetch('/api/usuarios/', {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({ id, is_active: ativo })
+    })
+    .then(async res => {
+        const data = await res.json()
+        if (!res.ok || data.status === 'error') {
+            throw new Error(data.message || 'Erro ao atualizar usuário')
+        }
+        return data
+    })
+    .then(() => {
+        showToast(
+            ativo ? 'Usuário ativado com sucesso' : 'Usuário desativado com sucesso',
+            'success'
+        )
+    })
+    .catch(err => {
+        showToast(err.message)
+        loadUsuarios()
+    })
+}
+
+
+function openCreateModal() {
+    document.getElementById('usuarioModalTitle').innerText = 'Novo Usuário'
+
+    document.getElementById('usuario-id').value = ''
+    document.getElementById('usuario-username').value = ''
+    document.getElementById('usuario-first-name').value = ''
+    document.getElementById('usuario-last-name').value = ''
+    document.getElementById('usuario-email').value = ''
+    document.getElementById('usuario-cpf').value = ''
+    document.getElementById('usuario-password').value = ''
+    document.getElementById('usuario-ativo').checked = true
+
+    loadSalasSelect()
+    loadFuncoesSelect()
+
+    usuarioModal.show()
+}
+
+
+function openEditModal(user) {
+    document.getElementById('usuarioModalTitle').innerText = 'Editar Usuário'
+
+    document.getElementById('usuario-id').value = user.id
+    document.getElementById('usuario-username').value = user.username
+    document.getElementById('usuario-first-name').value = user.first_name
+    document.getElementById('usuario-last-name').value = user.last_name
+    document.getElementById('usuario-email').value = user.email
+    document.getElementById('usuario-cpf').value = user.cpf
+    document.getElementById('usuario-ativo').checked = user.is_active
+
+    loadSalasSelect(user.sala__id)
+    loadFuncoesSelect(user.funcao__id)
+  
+    usuarioModal.show()
+}
+
+
+function openResetPasswordModal(userId, username) {
+    document.getElementById('reset-user-id').value = userId
+    document.getElementById('reset-user-name').innerText = username
+    document.getElementById('reset-password').value = ''
+    document.getElementById('reset-password-confirm').value = ''
+
+    resetSenhaModal.show()
+}
+
+
+function saveUsuario() {
+    const payload = {
+        id: document.getElementById('usuario-id').value || null,
+        username: document.getElementById('usuario-username').value,
+        first_name: document.getElementById('usuario-first-name').value,
+        last_name: document.getElementById('usuario-last-name').value,
+        email: document.getElementById('usuario-email').value,
+        cpf: document.getElementById('usuario-cpf').value,
+        password: document.getElementById('usuario-password').value,
+        sala_id: document.getElementById('usuario-sala').value || null,
+        funcao_id: document.getElementById('usuario-funcao').value || null,
+        is_active: document.getElementById('usuario-ativo').checked
+    }
+
+    fetch('/api/usuarios/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(async r => {
+        const data = await r.json()
+        if (!r.ok || data.status === 'error') {
+            throw new Error(data.message)
+        }
+        return data
+    })
+    .then(() => {
+        usuarioModal.hide()
+        showToast('Usuário salvo com sucesso', 'success')
+        loadUsuarios()
+    })
+    .catch(err => showToast(err.message))
+}
+
+
+function resetSenhaUsuario() {
+    const userId = document.getElementById('reset-user-id').value
+    const password = document.getElementById('reset-password').value
+    const confirm = document.getElementById('reset-password-confirm').value
+
+    if (!password || !confirm) {
+        showToast('Informe a nova senha e a confirmação')
+        return
+    }
+
+    if (password !== confirm) {
+        showToast('As senhas não coincidem')
+        return
+    }
+
+    fetch('/api/usuarios/reset-senha/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({
+            id: userId,
+            password: password
+        })
+    })
+    .then(async r => {
+        const data = await r.json()
+        if (!r.ok || data.status === 'error') {
+            throw new Error(data.message)
+        }
+        return data
+    })
+    .then(() => {
+        resetSenhaModal.hide()
+        showToast('Senha redefinida com sucesso', 'success')
+    })
+    .catch(err => showToast(err.message))
+}
+
+
+function openDeleteModal(id, nome) {
+    document.getElementById('delete-usuario-id').value = id
+    document.getElementById('delete-usuario-nome').innerText = nome
+    deleteModal.show()
+}
+
+
+function deleteUsuario() {
+    const id = document.getElementById('delete-usuario-id').value
+
+    fetch('/api/usuarios/', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({ id })
+    })
+    .then(() => {
+        deleteModal.hide()
+        showToast('Usuário excluído', 'success')
+        loadUsuarios()
+    })
+    .catch(() => showToast('Erro ao excluir usuário'))
+}
+</script>
+{% endblock %}

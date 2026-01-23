@@ -1,0 +1,323 @@
+{% extends "base.html" %}
+{% load static %}
+{% block head %}
+<title>Status</title>
+<style>
+    #list-banks {
+        margin-top: 50px;
+    }
+
+    .list-group-code {
+        min-width: 90px;
+    }
+
+    .list-group-name {
+        min-width: 300px;
+    }
+
+    #btn-add-operation {
+        margin-bottom: 5px;
+    }
+
+    .edit-icon{
+        text-decoration: none;
+    }
+
+    .bi-pencil-square {
+        color: green;
+        cursor: pointer;
+    }
+
+    .bi-trash {
+        color: red;
+        cursor: pointer;
+    }
+
+    .list-group {
+        margin-top: 5px;
+    }
+
+    .list-group-modal {
+        min-width: 400px;
+    }
+
+    .row {
+        margin-bottom: 5px;
+    }
+
+    .card-header {
+        text-align: right;
+    }
+
+    .card-text {
+        text-align: center;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active" aria-current="page">Status</li>
+        </ol>
+    </nav>
+    <div id="list-banks">
+        <div class="row">
+            <div class="col">
+                <a class="btn btn-primary btn-sm ms-1" onclick="openCreateModal()">
+                    <i class="bi bi-list-check"></i> Novo Status
+                </a>
+            </div>
+        </div>
+
+        <div class="row">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Cor</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="status-table-body">
+                <!-- renderizado via JS -->
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="statusModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="statusModalTitle">Novo Status</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="status-id">
+
+        <div class="mb-3">
+          <label class="form-label">Código</label>
+          <input type="number" id="status-codigo" class="form-control">
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Nome</label>
+          <input type="text" id="status-nome" class="form-control">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Cor</label>
+          <select class="form-select" name="status-color" id="status-color">
+            <option value="secondary" class="text-secondary">Secondary</option>
+            <option value="primary" class="text-primary">Primary</option>
+            <option value="success" class="text-success">Success</option>
+            <option value="danger" class="text-danger">Danger</option>
+            <option value="warning" class="text-warning">Warning</option>
+            <option value="info" class="text-info">Info</option>
+            <option value="light" class="text-light">Light</option>
+            <option value="dark" class="text-dark">Dark</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveStatus()">Salvar</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="deletestatusModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">Excluir Status</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body text-center">
+        <input type="hidden" id="delete-status-id">
+        <p>Tem certeza que deseja excluir o status <strong id="delete-status-nome"></strong>?</p>
+        
+        <p class="text-danger">Esta operação nao pode ser desfeita</p>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-danger" onclick="deleteStatus()">Excluir</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'js/utils.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    loadStatus()
+})
+
+function loadStatus() {
+    const tbody = document.getElementById('status-table-body')
+    renderLoading(tbody)
+
+    fetch('/api/status/')
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== 'success') {
+                showToast('Erro ao carregar status')
+                return
+            }
+
+            tbody.innerHTML = ''
+
+            if (data.data.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="2" class="text-center text-muted">
+                            Nenhum status cadastrado
+                        </td>
+                    </tr>
+                `
+                return
+            }
+
+            data.data.forEach(status => {
+                const tr = document.createElement('tr')
+
+                tr.innerHTML = `
+                    <td>${status.codigo} - ${status.nome}</td>
+                    <td class="text-${status.color}">${status.color}</td>
+                    <td>
+                        <a class="edit-icon" title="Editar status"
+                           onclick="openEditModal('${status.id}','${status.codigo}','${status.nome}', '${status.color}')">
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+                        <a class="edit-icon ms-2" title="Excluir status"
+                           onclick="openDeleteModal('${status.id}','${status.codigo} - ${status.nome}')">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </td>
+                `
+                tbody.appendChild(tr)
+            })
+        })
+        .catch(() => showToast('Erro de conexão com o servidor'))
+}
+
+
+let statusModal
+let deleteModal
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    statusModal = new bootstrap.Modal(
+        document.getElementById('statusModal')
+    )
+
+    deleteModal = new bootstrap.Modal(
+        document.getElementById('deletestatusModal')
+    )
+})
+
+/* CREATE */
+function openCreateModal() {
+    document.getElementById('statusModalTitle').innerText = 'Novo Status'
+    document.getElementById('status-id').value = ''
+    document.getElementById('status-codigo').value = ''
+    document.getElementById('status-nome').value = ''
+    document.getElementById('status-color').value = ''
+    statusModal.show()
+}
+
+/* EDIT */
+function openEditModal(id, codigo, nome, color) {
+    document.getElementById('statusModalTitle').innerText = 'Editar Status'
+    document.getElementById('status-id').value = id
+    document.getElementById('status-codigo').value = codigo
+    document.getElementById('status-nome').value = nome
+    document.getElementById('status-color').value = color
+    statusModal.show()
+}
+
+/* SAVE */
+function saveStatus() {
+    const id = document.getElementById('status-id').value
+    const codigo = document.getElementById('status-codigo').value
+    const nome = document.getElementById('status-nome').value
+    const color = document.getElementById('status-color').value
+
+    fetch('/api/status/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({ id, codigo, nome, color })
+    })
+    .then(async res => {
+        const data = await res.json()
+        if (!res.ok || data.status === 'error') {
+            throw new Error(data.message || 'Erro inesperado')
+        }
+        return data
+    })
+    .then(() => {
+        statusModal.hide()
+        showToast('Status atualizado com sucesso', 'success')
+        loadStatus()
+    })
+    .catch(err => showToast(err.message))
+}
+
+
+/* DELETE */
+function openDeleteModal(id, nome) {
+    document.getElementById('delete-status-id').value = id
+    document.getElementById('delete-status-nome').innerText = nome
+    deleteModal.show()
+}
+
+function deleteStatus() {
+    const id = document.getElementById('delete-status-id').value
+
+    fetch('/api/status/', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({ id })
+    })
+    .then(async res => {
+        const data = await res.json()
+        if (!res.ok || data.status === 'error') {
+            throw new Error(data.message || 'Erro ao excluir')
+        }
+        return data
+    })
+    .then(() => {
+        deleteModal.hide();
+        showToast('status excluido com sucesso', 'success')
+        loadStatus();
+    })
+    .catch(err => {
+        if(err.message.includes("Cannot delete some instances of model")){
+            showToast("Não é possível deletar um status com propostas ativas", 'danger')
+        } else {
+            showToast(err.message)
+        }
+    })
+}
+</script>
+
+
+{% endblock %}

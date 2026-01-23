@@ -8,7 +8,7 @@
   <aside class="sidebar collapsed">
     <header class="sidebar-header">
       <a href="#" class="header-logo">
-        <img src="" alt="CodingNepal">
+        <img src="" alt="logo">
       </a>
       <button class="toggler sidebar-toggler">
         <span class="material-symbols-rounded">chevron_left</span>
@@ -44,9 +44,11 @@
               <a href="{% url 'bancos' %}" class="dropdown-item"><i class="bi bi-bank"></i> Bancos</a>
               <a href="{% url 'operacoes' %}" class="dropdown-item"><i class="bi bi-collection"></i> Operações</a>
               <a href="{% url 'tabelas' %}" class="dropdown-item"><i class="bi bi-card-list"></i> Tabelas</a>
-              <a href="#" class="dropdown-item"><i class="bi bi-window-stack"></i> Salas</a>
+              <a href="{% url 'status' %}" class="dropdown-item"><i class="bi bi-list-check"></i> Status</a>
+              <a href="{% url 'salas' %}" class="dropdown-item"><i class="bi bi-window-stack"></i> Salas</a>
+              <a href="{% url 'funcoes' %}" class="dropdown-item"><i class="bi bi-person-workspace"></i> Funções</a>
+              <a href="{% url 'usuarios' %}" class="dropdown-item"><i class="bi bi-people"></i> Usuários</a>
             {% endif %}
-            <a href="#" class="dropdown-item"><i class="bi bi-people"></i> Usuários</a>
           </div>
         </li>
         {% if user.is_staff %}

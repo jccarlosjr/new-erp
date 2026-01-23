@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+<title>Funções</title>
+<style>
+    .edit-icon { text-decoration: none; }
+    .bi-pencil-square { color: green; cursor: pointer; }
+    .bi-trash { color: red; cursor: pointer; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active">Funções</li>
+        </ol>
+    </nav>
+
+    <div class="row mb-4">
+        <div class="col">
+            <button class="btn btn-primary btn-sm" onclick="openCreateModal()">
+                <i class="bi bi-plus-circle"></i> Nova Função
+            </button>
+        </div>
+    </div>
+
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th style="width:120px">Ações</th>
+            </tr>
+        </thead>
+        <tbody id="funcoes-table-body">
+            <!-- render via JS -->
+        </tbody>
+    </table>
+
+</div>
+
+<!-- MODAL CRIAR / EDITAR -->
+<div class="modal fade" id="funcaoModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 id="funcaoModalTitle">Nova Função</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="funcao-id">
+
+        <label class="form-label">Nome</label>
+        <input id="funcao-nome" class="form-control">
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveFuncao()">Salvar</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DELETE -->
+<div class="modal fade" id="deleteFuncaoModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5>Excluir Função</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body text-center">
+        <input type="hidden" id="delete-funcao-id">
+        <p>Deseja excluir <strong id="delete-funcao-nome"></strong>?</p>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-danger" onclick="deleteFuncao()">Excluir</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'js/utils.js' %}"></script>
+
+<script>
+let funcaoModal, deleteModal
+
+document.addEventListener('DOMContentLoaded', () => {
+    funcaoModal = new bootstrap.Modal(document.getElementById('funcaoModal'))
+    deleteModal = new bootstrap.Modal(document.getElementById('deleteFuncaoModal'))
+    loadFuncoes()
+})
+
+function loadFuncoes() {
+    const tbody = document.getElementById('funcoes-table-body')
+    renderLoading(tbody)
+
+    fetch('/api/funcoes/')
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== 'success') {
+                showToast('Erro ao carregar funções')
+                return
+            }
+
+            tbody.innerHTML = ''
+
+            if (!data.data.length) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="2" class="text-center text-muted">
+                            Nenhuma função cadastrada
+                        </td>
+                    </tr>
+                `
+                return
+            }
+
+            data.data.forEach(funcao => {
+                const tr = document.createElement('tr')
+                tr.innerHTML = `
+                    <td>${funcao.nome}</td>
+                    <td>
+                        <a class="edit-icon"
+                           title="Editar"
+                           onclick='openEditModal(${JSON.stringify(funcao)})'>
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+                        <a class="edit-icon ms-2"
+                           title="Excluir"
+                           onclick="openDeleteModal('${funcao.id}','${funcao.nome}')">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </td>
+                `
+                tbody.appendChild(tr)
+            })
+        })
+        .catch(() => showToast('Erro de conexão com o servidor'))
+}
+
+function openCreateModal() {
+    document.getElementById('funcaoModalTitle').innerText = 'Nova Função'
+    document.getElementById('funcao-id').value = ''
+    document.getElementById('funcao-nome').value = ''
+    funcaoModal.show()
+}
+
+function openEditModal(funcao) {
+    document.getElementById('funcaoModalTitle').innerText = 'Editar Função'
+    document.getElementById('funcao-id').value = funcao.id
+    document.getElementById('funcao-nome').value = funcao.nome
+    funcaoModal.show()
+}
+
+function saveFuncao() {
+    const payload = {
+        id: document.getElementById('funcao-id').value || null,
+        nome: document.getElementById('funcao-nome').value
+    }
+
+    fetch('/api/funcoes/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(async res => {
+        const data = await res.json()
+        if (!res.ok || data.status === 'error') {
+            throw new Error(data.message)
+        }
+        return data
+    })
+    .then(() => {
+        funcaoModal.hide()
+        showToast('Função salva com sucesso', 'success')
+        loadFuncoes()
+    })
+    .catch(err => showToast(err.message))
+}
+
+function openDeleteModal(id, nome) {
+    document.getElementById('delete-funcao-id').value = id
+    document.getElementById('delete-funcao-nome').innerText = nome
+    deleteModal.show()
+}
+
+function deleteFuncao() {
+    const id = document.getElementById('delete-funcao-id').value
+
+    fetch('/api/funcoes/', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({ id })
+    })
+    .then(() => {
+        deleteModal.hide()
+        showToast('Função excluída', 'success')
+        loadFuncoes()
+    })
+    .catch(() => showToast('Erro ao excluir função'))
+}
+</script>
+{% endblock %}
