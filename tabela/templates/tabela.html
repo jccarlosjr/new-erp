@@ -1,0 +1,483 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+<title>Tabelas</title>
+<style>
+    .edit-icon { text-decoration: none; }
+    .bi-pencil-square { color: green; cursor: pointer; }
+    .bi-trash { color: red; cursor: pointer; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active">Tabelas</li>
+        </ol>
+    </nav>
+
+    <div class="row mb-5">
+        <div class="col-md-4">
+            <button class="btn btn-primary btn-sm" onclick="openCreateModal()">
+                <i class="bi bi-plus-circle"></i> Nova Tabela
+            </button>
+        </div>
+    </div>
+    <div class="row mb-1">
+        <div class="col-md-4">
+            <label for="" class="ms-1">Banco</label>
+        </div>
+        <div class="col-md-4">
+            <label for="" class="ms-1">Operação</label>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <select id="filter-banco" class="form-select">
+                <option value="">Todos os bancos</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <select id="filter-operacao" class="form-select">
+                <option value="">Todas as operações</option>
+            </select>
+        </div>
+    </div>
+
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Banco</th>
+                <th>Operação</th>
+                <th>Prazo</th>
+                <th>Coef.</th>
+                <th>Ativo</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="tabelas-table-body">
+            <!-- render via JS -->
+        </tbody>
+    </table>
+
+</div>
+
+
+<div class="modal fade" id="tabelaModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 id="tabelaModalTitle">Nova Tabela</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="tabela-id">
+
+        <div class="row g-2">
+          <div class="col-md-6">
+            <label class="form-label">Nome</label>
+            <input id="tabela-nome" class="form-control">
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Prazo</label>
+            <input type="number" id="tabela-prazo" class="form-control">
+          </div>
+
+          <div class="col-md-3">
+            <label class="form-label">Coeficiente</label>
+            <input type="number" step="0.0001" id="tabela-coeficiente" class="form-control">
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Banco</label>
+            <select id="tabela-banco" class="form-select"></select>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Operação</label>
+            <select id="tabela-operacao" class="form-select"></select>
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">CMS %</label>
+            <input type="number" step="0.01" id="tabela-cms" class="form-control">
+          </div>
+
+          <div class="col-md-4">
+            <label class="form-label">Tipo CMS</label>
+            <input id="tabela-tipo-cms" maxlength="1" class="form-control">
+          </div>
+
+          <div class="col-md-4 d-flex align-items-center">
+            <div class="form-check mt-4">
+              <input class="form-check-input" type="checkbox" id="tabela-ativo" checked>
+              <label class="form-check-label">Ativo</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveTabela()">Salvar</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="deleteTabelaModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5>Excluir Tabela</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body text-center">
+        <input type="hidden" id="delete-tabela-id">
+        <p>Deseja excluir <strong id="delete-tabela-nome"></strong>?</p>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-danger" onclick="deleteTabela()">Excluir</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="{% static 'js/utils.js' %}"></script>
+<script>
+let tabelaModal, deleteModal
+
+document.addEventListener('DOMContentLoaded', () => {
+    tabelaModal = new bootstrap.Modal(document.getElementById('tabelaModal'))
+    deleteModal = new bootstrap.Modal(document.getElementById('deleteTabelaModal'))
+    loadBancoFilter()
+    loadOperacaoFilter()
+    loadTabelas()
+})
+
+
+document.getElementById('filter-banco').addEventListener('change', () => loadTabelas())
+document.getElementById('filter-operacao').addEventListener('change', () => loadTabelas())
+
+
+function loadBancoFilter() {
+    const select = document.getElementById('filter-banco')
+    select.innerHTML = `<option value="">Todos os bancos</option>`
+
+    fetch('/api/bancos/')
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== 'success') {
+                showToast('Erro ao carregar bancos')
+                return
+            }
+
+            data.data.forEach(banco => {
+                const option = document.createElement('option')
+                option.value = banco.id
+                option.textContent = `${banco.codigo} - ${banco.nome}`
+                select.appendChild(option)
+            })
+        })
+}
+
+
+function loadOperacaoFilter() {
+    const select = document.getElementById('filter-operacao')
+    select.innerHTML = `<option value="">Todas as operações</option>`
+
+    fetch('/api/operacoes/')
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== 'success') {
+                showToast('Erro ao carregar operações')
+                return
+            }
+
+            data.data.forEach(op => {
+                const option = document.createElement('option')
+                option.value = op.id
+                option.textContent = op.nome
+                select.appendChild(option)
+            })
+        })
+}
+
+
+function loadTabelas() {
+    const bancoId = document.getElementById('filter-banco').value
+    const operacaoId = document.getElementById('filter-operacao').value
+    const tbody = document.getElementById('tabelas-table-body')
+
+    renderLoading(tbody)
+
+    let params = new URLSearchParams()
+
+    if (bancoId) params.append('banco', bancoId)
+    if (operacaoId) params.append('operacao', operacaoId)
+
+    let url = '/api/tabelas/'
+
+    if ([...params].length) {
+        url += `?${params.toString()}`
+    }
+
+    fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== 'success') {
+                showToast('Erro ao carregar tabelas')
+                return
+            }
+
+            tbody.innerHTML = ''
+
+            if (data.data.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">
+                            Nenhuma tabela encontrada
+                        </td>
+                    </tr>
+                `
+                return
+            }
+
+            data.data.forEach(tabela => {
+                const tr = document.createElement('tr')
+                tr.innerHTML = `
+                    <td>${tabela.nome}</td>
+                    <td>${tabela.banco__nome}</td>
+                    <td>${tabela.operacao__nome}</td>
+                    <td>${tabela.prazo}</td>
+                    <td>${tabela.coeficiente}</td>
+                    <td class="text-center">
+                        <div class="form-check form-switch d-inline-flex">
+                            <input class="form-check-input"
+                                type="checkbox"
+                                ${tabela.ativo ? 'checked' : ''}
+                                onchange="toggleTabelaAtiva('${tabela.id}', this.checked)">
+                        </div>
+                    </td>
+                    <td>
+                        <a class="edit-icon" onclick='openEditModal(${JSON.stringify(tabela)})'>
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+                        <a class="edit-icon ms-2"
+                            onclick="openDeleteModal('${tabela.id}','${tabela.nome}')">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </td>
+                `
+                tbody.appendChild(tr)
+            })
+        })
+        .catch(() => showToast('Erro de conexão com o servidor'))
+}
+
+
+
+function toggleTabelaAtiva(id, ativo) {
+    fetch('/api/tabelas/', {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({ id, ativo })
+    })
+    .then(async res => {
+        const data = await res.json()
+        if (!res.ok || data.status === 'error') {
+            throw new Error(data.message || 'Erro ao atualizar tabela')
+        }
+        return data
+    })
+    .then(() => {
+        showToast(
+            ativo ? 'Tabela ativada com sucesso' : 'Tabela desativada com sucesso',
+            'success'
+        )
+    })
+    .catch(err => {
+        showToast(err.message)
+        loadTabelas()
+    })
+}
+
+
+
+function loadBancosSelect(selected = null) {
+    const select = document.getElementById('tabela-banco')
+    select.innerHTML = `<option value="">Selecione um banco</option>`
+
+    fetch('/api/bancos/')
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== 'success') {
+                showToast('Erro ao carregar bancos')
+                return
+            }
+
+            data.data.forEach(banco => {
+                const option = document.createElement('option')
+                option.value = banco.id
+                option.textContent = `${banco.codigo} - ${banco.nome}`
+
+                if (selected && selected == banco.id) {
+                    option.selected = true
+                }
+
+                select.appendChild(option)
+            })
+        })
+}
+
+function loadOperacoesSelect(selected = null) {
+    console.log(selected)
+    const select = document.getElementById('tabela-operacao')
+    select.innerHTML = `<option value="">Selecione uma operação</option>`
+
+    fetch('/api/operacoes/')
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== 'success') {
+                showToast('Erro ao carregar operações')
+                return
+            }
+
+            data.data.forEach(op => {
+                const option = document.createElement('option')
+                option.value = op.id
+                option.textContent = op.nome
+
+                if (selected && selected == op.id) {
+                    option.selected = true
+                }
+
+                select.appendChild(option)
+            })
+        })
+}
+
+
+function openCreateModal() {
+    document.getElementById('tabelaModalTitle').innerText = 'Nova Tabela'
+
+    document.getElementById('tabela-id').value = ''
+    document.getElementById('tabela-nome').value = ''
+    document.getElementById('tabela-prazo').value = ''
+    document.getElementById('tabela-coeficiente').value = ''
+    document.getElementById('tabela-cms').value = ''
+    document.getElementById('tabela-tipo-cms').value = ''
+    document.getElementById('tabela-ativo').checked = true
+
+    document.getElementById('tabela-banco').value = ''
+    document.getElementById('tabela-operacao').value = ''
+    
+    loadBancosSelect()
+    loadOperacoesSelect()
+
+    tabelaModal.show()
+}
+
+
+
+function openEditModal(tabela) {
+    console.log(tabela)
+    document.getElementById('tabelaModalTitle').innerText = 'Editar Tabela'
+
+    document.getElementById('tabela-id').value = tabela.id
+    document.getElementById('tabela-nome').value = tabela.nome
+    document.getElementById('tabela-prazo').value = tabela.prazo
+    document.getElementById('tabela-coeficiente').value = tabela.coeficiente
+    document.getElementById('tabela-cms').value = tabela.cms
+    document.getElementById('tabela-tipo-cms').value = tabela.tipo_cms
+    document.getElementById('tabela-ativo').checked = tabela.ativo
+
+    loadBancosSelect(tabela.banco__id)
+    loadOperacoesSelect(tabela.operacao__id)
+
+    tabelaModal.show()
+}
+
+
+
+
+function saveTabela() {
+    const payload = {
+        id: document.getElementById('tabela-id').value || null,
+        nome: document.getElementById('tabela-nome').value,
+        prazo: document.getElementById('tabela-prazo').value,
+        coeficiente: document.getElementById('tabela-coeficiente').value,
+        banco: document.getElementById('tabela-banco').value,
+        operacao: document.getElementById('tabela-operacao').value,
+        cms: document.getElementById('tabela-cms').value,
+        tipo_cms: document.getElementById('tabela-tipo-cms').value,
+        ativo: document.getElementById('tabela-ativo').checked
+    }
+
+    fetch('/api/tabelas/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(async r => {
+        const data = await r.json()
+        if (!r.ok || data.status === 'error') {
+            throw new Error(data.message)
+        }
+        return data
+    })
+    .then(() => {
+        tabelaModal.hide()
+        showToast('Tabela salva com sucesso', 'success')
+        loadTabelas()
+    })
+    .catch(err => showToast(err.message))
+}
+
+function openDeleteModal(id, nome) {
+    document.getElementById('delete-tabela-id').value = id
+    document.getElementById('delete-tabela-nome').innerText = nome
+    deleteModal.show()
+}
+
+function deleteTabela() {
+    const id = document.getElementById('delete-tabela-id').value
+
+    fetch('/api/tabelas/', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({ id })
+    })
+    .then(() => {
+        deleteModal.hide()
+        showToast('Tabela excluída', 'success')
+        loadTabelas()
+    })
+    .catch(() => showToast('Erro ao excluir'))
+}
+</script>
+{% endblock %}
