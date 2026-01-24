@@ -10,7 +10,7 @@ from .models import Cliente
 
 
 class ClienteView(LoginRequiredMixin, TemplateView):
-    template_name = 'clientes.html'
+    template_name = 'clientes/cliente_wizard.html'
 
 
 class ClienteAPIView(LoginRequiredMixin, View):

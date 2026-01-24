@@ -30,4 +30,5 @@ urlpatterns = [
     path('', include('empresa.urls')),
     path('', include('cliente.urls')),
     path('', include('convenio.urls')),
+    path('', include('card_oferta.urls')),
 ]

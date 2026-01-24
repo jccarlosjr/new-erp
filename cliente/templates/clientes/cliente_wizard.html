@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block head %}
+<title>Cadastro de Cliente</title>
+
+<style>
+.stepper {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+.step {
+    flex: 1;
+    padding: 12px;
+    text-align: center;
+    border-bottom: 3px solid #dee2e6;
+    color: #6c757d;
+    font-weight: 500;
+}
+.step.active {
+    border-color: #0d6efd;
+    color: #0d6efd;
+}
+.step-content {
+    display: none;
+}
+.step-content.active {
+    display: block;
+}
+.card-header {
+    font-weight: 600;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <h4 class="mb-4">Cadastro de Cliente</h4>
+
+    {% include "partials/stepper.html" %}
+
+    <div id="step-1" class="step-content active">
+        {% include "partials/cliente_form.html" %}
+    </div>
+
+    <div id="step-2" class="step-content">
+        {% include "partials/matriculas_list.html" %}
+    </div>
+    
+    <div id="step-3" class="step-content">
+        {% include "partials/propostas.html" %}
+    </div>
+
+</div>
+
+{% include "partials/matricula_modal.html" %}
+
+<script src="{% static 'js/utils.js' %}"></script>
+<script src="{% static 'js/cliente.api.js' %}"></script>
+
+<script>
+/* ===== STEPS ===== */
+function goStep(step) {
+    document.querySelectorAll('.step, .step-content')
+        .forEach(el => el.classList.remove('active'))
+
+    document.querySelector(`.step[data-step="${step}"]`).classList.add('active')
+    document.getElementById(`step-${step}`).classList.add('active')
+}
+
+/* ===== EVENTOS ORIGINAIS ===== */
+document.getElementById('btn-search-btn').addEventListener('click', getClienteByCPF)
+document.getElementById('clienteForm').addEventListener('submit', saveCliente)
+</script>
+{% endblock %}

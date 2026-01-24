@@ -5,7 +5,8 @@ from django.shortcuts import get_object_or_404
 from django.views import View
 from django.http import JsonResponse
 import json
-from .models import Convenio
+from .models import Convenio, Matricula
+from cliente.models import Cliente
 
 
 class ConvenioView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
@@ -91,19 +92,43 @@ class ConvenioAPIView(LoginRequiredMixin, AdminRequiredMixin, View):
             }, status=400)
 
 
-import json
-from django.http import JsonResponse
-from django.views import View
-from django.shortcuts import get_object_or_404
-
-from .models import Matricula
-from cliente.models import Cliente
-from convenio.models import Convenio
-
-
 class MatriculaAPIView(View):
 
-    def get(self, request):
+    def get(self, request, id=None):
+        """
+        - GET /api/matriculas/?cpf=...
+        - GET /api/matriculas/<id>/
+        """
+
+        # 🔹 GET POR ID (EDIÇÃO)
+        if id:
+            matricula = get_object_or_404(
+                Matricula.objects.select_related('cliente', 'convenio'),
+                id=id
+            )
+
+            return JsonResponse({
+                "status": "success",
+                "data": {
+                    "id": matricula.id,
+                    "matricula": matricula.matricula,
+                    "codigo_convenio": matricula.codigo_convenio,
+                    "uf_convenio": matricula.uf_convenio,
+                    "recebimento": matricula.recebimento,
+                    "banco": matricula.banco,
+                    "agencia": matricula.agencia,
+                    "conta": matricula.conta,
+
+                    "cliente": {
+                        "cpf": matricula.cliente.cpf,
+                        "nome": matricula.cliente.nome,
+                    },
+
+                    "convenio": matricula.convenio.id
+                }
+            })
+
+        # 🔹 GET POR CPF (LISTAGEM)
         cpf = request.GET.get('cpf')
 
         if not cpf:
@@ -112,28 +137,26 @@ class MatriculaAPIView(View):
                 "data": []
             })
 
-        matriculas = Matricula.objects.select_related(
-            'cliente', 'convenio'
-        )
+        matriculas = (
+            Matricula.objects
+            .select_related('cliente', 'convenio')
+            .filter(cliente__cpf=cpf)
+            .values(
+                'id',
+                'matricula',
+                'codigo_convenio',
+                'uf_convenio',
+                'recebimento',
+                'banco',
+                'agencia',
+                'conta',
 
-        if cpf:
-            matriculas = matriculas.filter(cliente__cpf=cpf)
+                'cliente__nome',
+                'cliente__cpf',
 
-        matriculas = matriculas.values(
-            'id',
-            'matricula',
-            'codigo_convenio',
-            'uf_convenio',
-            'recebimento',
-            'banco',
-            'agencia',
-            'conta',
-
-            'cliente__nome',
-            'cliente__cpf',
-
-            'convenio__id',
-            'convenio__nome',
+                'convenio__id',
+                'convenio__nome',
+            )
         )
 
         return JsonResponse({
@@ -147,7 +170,6 @@ class MatriculaAPIView(View):
             body = json.loads(request.body)
 
             cliente_cpf = body.get('cpf')
-
             matricula_id = body.get('id')
             convenio_id = body.get('convenio_id')
 
@@ -164,6 +186,7 @@ class MatriculaAPIView(View):
                     "status": "error",
                     "message": "CPF do cliente é obrigatório"
                 }, status=400)
+
             if not convenio_id:
                 return JsonResponse({
                     "status": "error",
@@ -179,7 +202,7 @@ class MatriculaAPIView(View):
             cliente = get_object_or_404(Cliente, cpf=cliente_cpf)
             convenio = get_object_or_404(Convenio, id=convenio_id)
 
-            # UPDATE
+            # 🔹 UPDATE
             if matricula_id:
                 matricula = get_object_or_404(Matricula, id=matricula_id)
 
@@ -192,7 +215,6 @@ class MatriculaAPIView(View):
                 matricula.banco = banco
                 matricula.agencia = agencia
                 matricula.conta = conta
-
                 matricula.save()
 
                 return JsonResponse({
@@ -203,7 +225,7 @@ class MatriculaAPIView(View):
                     }
                 })
 
-            # CREATE
+            # 🔹 CREATE
             matricula = Matricula.objects.create(
                 cliente=cliente,
                 convenio=convenio,

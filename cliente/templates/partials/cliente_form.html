@@ -1,0 +1,221 @@
+<form id="clienteForm">
+    {% csrf_token %}
+    <input type="hidden" id="cliente-id">
+
+    <div class="row g-2">
+
+        <!-- DADOS PESSOAIS -->
+        <div class="row">
+            <div class="col-md-4">
+                <label class="form-label">CPF</label>
+                <div class="d-flex gap-2">
+                    <input id="cpf"
+                           class="form-control"
+                           maxlength="14"
+                           oninput="formatCPF(this)"
+                           required>
+                    <button type="button"
+                            class="btn btn-primary btn-sm"
+                            id="btn-search-btn">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Nome</label>
+                <input id="nome"
+                       class="form-control"
+                       required>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Nascimento</label>
+                <input type="date"
+                       id="nascimento"
+                       class="form-control"
+                       required>
+            </div>
+        </div>
+
+        <!-- DOCUMENTOS -->
+        <div class="row mt-2">
+            <div class="col-md-4">
+                <label class="form-label">Nº Documento</label>
+                <input id="numero_documento"
+                       class="form-control"
+                       required>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Órgão Emissor</label>
+                <select id="orgao_emissor"
+                        class="form-select"
+                        required>
+                    <option value="">-</option>
+                    <option value="SSP">SSP</option>
+                    <option value="DETRAN">DETRAN</option>
+                    <option value="Outro">Outro</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">UF Emissão</label>
+                <select id="uf_emissao"
+                        class="form-select"
+                        required>
+                    <option value="">-</option>
+                    {% include "partials/ufs.html" %}
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Data Emissão</label>
+                <input type="date"
+                       id="data_emissao"
+                       class="form-control"
+                       required>
+            </div>
+        </div>
+
+        <!-- NATURALIDADE -->
+        <div class="row mt-2">
+            <div class="col-md-4">
+                <label class="form-label">Naturalidade</label>
+                <input id="naturalidade"
+                       class="form-control"
+                       required>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">UF Naturalidade</label>
+                <select id="uf_naturalidade"
+                        class="form-select"
+                        required>
+                    <option value="">-</option>
+                    {% include "partials/ufs.html" %}
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Sexo</label>
+                <select id="sexo"
+                        class="form-select"
+                        required>
+                    <option value="">-</option>
+                    <option value="M">Masculino</option>
+                    <option value="F">Feminino</option>
+                </select>
+            </div>
+
+            <div class="col-md-2 d-flex align-items-center">
+                <div class="form-check form-switch mt-4">
+                    <input type="checkbox"
+                           id="iletrado"
+                           class="form-check-input">
+                    <label class="form-check-label">Iletrado</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- FILIAÇÃO -->
+        <div class="row mt-2">
+            <div class="col-md-6">
+                <label class="form-label">Nome do Pai</label>
+                <input id="pai"
+                       class="form-control">
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Nome da Mãe</label>
+                <input id="mae"
+                       class="form-control">
+            </div>
+        </div>
+
+        <!-- CONTATO -->
+        <div class="row mt-2">
+            <div class="col-md-4">
+                <label class="form-label">Celular</label>
+                <input id="celular"
+                       class="form-control"
+                       maxlength="14"
+                       oninput="formatCelphone(this)"
+                       required>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Email</label>
+                <input type="email"
+                       id="email"
+                       class="form-control"
+                       required>
+            </div>
+        </div>
+
+        <!-- ENDEREÇO -->
+        <div class="row mt-2">
+            <div class="col-md-3">
+                <label class="form-label">CEP</label>
+                <input id="cep"
+                       class="form-control"
+                       maxlength="10"
+                       oninput="formatCEP(this)"
+                       required>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Endereço</label>
+                <input id="endereco"
+                       class="form-control"
+                       required>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Número</label>
+                <input id="numero"
+                       class="form-control"
+                       required>
+            </div>
+        </div>
+
+        <div class="row mt-2">
+            <div class="col-md-3">
+                <label class="form-label">Bairro</label>
+                <input id="bairro"
+                       class="form-control"
+                       required>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Complemento</label>
+                <input id="complemento"
+                       class="form-control">
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Cidade</label>
+                <input id="cidade"
+                       class="form-control"
+                       required>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">UF</label>
+                <select id="uf_cidade"
+                        class="form-select"
+                        required>
+                    <option value="">-</option>
+                    {% include "partials/ufs.html" %}
+                </select>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="mt-4 text-end">
+        <button class="btn btn-success">
+            Avançar <i class="bi bi-arrow-right-short"></i>
+        </button>
+    </div>
+</form>
