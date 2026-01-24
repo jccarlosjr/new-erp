@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 {% block head %}
-<title>Bancos</title>
+<title>Convênios</title>
 <style>
     #list-banks {
         margin-top: 50px;
@@ -58,14 +58,14 @@
 <div class="container">
     <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item active" aria-current="page">Bancos</li>
+            <li class="breadcrumb-item active" aria-current="page">Convênios</li>
         </ol>
     </nav>
     <div id="list-banks">
         <div class="row">
             <div class="col">
                 <a class="btn btn-primary btn-sm ms-1" onclick="openCreateModal()">
-                    <i class="bi bi-bank"></i> Novo Banco
+                    <i class="bi bi-bank"></i> Novo Convênio
                 </a>
             </div>
         </div>
@@ -74,11 +74,11 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>Banco</th>
+                    <th>Nome</th>
                     <th>Ações</th>
                 </tr>
             </thead>
-            <tbody id="bancos-table-body">
+            <tbody id="convenios-table-body">
                 <!-- renderizado via JS -->
             </tbody>
         </table>
@@ -87,32 +87,27 @@
 </div>
 
 
-<div class="modal fade" id="bancoModal" tabindex="-1">
+<div class="modal fade" id="convenioModal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
 
       <div class="modal-header">
-        <h5 class="modal-title" id="bancoModalTitle">Novo Banco</h5>
+        <h5 class="modal-title" id="convenioModalTitle">Novo Convênio</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
 
       <div class="modal-body">
-        <input type="hidden" id="banco-id">
-
-        <div class="mb-3">
-          <label class="form-label">Código</label>
-          <input type="number" id="banco-codigo" class="form-control">
-        </div>
+        <input type="hidden" id="convenio-id">
 
         <div class="mb-3">
           <label class="form-label">Nome</label>
-          <input type="text" id="banco-nome" class="form-control">
+          <input type="text" id="convenio-nome" class="form-control">
         </div>
       </div>
 
       <div class="modal-footer">
         <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button class="btn btn-primary" onclick="saveBanco()">Salvar</button>
+        <button class="btn btn-primary" onclick="saveConvenio()">Salvar</button>
       </div>
 
     </div>
@@ -120,25 +115,25 @@
 </div>
 
 
-<div class="modal fade" id="deleteBancoModal" tabindex="-1">
+<div class="modal fade" id="deleteConvenioModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
 
       <div class="modal-header">
-        <h5 class="modal-title">Excluir Banco</h5>
+        <h5 class="modal-title">Excluir Convênio</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
 
       <div class="modal-body text-center">
-        <input type="hidden" id="delete-banco-id">
-        <p>Tem certeza que deseja excluir o banco <strong id="delete-banco-nome"></strong>?</p>
+        <input type="hidden" id="delete-convenio-id">
+        <p>Tem certeza que deseja excluir o convênio <strong id="delete-convenio-nome"></strong>?</p>
         
         <p class="text-danger">Esta operação nao pode ser desfeita</p>
       </div>
 
       <div class="modal-footer">
         <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button class="btn btn-danger" onclick="deleteBanco()">Excluir</button>
+        <button class="btn btn-danger" onclick="deleteConvenio()">Excluir</button>
       </div>
 
     </div>
@@ -148,18 +143,18 @@
 <script src="{% static 'js/utils.js' %}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    loadBancos()
+    loadConvenio()
 })
 
-function loadBancos() {
-    const tbody = document.getElementById('bancos-table-body')
+function loadConvenio() {
+    const tbody = document.getElementById('convenios-table-body')
     renderLoading(tbody)
 
-    fetch('/api/bancos/')
+    fetch('/api/convenios/')
         .then(res => res.json())
         .then(data => {
             if (data.status !== 'success') {
-                showToast('Erro ao carregar bancos')
+                showToast('Erro ao carregar convênios')
                 return
             }
 
@@ -169,25 +164,25 @@ function loadBancos() {
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="2" class="text-center text-muted">
-                            Nenhum banco cadastrado
+                            Nenhum convênio cadastrado
                         </td>
                     </tr>
                 `
                 return
             }
 
-            data.data.forEach(banco => {
+            data.data.forEach(element => {
                 const tr = document.createElement('tr')
 
                 tr.innerHTML = `
-                    <td>${banco.codigo} - ${banco.nome}</td>
+                    <td>${element.nome}</td>
                     <td>
-                        <a class="edit-icon" title="Editar Banco"
-                           onclick="openEditModal('${banco.id}','${banco.codigo}','${banco.nome}')">
+                        <a class="edit-icon" title="Editar Convênio"
+                           onclick="openEditModal('${element.id}', '${element.nome}')">
                             <i class="bi bi-pencil-square"></i>
                         </a>
-                        <a class="edit-icon ms-2" title="Excluir Banco"
-                           onclick="openDeleteModal('${banco.id}','${banco.codigo} - ${banco.nome}')">
+                        <a class="edit-icon ms-2" title="Excluir Convênio"
+                           onclick="openDeleteModal('${element.id}', '${element.nome}')">
                             <i class="bi bi-trash"></i>
                         </a>
                     </td>
@@ -199,51 +194,48 @@ function loadBancos() {
 }
 
 
-let bancoModal
+let convenioModal
 let deleteModal
 
 document.addEventListener('DOMContentLoaded', function () {
 
-    bancoModal = new bootstrap.Modal(
-        document.getElementById('bancoModal')
+    convenioModal = new bootstrap.Modal(
+        document.getElementById('convenioModal')
     )
 
     deleteModal = new bootstrap.Modal(
-        document.getElementById('deleteBancoModal')
+        document.getElementById('deleteConvenioModal')
     )
 })
 
 /* CREATE */
 function openCreateModal() {
-    document.getElementById('bancoModalTitle').innerText = 'Novo Banco'
-    document.getElementById('banco-id').value = ''
-    document.getElementById('banco-codigo').value = ''
-    document.getElementById('banco-nome').value = ''
-    bancoModal.show()
+    document.getElementById('convenioModalTitle').innerText = 'Novo Convênio'
+    document.getElementById('convenio-id').value = ''
+    document.getElementById('convenio-nome').value = ''
+    convenioModal.show()
 }
 
 /* EDIT */
-function openEditModal(id, codigo, nome) {
-    document.getElementById('bancoModalTitle').innerText = 'Editar Banco'
-    document.getElementById('banco-id').value = id
-    document.getElementById('banco-codigo').value = codigo
-    document.getElementById('banco-nome').value = nome
-    bancoModal.show()
+function openEditModal(id, nome) {
+    document.getElementById('convenioModalTitle').innerText = 'Editar Convênio'
+    document.getElementById('convenio-id').value = id
+    document.getElementById('convenio-nome').value = nome
+    convenioModal.show()
 }
 
 /* SAVE */
-function saveBanco() {
-    const id = document.getElementById('banco-id').value
-    const codigo = document.getElementById('banco-codigo').value
-    const nome = document.getElementById('banco-nome').value
+function saveConvenio() {
+    const id = document.getElementById('convenio-id').value
+    const nome = document.getElementById('convenio-nome').value
 
-    fetch('/api/bancos/', {
+    fetch('/api/convenios/', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': getCSRFToken()
         },
-        body: JSON.stringify({ id, codigo, nome })
+        body: JSON.stringify({ id, nome })
     })
     .then(async res => {
         const data = await res.json()
@@ -253,9 +245,9 @@ function saveBanco() {
         return data
     })
     .then(() => {
-        bancoModal.hide()
-        showToast('Banco atualizado com sucesso', 'success')
-        loadBancos()
+        convenioModal.hide()
+        showToast('Convênio atualizada com sucesso', 'success')
+        loadConvenio()
     })
     .catch(err => showToast(err.message))
 }
@@ -263,16 +255,15 @@ function saveBanco() {
 
 /* DELETE */
 function openDeleteModal(id, nome) {
-    document.getElementById('delete-banco-id').value = id
-    document.getElementById('delete-banco-nome').innerText = nome
+    document.getElementById('delete-convenio-id').value = id
+    document.getElementById('delete-convenio-nome').innerText = nome
     deleteModal.show()
 }
 
+function deleteConvenio() {
+    const id = document.getElementById('delete-convenio-id').value
 
-function deleteBanco() {
-    const id = document.getElementById('delete-banco-id').value
-
-    fetch('/api/bancos/', {
+    fetch('/api/convenios/', {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
@@ -289,18 +280,17 @@ function deleteBanco() {
     })
     .then(() => {
         deleteModal.hide();
-        showToast('Banco excluido com sucesso', 'success')
-        loadBancos();
+        showToast('Convênio excluido com sucesso', 'success')
+        loadConvenio();
     })
     .catch(err => {
         if(err.message.includes("Cannot delete some instances of model")){
-            showToast("Não é possível deletar um banco com tabelas ativas", 'danger')
+            showToast("Não é possível deletar um convênio com propostas ativas", 'danger')
         } else {
             showToast(err.message)
         }
     })
 }
-
 </script>
 
 
