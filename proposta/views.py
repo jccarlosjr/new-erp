@@ -127,6 +127,7 @@ class PropostaAPIView(LoginRequiredMixin, View):
         codigo_interno = request.GET.get('codigo_interno')
         card_codigo = request.GET.get('card_codigo_interno')
         cpf = request.GET.get('cpf')
+        card_id = request.GET.get('card_id')
 
         propostas = Proposta.objects.select_related(
             'cliente',
@@ -146,6 +147,11 @@ class PropostaAPIView(LoginRequiredMixin, View):
         if card_codigo:
             propostas = propostas.filter(
                 card_oferta__codigo_interno=card_codigo
+            )
+
+        if card_id:
+            propostas = propostas.filter(
+                card_oferta__id=card_id
             )
 
         if cpf:
@@ -177,6 +183,7 @@ class PropostaAPIView(LoginRequiredMixin, View):
 
             'tabela__id',
             'tabela__nome',
+            'tabela__operacao__nome',
 
             'usuario__id',
             'usuario__username',
@@ -217,10 +224,10 @@ class PropostaAPIView(LoginRequiredMixin, View):
                     "message": "CPF do cliente é obrigatório"
                 }, status=400)
 
-            if not tabela_id or not status_id or not usuario_id:
+            if not tabela_id:
                 return JsonResponse({
                     "status": "error",
-                    "message": "Tabela, status e usuário são obrigatórios"
+                    "message": "Tabela é obrigatória"
                 }, status=400)
 
             if parcela is None or prazo is None or troco is None:
@@ -231,7 +238,12 @@ class PropostaAPIView(LoginRequiredMixin, View):
 
             cliente = get_object_or_404(Cliente, cpf=cpf)
             tabela = get_object_or_404(Tabela, id=tabela_id)
-            status = get_object_or_404(Status, id=status_id)
+
+            try:
+                status = get_object_or_404(Status, id=status_id)
+            except:
+                status = None
+
             usuario = get_object_or_404(CustomUser, id=usuario_id)
 
             card_oferta = None

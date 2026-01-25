@@ -3,10 +3,11 @@
 <table class="table table-sm align-middle">
     <thead>
         <tr>
-            <th>Tabela</th>
+            <th>Código Interno</th>
+            <th>Operação</th>
             <th>Parcela</th>
-            <th>Prazo</th>
-            <th>Troco</th>
+            <th>CPF</th>
+            <th>Nome</th>
             <th>Status</th>
             <th width="120">Ações</th>
         </tr>
@@ -14,10 +15,9 @@
     <tbody id="propostasTable"></tbody>
 </table>
 
-<button class="btn btn-success" onclick="openPropostaForm()">
+<button class="btn btn-success" onclick="openCreatePropostaModal()">
     + Nova Proposta
 </button>
-
 
 
 <div class="d-flex justify-content-between mt-4">
@@ -29,3 +29,5 @@
         Continuar <i class="bi bi-arrow-right-short"></i>
     </button>
 </div>
+
+{% include "partials/proposta_modal.html" %}

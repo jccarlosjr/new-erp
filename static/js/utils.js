@@ -84,3 +84,15 @@ function formatCEP(input) {
 function formatNumbersOnly(input) {
   input.value = input.value.replace(/\D/g, "");
 }
+
+function floatFormat(input) {
+  let value = input.value.replace(/\D/g, "");
+  if (value.length >= 2) {
+    const decimalPart = value.slice(-2);
+    const integerPart = value.slice(0, -2);
+
+    input.value = `${integerPart}.${decimalPart}`;
+  } else {
+    input.value = value;
+  }
+}

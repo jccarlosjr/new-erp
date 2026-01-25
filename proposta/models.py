@@ -52,13 +52,14 @@ class Proposta(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT)
     tabela = models.ForeignKey(Tabela, on_delete=models.PROTECT)
     usuario = models.ForeignKey(CustomUser, on_delete=models.PROTECT)
-    status = models.ForeignKey(Status, on_delete=models.PROTECT)
+    status = models.ForeignKey(Status, on_delete=models.PROTECT, null=True, blank=True)
     card_oferta = models.ForeignKey(CardOferta, on_delete=models.PROTECT, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.id:
-            self.status.codigo = '1'
-            super().save(*args, **kwargs) 
+            if not self.status:
+                self.status = Status.objects.filter(codigo='1').first()
+            super().save(*args, **kwargs)
 
         if not self.codigo_interno:
             self.codigo_interno = get_proposal_code(self)
@@ -66,6 +67,7 @@ class Proposta(models.Model):
             super().save(*args, **kwargs)
         else:
             super().save(*args, **kwargs)
+
 
     def __str__(self):
         return self.codigo_interno

@@ -1,8 +1,9 @@
 let matriculaModal;
+let propostaModal;
 let currentCliente = null;
 let selectedMatricula = null;
 let currentCardOferta = null;
-
+let currentTabela = null;
 
 /* ===============================
    EVENTOS
@@ -11,6 +12,11 @@ let currentCardOferta = null;
 document.addEventListener('DOMContentLoaded', () => {
     matriculaModal = new bootstrap.Modal(
         document.getElementById('matriculaModal')
+    );
+
+
+    propostaModal = new bootstrap.Modal(
+        document.getElementById('propostaModal')
     );
 
     document
@@ -427,6 +433,13 @@ function loadUFs(selectId, selected = null) {
 ================================ */ 
 
 function createCardOferta() {
+    console.log(currentCardOferta);
+
+    if(currentCardOferta != null) {
+        currentCardOferta = currentCardOferta;
+        goStep(3);
+        return;
+    }
 
     if (!currentCliente?.cpf) {
         showToast("Cliente não identificado", "danger");
@@ -465,4 +478,284 @@ function createCardOferta() {
             showToast("Erro de conexão com o servidor", "danger");
             console.error(err);
         });
+}
+
+/* ===============================
+   PROPOSTA
+================================ */ 
+
+function openCreatePropostaModal() {
+
+    if (!currentCliente?.cpf) {
+        showToast("Cliente não identificado", "danger");
+        return;
+    }
+
+    if (!currentCardOferta?.id) {
+        showToast("Card de oferta não identificado", "danger");
+        return;
+    }
+
+    document.getElementById('propostaModalTitle').innerText =
+        "Nova Proposta";
+
+    document.getElementById('proposta-id').value = '';
+
+    document
+        .querySelectorAll('#propostaModal input, #propostaModal textarea')
+        .forEach(el => el.value = '');
+    
+    loadBancosSelect();
+    loadOperacoesSelect();
+
+    propostaModal.show();
+}
+
+
+function saveProposta() {
+
+    if (!currentCliente?.cpf) {
+        showToast("Cliente não identificado", "danger");
+        return;
+    }
+
+    if (!currentCardOferta?.id) {
+        showToast("Card de oferta não identificado", "danger");
+        return;
+    }
+
+    const payload = {
+        id: document.getElementById('proposta-id').value || null,
+
+        cpf: currentCliente.cpf,
+        card_oferta_id: currentCardOferta.id,
+        usuario_id: currentUser,
+
+        tabela_id: Number(document.getElementById('tabela-select').value),
+
+        parcela: Number(document.getElementById('parcela').value),
+        prazo: Number(document.getElementById('prazo').value),
+        troco: Number(document.getElementById('troco').value),
+        financiado: Number(document.getElementById('troco').value),
+        obs: document.getElementById('obs').value,
+    };
+
+    /* ===== VALIDAÇÕES ===== */
+    if (!payload.tabela_id || !payload.parcela) {
+        showToast("Tabela e parcela são obrigatórios", "warning");
+        return;
+    }
+
+    fetch('/api/propostas/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken(),
+        },
+        body: JSON.stringify(payload),
+    })
+        .then(res => res.json())
+        .then(res => {
+            if (res.status === 'success') {
+
+                showToast(
+                    payload.id
+                        ? "Proposta atualizada com sucesso"
+                        : "Proposta criada com sucesso",
+                    "success"
+                );
+
+                propostaModal.hide();
+                loadPropostasByCardID();
+
+            } else {
+                showToast(res.message || "Erro ao salvar proposta", "danger");
+            }
+        })
+        .catch(err => {
+            showToast("Erro de conexão com o servidor", "danger");
+            console.error(err);
+        });
+}
+
+
+function loadBancosSelect(selected = null) {
+    const select = document.getElementById('banco-select')
+    select.innerHTML = `<option value="">Selecione um banco</option>`
+
+    fetch('/api/bancos/')
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== 'success') {
+                showToast('Erro ao carregar bancos')
+                return
+            }
+
+            data.data.forEach(banco => {
+                const option = document.createElement('option')
+                option.value = banco.id
+                option.textContent = `${banco.codigo} - ${banco.nome}`
+
+                if (selected && selected == banco.id) {
+                    option.selected = true
+                }
+
+                select.appendChild(option)
+            })
+        })
+}
+
+
+function loadOperacoesSelect(selected = null) {
+    const select = document.getElementById('operacoes-select')
+    select.innerHTML = `<option value="">Selecione uma operação</option>`
+
+    fetch('/api/operacoes/')
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== 'success') {
+                showToast('Erro ao carregar operações')
+                return
+            }
+
+            data.data.forEach(operacao => {
+                const option = document.createElement('option')
+                option.value = operacao.id
+                option.textContent = `${operacao.nome}`
+
+                if (selected && selected == operacao.id) {
+                    option.selected = true
+                }
+
+                select.appendChild(option)
+            })
+        })
+}
+
+
+document.getElementById("operacoes-select").addEventListener("change", loadTabelasSelect);
+
+function loadTabelasSelect(selected = null) {
+    const formProposta = document.getElementById('form-proposta');
+    formProposta.classList.remove('d-none');
+
+    const bancoId = document.getElementById('banco-select').value
+    const operacaoId = document.getElementById('operacoes-select').value
+
+    let params = new URLSearchParams()
+
+    params.append('banco', bancoId)
+    params.append('operacao', operacaoId)
+    params.append('ativo', 'true')
+
+    let url = '/api/tabelas/'
+
+    if ([...params].length) {
+        url += `?${params.toString()}`
+    }
+
+    const select = document.getElementById('tabela-select')
+    select.innerHTML = `<option value="">Selecione uma tabela</option>`
+
+    fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== 'success') {
+                showToast('Erro ao carregar tabelas para esse banco e operação')
+                return
+            }
+
+            data.data.forEach(tabela => {
+                const option = document.createElement('option')
+                option.value = tabela.id
+                option.textContent = `${tabela.nome}`
+                option.dataset.coeficiente = tabela.coeficiente
+                option.dataset.prazo = tabela.prazo
+                option.dataset.cms = tabela.cms
+
+                if (selected && selected == tabela.id) {
+                    option.selected = true
+                    document.getElementById('coeficiente').value = tabela.coeficiente
+                    document.getElementById('prazo').value = tabela.prazo
+                    document.getElementById('cms').value = tabela.cms
+                }
+
+                select.appendChild(option)
+            })
+        })
+}
+
+document.getElementById("tabela-select").addEventListener("change", function () {
+    const selectedOption = this.options[this.selectedIndex]
+
+    if (!selectedOption || !selectedOption.dataset.coeficiente) {
+        document.getElementById('coeficiente').value = ''
+        return
+    }
+    
+    if (!selectedOption || !selectedOption.dataset.prazo) {
+        document.getElementById('prazo').value = ''
+        return
+    }
+
+    if (!selectedOption || !selectedOption.dataset.cms) {
+        document.getElementById('cms').value = ''
+        return
+    }
+
+    document.getElementById('coeficiente').value = selectedOption.dataset.coeficiente
+    document.getElementById('prazo').value = selectedOption.dataset.prazo
+    document.getElementById('cms').value = selectedOption.dataset.cms
+});
+
+
+document.getElementById("parcela").addEventListener("change", () => {
+    const coeficiente = Number(document.getElementById('coeficiente').value);
+    const parcela = Number(document.getElementById('parcela').value);
+
+    const troco = parcela / coeficiente;
+    document.getElementById('troco').value = troco.toFixed(2);
+
+})
+
+
+function loadPropostasByCardID() {
+
+    fetch(`/api/propostas/?card_id=${currentCardOferta.id}`)
+        .then(res => res.json())
+        .then(res => {
+            if (res.data) {
+                renderPropostas(res.data);
+            }
+        })
+        .catch(err => {
+            showToast("Erro ao carregar matrículas", "danger");
+            console.error(err);
+        });
+}
+
+function renderPropostas(propostas) {
+    let propostasTable = document.getElementById('propostasTable');
+    propostasTable.innerHTML = '';
+
+    
+
+    propostas.forEach(proposta => {
+        let row = `
+            <tr>
+                <td>${proposta.codigo_interno}</td>
+                <td>${proposta.tabela__operacao__nome}</td>
+                <td>R$ ${proposta.parcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL'})}</td>
+                <td>${proposta.cliente__cpf}</td>
+                <td>${proposta.cliente__nome}</td>
+                <td>${proposta.status__nome}</td>
+                <td>
+                    <button class="btn btn-primary" onclick="editProposta(${proposta.id})">Editar</button>
+                    <button class="btn btn-danger" onclick="deleteProposta(${proposta.id})">Excluir</button>
+                </td>
+            </tr>
+        `;
+        propostasTable.innerHTML += row;
+    });
+
 }
