@@ -11,34 +11,33 @@
         <input type="hidden" id="matricula-id">
 
         <div class="row g-2">
-          <div class="col-md-6">
+          <div class="col-md-5">
             <label class="form-label">Cliente</label>
             <input id="matricula-cliente" class="form-control" readonly>
           </div>
 
-          <div class="col-md-2">
+          <div class="col-md-4">
             <label class="form-label">Convênio</label>
             <select id="convenio" class="form-select"></select>
           </div>
 
-          <div class="col-md-4">
+          <div class="col-md-3">
             <label class="form-label">Matrícula</label>
             <input id="matricula-matricula" class="form-control">
           </div>
         </div>
 
-        <div class="row mt-3">
+        <div class="row mt-4">
           <div class="col-md-4">
-            <label class="form-label">Código Convênio</label>
+            <label class="form-label">Código/Espécie</label>
             <input id="matricula-codigo-convenio" class="form-control">
           </div>
 
-          <div class="col-md-2">
+          <div class="col-md-4">
             <label class="form-label">UF</label>
             <select id="matricula-uf-convenio" class="form-select">
               <option value="">-</option>
               {% include "partials/ufs.html" %}
-
             </select>
           </div>
 
@@ -57,12 +56,12 @@
             <input id="matricula-banco" class="form-control">
           </div>
 
-          <div class="col-md-2">
+          <div class="col-md-4">
             <label class="form-label">Agência</label>
             <input id="matricula-agencia" class="form-control">
           </div>
 
-          <div class="col-md-4">
+          <div class="col-md-6">
             <label class="form-label">Conta</label>
             <input id="matricula-conta" class="form-control">
           </div>

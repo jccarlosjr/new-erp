@@ -463,6 +463,9 @@ function createCardOferta() {
                 showToast("Card de oferta criado", "success");
                 currentCardOferta = res.data;
                 goStep(3);
+                document.getElementById('card-oferta').innerHTML = `
+                    Card de Ofertas - <span class="text-primary">${currentCardOferta.codigo_interno}</span>
+                `;
             } else {
                 showToast(res.message || "Erro ao criar card", "danger");
             }
@@ -478,6 +481,8 @@ function createCardOferta() {
 ================================ */ 
 
 function openCreatePropostaModal() {
+    let formProposta = document.getElementById('form-proposta-fields');
+    formProposta.innerHTML = '';
 
     if (!currentCliente?.cpf) {
         showToast("Cliente não identificado", "danger");
@@ -534,9 +539,15 @@ function saveProposta() {
     };
 
     /* ===== VALIDAÇÕES ===== */
-    if (!payload.tabela_id || !payload.parcela) {
-        showToast("Tabela e parcela são obrigatórios", "warning");
-        return;
+    const select = document.getElementById('operacoes-select');
+    const selectedText = select.options[select.selectedIndex].text;
+
+    /* ===== MARGEM LIVRE ===== */
+    if(selectedText.includes('Margem Livre')) {
+        if(!payload.tabela_id || !payload.parcela){
+            showToast("Tabela e parcela são obrigatórios", "warning");
+            return;
+        }
     }
 
     fetch('/api/propostas/', {
@@ -627,6 +638,7 @@ function loadOperacoesSelect(selected = null) {
 
 
 document.getElementById("operacoes-select").addEventListener("change", loadTabelasSelect);
+document.getElementById("operacoes-select").addEventListener("change", renderPropostaFields);
 
 function loadTabelasSelect(selected = null) {
     const formProposta = document.getElementById('form-proposta');
@@ -661,7 +673,7 @@ function loadTabelasSelect(selected = null) {
             data.data.forEach(tabela => {
                 const option = document.createElement('option')
                 option.value = tabela.id
-                option.textContent = `${tabela.nome}`
+                option.textContent = `${tabela.nome} - ${tabela.prazo}x`
                 option.dataset.coeficiente = tabela.coeficiente
                 option.dataset.prazo = tabela.prazo
                 option.dataset.cms = tabela.cms
@@ -678,6 +690,40 @@ function loadTabelasSelect(selected = null) {
         })
 }
 
+function renderPropostaFields(){
+    let formProposta = document.getElementById('form-proposta-fields');
+    const select = document.getElementById('operacoes-select');
+    const selectedText = select.options[select.selectedIndex].text;
+
+    formProposta.innerHTML = '';
+
+    if(selectedText.includes('Margem Livre')){
+        formProposta.innerHTML = `
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <label>Parcela</label>
+                <input type="text" id="parcela" class="form-control" onchange="calcularTroco()" oninput="floatFormat(this)" required>
+            </div>
+            <div class="col-md-6">
+                <label>Troco</label>
+                <input type="text" id="troco" class="form-control">
+            </div>
+            <div class="col-md-12">
+                <label>Observação</label>
+                <textarea type="text" id="obs" class="form-control"></textarea>
+            </div>
+        </div>
+        `
+    };
+}
+
+function calcularTroco(){
+    const coeficiente = Number(document.getElementById('coeficiente').value);
+    const parcela = Number(document.getElementById('parcela').value);
+    const troco = parcela / coeficiente;
+    document.getElementById('troco').value = troco.toFixed(2);
+}
+
 document.getElementById("tabela-select").addEventListener("change", function () {
     const selectedOption = this.options[this.selectedIndex]
 
@@ -691,25 +737,10 @@ document.getElementById("tabela-select").addEventListener("change", function () 
         return
     }
 
-    if (!selectedOption || !selectedOption.dataset.cms) {
-        document.getElementById('cms').value = ''
-        return
-    }
-
     document.getElementById('coeficiente').value = selectedOption.dataset.coeficiente
     document.getElementById('prazo').value = selectedOption.dataset.prazo
-    document.getElementById('cms').value = selectedOption.dataset.cms
 });
 
-
-document.getElementById("parcela").addEventListener("change", () => {
-    const coeficiente = Number(document.getElementById('coeficiente').value);
-    const parcela = Number(document.getElementById('parcela').value);
-
-    const troco = parcela / coeficiente;
-    document.getElementById('troco').value = troco.toFixed(2);
-
-})
 
 
 function loadPropostasByCardID() {
@@ -735,9 +766,8 @@ function renderPropostas(propostas) {
         let row = `
             <tr>
                 <td>${proposta.codigo_interno}</td>
-                <td>${proposta.card_oferta__codigo_interno}</td>
                 <td>${proposta.tabela__operacao__nome}</td>
-                <td>R$ ${proposta.parcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL'})}</td>
+                <td>${proposta.parcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL'})}</td>
                 <td>${proposta.cliente__cpf}</td>
                 <td>${proposta.cliente__nome}</td>
                 <td>${proposta.card_oferta__matricula__matricula}</td>
@@ -751,3 +781,4 @@ function renderPropostas(propostas) {
     });
 
 }
+

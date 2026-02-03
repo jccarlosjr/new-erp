@@ -1,6 +1,7 @@
 Padronizar operações existentes
 Configurar modal para configurar cada operação
-Ao retornar para matriculas, atualizar a matricula do card atual
+Configurar validators em "saveProposta"
+Adicionar máscaras nos campos
 
 Card com status - Aberto / Solicitado Digitação / Atendido
 Criar modal para editar propostas

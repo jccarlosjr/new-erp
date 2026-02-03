@@ -28,38 +28,20 @@
                 </div>
 
                 <div class="row g-2 d-none mt-3" id="form-proposta">
-
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <label>Tabela</label>
                         <select id="tabela-select" class="form-select"></select>
                     </div>
-
                     <div class="col-md-6">
                         <label>Coeficiente</label>
                         <input type="text" id="coeficiente" class="form-control" readonly>
                     </div>
-
-                    <div class="col-md-4">
-                        <label>Parcela</label>
-                        <input type="text" id="parcela" class="form-control" oninput="floatFormat(this)">
-                    </div>
-
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         <label>Prazo</label>
                         <input type="number" id="prazo" class="form-control" readonly>
                     </div>
-
-                    <div class="col-md-4">
-                        <label>Troco</label>
-                        <input type="text" id="troco" class="form-control">
-                    </div>
-
-                    <div class="col-md-12">
-                        <label>Observações</label>
-                        <textarea id="obs" class="form-control"></textarea>
-                    </div>
-
                 </div>
+                <span id="form-proposta-fields"></span>
             </div>
 
             <div class="modal-footer">
@@ -74,3 +56,4 @@
         </div>
     </div>
 </div>
+
