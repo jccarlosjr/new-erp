@@ -321,39 +321,32 @@ function renderConvenios(convenios) {
 }
 
 function renderMatriculas(matriculas) {
-    const tbody = document.getElementById('matriculasTable');
+    const divMatriculas = document.getElementById('matriculas');
 
     if (!matriculas.length) {
         tbody.innerHTML = `
-            <tr>
-                <td colspan="6" class="text-center text-muted">
+            <div class="col-md-12">
                     Nenhuma matrícula cadastrada
-                </td>
-            </tr>`;
+            </div>`;
         return;
     }
 
-    tbody.innerHTML = '';
+    divMatriculas.innerHTML = '';
 
     matriculas.forEach(m => {
-        tbody.innerHTML += `
-            <tr>
-                <td>
-                    <input type="radio"
-                           name="matriculaSelect"
-                           onclick="selectMatricula(${m.id})">
-                </td>
-                <td>${m.convenio__nome}</td>
-                <td>${m.matricula}</td>
-                <td>${m.banco || '-'}</td>
-                <td>${m.conta || '-'}</td>
-                <td>
-                    <button class="btn btn-sm btn-outline-primary"
-                            onclick="editMatricula(${m.id})">
-                        Editar
-                    </button>
-                </td>
-            </tr>
+        divMatriculas.innerHTML += `
+        <div class="row text-center mt-2">
+            <div class="col-md-1"><input type="radio" name="matriculaSelect" onclick="selectMatricula(${m.id})"></div>
+            <div class="col-md-2">${m.convenio__nome}</div>
+            <div class="col-md-2">${m.matricula}</div>
+            <div class="col-md-2">${m.codigo_convenio}</div>
+            <div class="col-md-1">${m.banco}</div>
+            <div class="col-md-1">${m.agencia}</div>
+            <div class="col-md-2">${m.conta}</div>
+            <div class="col-md-1">
+                <button class="btn btn-sm btn-outline-success" onclick="editMatricula(${m.id})"><i class="bi bi-pencil-square"></i></button>
+            </div>
+        </div>
         `;
     });
 }
@@ -738,20 +731,19 @@ function renderPropostas(propostas) {
     let propostasTable = document.getElementById('propostasTable');
     propostasTable.innerHTML = '';
 
-    
-
     propostas.forEach(proposta => {
         let row = `
             <tr>
                 <td>${proposta.codigo_interno}</td>
+                <td>${proposta.card_oferta__codigo_interno}</td>
                 <td>${proposta.tabela__operacao__nome}</td>
                 <td>R$ ${proposta.parcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL'})}</td>
                 <td>${proposta.cliente__cpf}</td>
                 <td>${proposta.cliente__nome}</td>
-                <td>${proposta.status__nome}</td>
+                <td>${proposta.card_oferta__matricula__matricula}</td>
                 <td>
-                    <button class="btn btn-primary" onclick="editProposta(${proposta.id})">Editar</button>
-                    <button class="btn btn-danger" onclick="deleteProposta(${proposta.id})">Excluir</button>
+                    <button class="btn btn-outline-success" onclick="editProposta(${proposta.id})"><i class="bi bi-pencil-square"></i></button>
+                    <button class="btn btn-outline-danger" onclick="deleteProposta(${proposta.id})"><i class="bi bi-trash"></i></button>
                 </td>
             </tr>
         `;

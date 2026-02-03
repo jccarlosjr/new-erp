@@ -194,6 +194,7 @@ class PropostaAPIView(LoginRequiredMixin, View):
 
             'card_oferta__id',
             'card_oferta__codigo_interno',
+            'card_oferta__matricula__matricula',
         )
 
         return JsonResponse({
