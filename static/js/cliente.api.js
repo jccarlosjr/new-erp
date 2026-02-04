@@ -1,5 +1,6 @@
 let matriculaModal;
 let propostaModal;
+let deleteModal;
 let currentCliente = null;
 let selectedMatricula = null;
 let currentCardOferta = null;
@@ -18,6 +19,11 @@ document.addEventListener('DOMContentLoaded', () => {
     propostaModal = new bootstrap.Modal(
         document.getElementById('propostaModal')
     );
+    
+    
+    deleteModal = new bootstrap.Modal(
+        document.getElementById('deleteModal')
+    );
 
     document
         .getElementById('btn-search-btn')
@@ -28,6 +34,60 @@ document.addEventListener('DOMContentLoaded', () => {
         ?.addEventListener('submit', saveCliente);
 });
 
+document.getElementById("operacoes-select").addEventListener("change", loadTabelasSelect);
+document.getElementById("operacoes-select").addEventListener("change", renderPropostaFields);
+
+document.getElementById("operacoes-select").addEventListener("change", () => {
+    document.getElementById('coeficiente').value = ''
+    document.getElementById('prazo').value = ''
+});
+
+document.getElementById("banco-select").addEventListener("change", () => {
+    document.getElementById('coeficiente').value = ''
+    document.getElementById('prazo').value = ''
+});
+
+document.getElementById("tabela-select").addEventListener("change", function () {
+    const selectedOption = this.options[this.selectedIndex]
+
+    if (!selectedOption || !selectedOption.dataset.coeficiente) {
+        document.getElementById('coeficiente').value = ''
+        return
+    }
+    
+    if (!selectedOption || !selectedOption.dataset.prazo) {
+        document.getElementById('prazo').value = ''
+        return
+    }
+
+    document.getElementById('coeficiente').value = selectedOption.dataset.coeficiente
+    document.getElementById('prazo').value = selectedOption.dataset.prazo
+});
+
+function calcularTroco(){
+    const select = document.getElementById('operacoes-select');
+    const selectedText = select.options[select.selectedIndex].text;
+
+    if(selectedText.includes('Cartão')){
+        const coeficiente = Number(document.getElementById('coeficiente').value);
+        const parcela = Number(document.getElementById('parcela').value);
+        const parcelaReal = parcela * 0.7;
+        const troco = (parcelaReal * coeficiente);
+        document.getElementById('troco').value = troco.toFixed(2);
+    } else {
+        const coeficiente = Number(document.getElementById('coeficiente').value);
+        const saldo_devedor = Number(document.getElementById('saldo_devedor')?.value ?? 0);
+        const parcela = Number(document.getElementById('parcela').value);
+        const troco = (parcela / coeficiente) - saldo_devedor;
+        document.getElementById('troco').value = troco.toFixed(2);
+    }
+
+
+}
+
+
+/* ===============================
+================================ */
 
 /* ===============================
    CLIENTE
@@ -122,7 +182,8 @@ function saveCliente(e) {
             console.error(err);
         });
 }
-
+/* ===============================
+================================ */
 
 /* ===============================
    MATRÍCULAS
@@ -252,6 +313,8 @@ function saveMatricula() {
         });
 }
 
+/* ===============================
+================================ */
 
 
 /* ===============================
@@ -270,7 +333,8 @@ function loadConvenios() {
             console.error(err);
         });
 }
-
+/* ===============================
+================================ */
 
 
 /* ===============================
@@ -420,6 +484,150 @@ function loadUFs(selectId, selected = null) {
     });
 }
 
+function renderPropostaFields(){
+    let formProposta = document.getElementById('form-proposta-fields');
+    const select = document.getElementById('operacoes-select');
+    const selectedText = select.options[select.selectedIndex].text;
+
+    formProposta.innerHTML = '';
+
+    if(selectedText.includes('Margem Livre')){
+        formProposta.innerHTML = `
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <label>Parcela</label>
+                <input type="text" id="parcela" class="form-control" onchange="calcularTroco()" oninput="floatFormat(this)" required maxlength="9">
+            </div>
+            <div class="col-md-6">
+                <label>Troco</label>
+                <input type="text" id="troco" class="form-control" maxlength="9">
+            </div>
+            <div class="col-md-12">
+                <label>Observação</label>
+                <textarea type="text" id="obs" class="form-control"></textarea>
+            </div>
+        </div>
+        `
+    } else if(selectedText.includes('Refinanciamento')){
+        formProposta.innerHTML = `
+        <div class="row mt-3">
+            <div class="col-md-4">
+                <label>Parcela</label>
+                <input type="text" id="parcela" class="form-control" onchange="calcularTroco()" oninput="floatFormat(this)" required maxlength="9">
+            </div>
+            <div class="col-md-4">
+                <label>Saldo Devedor</label>
+                <input type="text" id="saldo_devedor" class="form-control" onchange="calcularTroco()" oninput="floatFormat(this)" required maxlength="9">
+            </div>
+            <div class="col-md-4">
+                <label>Troco</label>
+                <input type="text" id="troco" class="form-control" oninput="floatFormat(this)" maxlength="9">
+            </div>
+            <div class="col-md-12">
+                <label>Observação</label>
+                <textarea type="text" id="obs" class="form-control"></textarea>
+            </div>
+        </div>
+        `
+    } else if(selectedText.includes('Portabilidade')){
+        formProposta.innerHTML = `
+        <div class="row mt-3">
+            <div class="col-md-3">
+                <label>Banco Origem</label>
+                <input type="text" id="banco_origem" class="form-control" required maxlength="3" oninput="formatNumbersOnly(this)">
+            </div>
+            <div class="col-md-6">
+                <label>Nº Contrato</label>
+                <input type="text" id="contrato_portado" class="form-control" required>
+            </div>
+            <div class="col-md-3">
+                <label>Saldo Devedor</label>
+                <input type="text" id="saldo_devedor" class="form-control" onchange="calcularTroco()" oninput="floatFormat(this)" required maxlength="9">
+            </div>
+            <!-- -->
+            <div class="col-md-3">
+                <label>Prazo Original</label>
+                <input type="text" id="prazo_original" class="form-control" required maxlength="3" oninput="formatNumbersOnly(this)">
+            </div>
+            <div class="col-md-3">
+                <label>Prazo Restante</label>
+                <input type="text" id="prazo_restante" class="form-control" required maxlength="3" oninput="formatNumbersOnly(this)">
+            </div>
+            <div class="col-md-3">
+                <label>Parcela</label>
+                <input type="text" id="parcela" class="form-control" onchange="calcularTroco()" oninput="floatFormat(this)" required maxlength="9">
+            </div>
+            <div class="col-md-3">
+                <label>Troco</label>
+                <input type="text" id="troco" class="form-control" oninput="floatFormat(this)" maxlength="9">
+            </div>
+            <div class="col-md-12">
+                <label>Observação</label>
+                <textarea type="text" id="obs" class="form-control"></textarea>
+            </div>
+        </div>
+        `
+    } else if(selectedText.includes('Cartão')){
+        formProposta.innerHTML = `
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <label>Parcela</label>
+                <input type="text" id="parcela" class="form-control" onchange="calcularTroco()" oninput="floatFormat(this)" required maxlength="9">
+            </div>
+            <div class="col-md-6">
+                <label>Saque</label>
+                <input type="text" id="troco" class="form-control" maxlength="9" oninput="floatFormat(this)">
+            </div>
+            <div class="col-md-12">
+                <label>Observação</label>
+                <textarea type="text" id="obs" class="form-control"></textarea>
+            </div>
+        </div>
+        `
+    } else if(selectedText.includes('Saque')){
+        formProposta.innerHTML = `
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <label>Parcela</label>
+                <input type="text" id="parcela" class="form-control" oninput="floatFormat(this)" required maxlength="9">
+            </div>
+            <div class="col-md-6">
+                <label>Saque</label>
+                <input type="text" id="troco" class="form-control" oninput="floatFormat(this)" required maxlength="9">
+            </div>
+            <div class="col-md-12">
+                <label>Observação</label>
+                <textarea type="text" id="obs" class="form-control"></textarea>
+            </div>
+        </div>
+        `
+    }
+}
+
+function renderPropostas(propostas) {
+    let propostasTable = document.getElementById('propostasTable');
+    propostasTable.innerHTML = '';
+
+    propostas.forEach(proposta => {
+        let row = `
+            <tr>
+                <td>${proposta.codigo_interno}</td>
+                <td>${proposta.tabela__operacao__nome}</td>
+                <td>${proposta.parcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL'})}</td>
+                <td>${proposta.cliente__cpf}</td>
+                <td>${proposta.cliente__nome}</td>
+                <td>${proposta.card_oferta__matricula__matricula}</td>
+                <td>
+                    <button class="btn btn-outline-success" onclick="editProposta(${proposta.id})"><i class="bi bi-pencil-square"></i></button>
+                    <button class="btn btn-outline-danger" onclick="openDeleteModal(${proposta.id}, '${proposta.codigo_interno}')"><i class="bi bi-trash"></i></button>
+                </td>
+            </tr>
+        `;
+        propostasTable.innerHTML += row;
+    });
+
+}
+
 
 /* ===============================
    CARD
@@ -476,6 +684,11 @@ function createCardOferta() {
         });
 }
 
+
+/* ===============================
+================================ */
+
+
 /* ===============================
    PROPOSTA
 ================================ */ 
@@ -509,7 +722,6 @@ function openCreatePropostaModal() {
     propostaModal.show();
 }
 
-
 function saveProposta() {
 
     if (!currentCliente?.cpf) {
@@ -522,6 +734,10 @@ function saveProposta() {
         return;
     }
 
+    let saldoDevedor = Number(document.getElementById('saldo_devedor')?.value ?? 0);
+    let troco = Number(document.getElementById('troco').value);
+    let financiado = saldoDevedor + troco;
+
     const payload = {
         id: document.getElementById('proposta-id').value || null,
 
@@ -532,9 +748,14 @@ function saveProposta() {
         tabela_id: Number(document.getElementById('tabela-select').value),
 
         parcela: Number(document.getElementById('parcela').value),
+        saldo_devedor: saldoDevedor,
         prazo: Number(document.getElementById('prazo').value),
-        troco: Number(document.getElementById('troco').value),
-        financiado: Number(document.getElementById('troco').value),
+        troco: troco,
+        financiado: financiado,
+        banco_origem: document.getElementById('banco_origem')?.value ?? null,
+        contrato_portado: document.getElementById('contrato_portado')?.value ?? null,
+        prazo_original: Number(document.getElementById('prazo_original')?.value) ?? null,
+        prazo_restante: Number(document.getElementById('prazo_restante')?.value) ?? null,
         obs: document.getElementById('obs').value,
     };
 
@@ -546,6 +767,48 @@ function saveProposta() {
     if(selectedText.includes('Margem Livre')) {
         if(!payload.tabela_id || !payload.parcela){
             showToast("Tabela e parcela são obrigatórios", "warning");
+            return;
+        }
+    }
+
+    /* ===== SAQUE COMPLEMENTAR ===== */
+    if(selectedText.includes('Saque')) {
+        if(!payload.tabela_id || !payload.parcela || !payload.troco){
+            showToast("Tabela, parcela e saque são obrigatórios", "warning");
+            return;
+        }
+    }
+
+    /* ===== REFINANCIAMENTO ===== */
+    if(selectedText.includes('Refinanciamento')) {
+        if(!payload.tabela_id || !payload.parcela || !payload.saldo_devedor){
+            showToast("Tabela, parcela e saldo devedor são obrigatórios", "warning");
+            return;
+        }
+    }
+
+    /* ===== PORTABILIDADE ===== */
+    if (selectedText.includes('Portabilidade')) {
+
+        const camposObrigatorios = {
+            tabela_id: 'Tabela',
+            parcela: 'Parcela',
+            saldo_devedor: 'Saldo devedor',
+            banco_origem: 'Banco de origem',
+            contrato_portado: 'Contrato portado',
+            prazo_original: 'Prazo original',
+            prazo_restante: 'Prazo restante'
+        };
+
+        const faltantes = Object.entries(camposObrigatorios)
+            .filter(([campo]) => !payload[campo])
+            .map(([, label]) => label);
+
+        if (faltantes.length) {
+            showToast(
+                `Campos obrigatórios não preenchidos: ${faltantes.join(', ')}`,
+                'warning'
+            );
             return;
         }
     }
@@ -582,7 +845,6 @@ function saveProposta() {
         });
 }
 
-
 function loadBancosSelect(selected = null) {
     const select = document.getElementById('banco-select')
     select.innerHTML = `<option value="">Selecione um banco</option>`
@@ -609,7 +871,6 @@ function loadBancosSelect(selected = null) {
         })
 }
 
-
 function loadOperacoesSelect(selected = null) {
     const select = document.getElementById('operacoes-select')
     select.innerHTML = `<option value="">Selecione uma operação</option>`
@@ -635,10 +896,6 @@ function loadOperacoesSelect(selected = null) {
             })
         })
 }
-
-
-document.getElementById("operacoes-select").addEventListener("change", loadTabelasSelect);
-document.getElementById("operacoes-select").addEventListener("change", renderPropostaFields);
 
 function loadTabelasSelect(selected = null) {
     const formProposta = document.getElementById('form-proposta');
@@ -690,59 +947,6 @@ function loadTabelasSelect(selected = null) {
         })
 }
 
-function renderPropostaFields(){
-    let formProposta = document.getElementById('form-proposta-fields');
-    const select = document.getElementById('operacoes-select');
-    const selectedText = select.options[select.selectedIndex].text;
-
-    formProposta.innerHTML = '';
-
-    if(selectedText.includes('Margem Livre')){
-        formProposta.innerHTML = `
-        <div class="row mt-3">
-            <div class="col-md-6">
-                <label>Parcela</label>
-                <input type="text" id="parcela" class="form-control" onchange="calcularTroco()" oninput="floatFormat(this)" required>
-            </div>
-            <div class="col-md-6">
-                <label>Troco</label>
-                <input type="text" id="troco" class="form-control">
-            </div>
-            <div class="col-md-12">
-                <label>Observação</label>
-                <textarea type="text" id="obs" class="form-control"></textarea>
-            </div>
-        </div>
-        `
-    };
-}
-
-function calcularTroco(){
-    const coeficiente = Number(document.getElementById('coeficiente').value);
-    const parcela = Number(document.getElementById('parcela').value);
-    const troco = parcela / coeficiente;
-    document.getElementById('troco').value = troco.toFixed(2);
-}
-
-document.getElementById("tabela-select").addEventListener("change", function () {
-    const selectedOption = this.options[this.selectedIndex]
-
-    if (!selectedOption || !selectedOption.dataset.coeficiente) {
-        document.getElementById('coeficiente').value = ''
-        return
-    }
-    
-    if (!selectedOption || !selectedOption.dataset.prazo) {
-        document.getElementById('prazo').value = ''
-        return
-    }
-
-    document.getElementById('coeficiente').value = selectedOption.dataset.coeficiente
-    document.getElementById('prazo').value = selectedOption.dataset.prazo
-});
-
-
-
 function loadPropostasByCardID() {
 
     fetch(`/api/propostas/?card_id=${currentCardOferta.id}`)
@@ -758,27 +962,39 @@ function loadPropostasByCardID() {
         });
 }
 
-function renderPropostas(propostas) {
-    let propostasTable = document.getElementById('propostasTable');
-    propostasTable.innerHTML = '';
-
-    propostas.forEach(proposta => {
-        let row = `
-            <tr>
-                <td>${proposta.codigo_interno}</td>
-                <td>${proposta.tabela__operacao__nome}</td>
-                <td>${proposta.parcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL'})}</td>
-                <td>${proposta.cliente__cpf}</td>
-                <td>${proposta.cliente__nome}</td>
-                <td>${proposta.card_oferta__matricula__matricula}</td>
-                <td>
-                    <button class="btn btn-outline-success" onclick="editProposta(${proposta.id})"><i class="bi bi-pencil-square"></i></button>
-                    <button class="btn btn-outline-danger" onclick="deleteProposta(${proposta.id})"><i class="bi bi-trash"></i></button>
-                </td>
-            </tr>
-        `;
-        propostasTable.innerHTML += row;
-    });
-
+function openDeleteModal(id, nome) {
+    document.getElementById('delete-id').value = id
+    document.getElementById('delete-nome').innerText = nome
+    deleteModal.show()
 }
 
+function deleteProposta(){
+
+    deleteModal.show();
+    const id = document.getElementById('delete-id').value;
+
+    fetch(`/api/propostas/`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRFToken': getCSRFToken(),
+        },
+        body: JSON.stringify({ id })
+    })
+        .then(res => res.json())
+        .then(res => {
+            if (res.status === 'success') {
+                deleteModal.hide()
+                showToast("Proposta excluida com sucesso", "success");
+                loadPropostasByCardID();
+            } else {
+                showToast(res.message || "Erro ao excluir proposta", "danger");
+            }
+        })
+        .catch(err => {
+            showToast("Erro de conexão com o servidor", "danger");
+            console.error(err);
+        });
+}
+
+/* ===============================
+================================ */

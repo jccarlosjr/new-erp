@@ -7,11 +7,10 @@ from .models import Operacao
 def padronizar_bancos(sender, **kwargs):
     default_operations = [
         'Margem Livre',
-        'Portabilidade',
+        'Refinanciamento',
         'Portabilidade + Refin',
         'Cartão Consignado (RMC)',
         'Cartão Benefício (RCC)',
-        'Empréstimo Pessoal',
         'Saque Complementar (RMC)',
         'Saque Complementar (RCC)',
     ]
