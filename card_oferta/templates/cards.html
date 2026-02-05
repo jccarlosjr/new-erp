@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% load static %}
+{% block head %}
+<title>Cards de Oferta</title>
+<style>
+i{
+    cursor: pointer;
+}
+</style>
+{% endblock %}
+{% block content %}
+<div class="container">
+    <nav style="--bs-breadcrumb-divider: '>';" aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active" aria-current="page">Cards de Oferta</li>
+        </ol>
+    </nav>
+    <div id="list-banks">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                Filtrar por
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <select id="filter-operacao" class="form-select">
+                    <option value="cpf">CPF</option>
+                    <option value="nome">Nome</option>
+                    <option value="matricula">Matrícula</option>
+                    <option value="codigo_interno">Código Interno</option>
+                    <option value="status">Status</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input type="text" id="filter-banco" class="form-control">
+            </div>
+            <div class="col-md-4">
+                <button class="btn btn-primary"><i class="bi bi-funnel"></i> Filtrar</button>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Usuário</th>
+                    <th>Código Interno</th>
+                    <th>Nome</th>
+                    <th>CPF</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="cards-table-body">
+                <!-- renderizado via JS -->
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+
+
+<script src="{% static 'js/utils.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    loadCards()
+})
+
+function loadCards() {
+    showLoader();
+    const tbody = document.getElementById('cards-table-body')
+    renderLoading(tbody)
+
+    fetch(`/api/cards-oferta/?user_id=${currentUser}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== 'success') {
+                showToast('Erro ao carregar cards')
+                return
+            }
+
+            tbody.innerHTML = ''
+
+            if (data.data.length === 0) {
+                tbody.innerHTML = `
+                <tr>
+                    <td colspan="2" class="text-center text-muted">
+                        Nenhum card cadastrado
+                    </td>
+                </tr>
+            `
+                return
+            }
+
+            data.data.forEach(card => {
+                const tr = document.createElement('tr')
+
+                tr.innerHTML = `
+                <td>${card.user__username}</td>
+                <td>${card.codigo_interno}</td>
+                <td>${card.cliente__nome}</td>
+                <td>${card.cliente__cpf}</td>
+                <td>${card.status_nome}</td>
+                <td>
+                    <i class="bi bi-files text-success" title="Abrir Propostas"></i>
+                    <i class="bi bi-pencil-square text-warning" title="Excluir"></i>
+                    <i class="bi bi-trash3 text-danger" title="Editar"></i>
+                </td>
+            `
+                tbody.appendChild(tr)
+            })
+        })
+        .catch(() => showToast('Erro de conexão com o servidor'))
+        .finally(() => hideLoader())
+}
+</script>
+
+
+{% endblock %}

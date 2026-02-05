@@ -2,8 +2,15 @@ from django.db import models
 from cliente.models import Cliente
 from convenio.models import Matricula
 from datetime import datetime
+from accounts.models import CustomUser
 
-
+STATUS_CHOICES = [
+    ('NAO_INICIADO', 'Não Iniciado'),
+    ('DIGITACAO', 'Digitação Solicitada'),
+    ('DIGITADO', 'Digitado'),
+    ('FINALIZADO', 'Finalizado'),
+    ('CANCELADO', 'Cancelado'),
+]
 
 def get_card_code(proposta):
     id = str(proposta.id).zfill(5)
@@ -15,6 +22,8 @@ class CardOferta(models.Model):
     cliente = models.ForeignKey(Cliente, on_delete=models.CASCADE)
     matricula = models.ForeignKey(Matricula, on_delete=models.CASCADE)
     codigo_interno = models.CharField(max_length=100, unique=True, null=True, blank=True)
+    status = models.CharField(max_length=100, choices=STATUS_CHOICES, default='NAO_INICIADO')
+    user = models.ForeignKey(CustomUser, on_delete=models.PROTECT, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.id:

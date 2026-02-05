@@ -181,6 +181,7 @@ document.getElementById('filter-ativas').addEventListener('change', () => loadTa
 
 
 function loadBancoFilter() {
+    showLoader();
     const select = document.getElementById('filter-banco')
     select.innerHTML = `<option value="">Todos os bancos</option>`
 
@@ -199,10 +200,12 @@ function loadBancoFilter() {
                 select.appendChild(option)
             })
         })
+        .finally(() => hideLoader())
 }
 
 
 function loadOperacaoFilter() {
+    showLoader();
     const select = document.getElementById('filter-operacao')
     select.innerHTML = `<option value="">Todas as operações</option>`
 
@@ -221,10 +224,12 @@ function loadOperacaoFilter() {
                 select.appendChild(option)
             })
         })
+        .finally(() => hideLoader())
 }
 
 
 function loadTabelas() {
+    showLoader();
     const bancoId = document.getElementById('filter-banco').value
     const operacaoId = document.getElementById('filter-operacao').value
     const ativas = document.getElementById('filter-ativas').checked
@@ -295,11 +300,13 @@ function loadTabelas() {
             })
         })
         .catch(() => showToast('Erro de conexão com o servidor'))
+        .finally(() => hideLoader())
 }
 
 
 
 function toggleTabelaAtiva(id, ativo) {
+    showLoader();
     fetch('/api/tabelas/', {
         method: 'PATCH',
         headers: {
@@ -325,11 +332,13 @@ function toggleTabelaAtiva(id, ativo) {
         showToast(err.message)
         loadTabelas()
     })
+    .finally(() => hideLoader())
 }
 
 
 
 function loadBancosSelect(selected = null) {
+    showLoader();
     const select = document.getElementById('tabela-banco')
     select.innerHTML = `<option value="">Selecione um banco</option>`
 
@@ -353,11 +362,12 @@ function loadBancosSelect(selected = null) {
                 select.appendChild(option)
             })
         })
+        .finally(() => hideLoader())
 }
 
 
 function loadOperacoesSelect(selected = null) {
-    console.log(selected)
+    showLoader();
     const select = document.getElementById('tabela-operacao')
     select.innerHTML = `<option value="">Selecione uma operação</option>`
 
@@ -381,6 +391,7 @@ function loadOperacoesSelect(selected = null) {
                 select.appendChild(option)
             })
         })
+        .finally(() => hideLoader())
 }
 
 
@@ -428,6 +439,7 @@ function openEditModal(tabela) {
 
 
 function saveTabela() {
+    showLoader();
     const payload = {
         id: document.getElementById('tabela-id').value || null,
         nome: document.getElementById('tabela-nome').value,
@@ -461,6 +473,7 @@ function saveTabela() {
         loadTabelas()
     })
     .catch(err => showToast(err.message))
+    .finally(() => hideLoader())
 }
 
 function openDeleteModal(id, nome) {
@@ -470,6 +483,7 @@ function openDeleteModal(id, nome) {
 }
 
 function deleteTabela() {
+    showLoader();
     const id = document.getElementById('delete-tabela-id').value
 
     fetch('/api/tabelas/', {
@@ -486,6 +500,7 @@ function deleteTabela() {
         loadTabelas()
     })
     .catch(() => showToast('Erro ao excluir'))
+    .finally(() => hideLoader())
 }
 </script>
 {% endblock %}

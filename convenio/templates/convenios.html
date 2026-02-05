@@ -147,6 +147,7 @@ document.addEventListener('DOMContentLoaded', function () {
 })
 
 function loadConvenio() {
+    showLoader();
     const tbody = document.getElementById('convenios-table-body')
     renderLoading(tbody)
 
@@ -191,6 +192,7 @@ function loadConvenio() {
             })
         })
         .catch(() => showToast('Erro de conexão com o servidor'))
+        .finally(() => hideLoader())
 }
 
 
@@ -226,6 +228,7 @@ function openEditModal(id, nome) {
 
 /* SAVE */
 function saveConvenio() {
+    showLoader()
     const id = document.getElementById('convenio-id').value
     const nome = document.getElementById('convenio-nome').value
 
@@ -250,6 +253,7 @@ function saveConvenio() {
         loadConvenio()
     })
     .catch(err => showToast(err.message))
+    .finally(() => hideLoader())
 }
 
 
@@ -261,6 +265,7 @@ function openDeleteModal(id, nome) {
 }
 
 function deleteConvenio() {
+    showLoader()
     const id = document.getElementById('delete-convenio-id').value
 
     fetch('/api/convenios/', {
@@ -290,6 +295,7 @@ function deleteConvenio() {
             showToast(err.message)
         }
     })
+    .finally(() => hideLoader())
 }
 </script>
 

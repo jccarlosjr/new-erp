@@ -109,6 +109,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 function loadSalas() {
+    showLoader();
     const tbody = document.getElementById('salas-table-body')
     renderLoading(tbody)
 
@@ -153,6 +154,7 @@ function loadSalas() {
             })
         })
         .catch(() => showToast('Erro de conexão com o servidor'))
+        .finally(() => hideLoader())
 }
 
 
@@ -173,6 +175,7 @@ function openEditModal(sala) {
 
 
 function saveSala() {
+    showLoader();
     const payload = {
         id: document.getElementById('sala-id').value || null,
         nome: document.getElementById('sala-nome').value
@@ -199,6 +202,7 @@ function saveSala() {
         loadSalas()
     })
     .catch(err => showToast(err.message))
+    .finally(() => hideLoader())
 }
 
 
@@ -210,6 +214,7 @@ function openDeleteModal(id, nome) {
 
 
 function deleteSala() {
+    showLoader();
     const id = document.getElementById('delete-sala-id').value
 
     fetch('/api/salas/', {
@@ -226,6 +231,7 @@ function deleteSala() {
         loadSalas()
     })
     .catch(() => showToast('Erro ao excluir sala'))
+    .finally(() => hideLoader())
 }
 </script>
 {% endblock %}

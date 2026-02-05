@@ -1,8 +1,6 @@
-Padronizar operações existentes
-Configurar modal para configurar cada operação
-Configurar validators em "saveProposta"
-Adicionar máscaras nos campos
+Configurar os filtros na tela de cards de oferta
+Configurar os filtros na view de cards de oferta
 
-Card com status - Aberto / Solicitado Digitação / Atendido
-Criar modal para editar propostas
-Configurar botões de ações para propostas
+Criar tela de propostas vinculada a um card
+Criar tela de edição de card - Restrição para editar somente o Status
+Adicionar function para (deletar) Cards alterando o status para cancelado

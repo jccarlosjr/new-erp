@@ -53,6 +53,10 @@
         {% include "partials/propostas.html" %}
     </div>
 
+    <div id="step-4" class="step-content">
+        {% include "partials/card_digitado.html" %}
+    </div>
+
 </div>
 
 {% include "partials/matricula_modal.html" %}
@@ -70,9 +74,5 @@ function goStep(step) {
     document.querySelector(`.step[data-step="${step}"]`).classList.add('active')
     document.getElementById(`step-${step}`).classList.add('active')
 }
-
-/* ===== EVENTOS ORIGINAIS ===== */
-document.getElementById('btn-search-btn').addEventListener('click', getClienteByCPF)
-document.getElementById('clienteForm').addEventListener('submit', saveCliente)
 </script>
 {% endblock %}

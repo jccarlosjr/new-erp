@@ -183,7 +183,11 @@ class PropostaAPIView(LoginRequiredMixin, View):
 
             'tabela__id',
             'tabela__nome',
+            'tabela__coeficiente',
+            'tabela__banco__id',
+            'tabela__banco__nome',
             'tabela__operacao__nome',
+            'tabela__operacao__id',
 
             'usuario__id',
             'usuario__username',

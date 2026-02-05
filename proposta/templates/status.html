@@ -166,6 +166,7 @@ document.addEventListener('DOMContentLoaded', function () {
 })
 
 function loadStatus() {
+    showLoader()
     const tbody = document.getElementById('status-table-body')
     renderLoading(tbody)
 
@@ -211,6 +212,7 @@ function loadStatus() {
             })
         })
         .catch(() => showToast('Erro de conexão com o servidor'))
+        .finally(() => hideLoader())
 }
 
 
@@ -250,6 +252,7 @@ function openEditModal(id, codigo, nome, color) {
 
 /* SAVE */
 function saveStatus() {
+    showLoader();
     const id = document.getElementById('status-id').value
     const codigo = document.getElementById('status-codigo').value
     const nome = document.getElementById('status-nome').value
@@ -276,6 +279,7 @@ function saveStatus() {
         loadStatus()
     })
     .catch(err => showToast(err.message))
+    .finally(() => hideLoader())
 }
 
 
@@ -287,6 +291,7 @@ function openDeleteModal(id, nome) {
 }
 
 function deleteStatus() {
+    showLoader();
     const id = document.getElementById('delete-status-id').value
 
     fetch('/api/status/', {
@@ -316,6 +321,7 @@ function deleteStatus() {
             showToast(err.message)
         }
     })
+    .finally(() => hideLoader())
 }
 </script>
 

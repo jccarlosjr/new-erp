@@ -94,6 +94,7 @@ function calcularTroco(){
 ================================ */
 
 function getClienteByCPF() {
+    showLoader();
     const cpfValue = document.getElementById('cpf').value.trim();
     const cpf = cleanCPF(cpfValue);
 
@@ -121,11 +122,13 @@ function getClienteByCPF() {
         .catch(err => {
             showToast("Erro de conexão com o servidor", "danger");
             console.error(err);
-        });
+        })
+        .finally(() => hideLoader());
 }
 
 
 function saveCliente(e) {
+    showLoader();
     e.preventDefault();
 
     const payload = {
@@ -180,7 +183,8 @@ function saveCliente(e) {
         .catch(err => {
             showToast("Erro de conexão com o servidor", "danger");
             console.error(err);
-        });
+        })
+        .finally(() => hideLoader())
 }
 /* ===============================
 ================================ */
@@ -209,7 +213,11 @@ function openCreateMatriculaModal() {
 }
 
 function loadMatriculasCliente() {
-    if (!currentCliente?.cpf) return;
+    showLoader();
+    if (!currentCliente?.cpf) {
+        showToast("Cliente não identificado, retorne para a etapa anterior", "danger");
+        return;
+    }
 
     fetch(`/api/matriculas/?cpf=${currentCliente.cpf}`)
         .then(res => res.json())
@@ -221,10 +229,12 @@ function loadMatriculasCliente() {
         .catch(err => {
             showToast("Erro ao carregar matrículas", "danger");
             console.error(err);
-        });
+        })
+        .finally(() => hideLoader())
 }
 
 function editMatricula(id) {
+    showLoader();
     fetch(`/api/matriculas/${id}/`)
         .then(res => res.json())
         .then(res => {
@@ -243,11 +253,12 @@ function editMatricula(id) {
         .catch(err => {
             showToast("Erro ao carregar matrícula", "danger");
             console.error(err);
-        });
+        })
+        .finally(() => hideLoader());
 }
 
 function saveMatricula() {
-
+    showLoader();
     if (!currentCliente?.cpf) {
         showToast("Cliente não identificado", "danger");
         return;
@@ -310,7 +321,8 @@ function saveMatricula() {
         .catch(err => {
             showToast("Erro de conexão com o servidor", "danger");
             console.error(err);
-        });
+        })
+        .finally(() => hideLoader())
 }
 
 /* ===============================
@@ -321,6 +333,7 @@ function saveMatricula() {
    CONVENIOS
 ================================ */
 function loadConvenios() {
+    showLoader();
     fetch('/api/convenios/')
         .then(res => res.json())
         .then(res => {
@@ -331,7 +344,8 @@ function loadConvenios() {
         .catch(err => {
             showToast("Erro ao carregar convênios", "danger");
             console.error(err);
-        });
+        })
+        .finally(() => hideLoader())
 }
 /* ===============================
 ================================ */
@@ -613,13 +627,11 @@ function renderPropostas(propostas) {
             <tr>
                 <td>${proposta.codigo_interno}</td>
                 <td>${proposta.tabela__operacao__nome}</td>
+                <td>${proposta.tabela__banco__nome}</td>
                 <td>${proposta.parcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL'})}</td>
-                <td>${proposta.cliente__cpf}</td>
-                <td>${proposta.cliente__nome}</td>
                 <td>${proposta.card_oferta__matricula__matricula}</td>
                 <td>
-                    <button class="btn btn-outline-success" onclick="editProposta(${proposta.id})"><i class="bi bi-pencil-square"></i></button>
-                    <button class="btn btn-outline-danger" onclick="openDeleteModal(${proposta.id}, '${proposta.codigo_interno}')"><i class="bi bi-trash"></i></button>
+                    <button class="btn btn-outline-danger" title="Excluir" onclick="openDeleteModal(${proposta.id}, '${proposta.codigo_interno}')"><i class="bi bi-trash"></i></button>
                 </td>
             </tr>
         `;
@@ -634,7 +646,7 @@ function renderPropostas(propostas) {
 ================================ */ 
 
 function createCardOferta() {
-    console.log(currentCardOferta);
+    showLoader();
 
     if(currentCardOferta != null) {
         currentCardOferta = currentCardOferta;
@@ -672,7 +684,8 @@ function createCardOferta() {
                 currentCardOferta = res.data;
                 goStep(3);
                 document.getElementById('card-oferta').innerHTML = `
-                    Card de Ofertas - <span class="text-primary">${currentCardOferta.codigo_interno}</span>
+                    <h4 class="mb-4">${currentCliente.nome} - ${currentCliente.cpf}</h4>
+                    <p>Card de Ofertas - <span class="text-primary">${currentCardOferta.codigo_interno}</span></p>
                 `;
             } else {
                 showToast(res.message || "Erro ao criar card", "danger");
@@ -681,7 +694,8 @@ function createCardOferta() {
         .catch(err => {
             showToast("Erro de conexão com o servidor", "danger");
             console.error(err);
-        });
+        })
+        .finally(() => hideLoader())
 }
 
 
@@ -723,7 +737,7 @@ function openCreatePropostaModal() {
 }
 
 function saveProposta() {
-
+    showLoader();
     if (!currentCliente?.cpf) {
         showToast("Cliente não identificado", "danger");
         return;
@@ -842,10 +856,12 @@ function saveProposta() {
         .catch(err => {
             showToast("Erro de conexão com o servidor", "danger");
             console.error(err);
-        });
+        })
+        .finally(() => hideLoader())
 }
 
 function loadBancosSelect(selected = null) {
+    showLoader();
     const select = document.getElementById('banco-select')
     select.innerHTML = `<option value="">Selecione um banco</option>`
 
@@ -869,9 +885,11 @@ function loadBancosSelect(selected = null) {
                 select.appendChild(option)
             })
         })
+        .finally(() => hideLoader())
 }
 
 function loadOperacoesSelect(selected = null) {
+    showLoader();
     const select = document.getElementById('operacoes-select')
     select.innerHTML = `<option value="">Selecione uma operação</option>`
 
@@ -895,9 +913,11 @@ function loadOperacoesSelect(selected = null) {
                 select.appendChild(option)
             })
         })
+        .finally(() => hideLoader());
 }
 
 function loadTabelasSelect(selected = null) {
+    showLoader();
     const formProposta = document.getElementById('form-proposta');
     formProposta.classList.remove('d-none');
 
@@ -945,10 +965,11 @@ function loadTabelasSelect(selected = null) {
                 select.appendChild(option)
             })
         })
+        .finally(() => hideLoader())
 }
 
 function loadPropostasByCardID() {
-
+    showLoader();
     fetch(`/api/propostas/?card_id=${currentCardOferta.id}`)
         .then(res => res.json())
         .then(res => {
@@ -959,7 +980,8 @@ function loadPropostasByCardID() {
         .catch(err => {
             showToast("Erro ao carregar matrículas", "danger");
             console.error(err);
-        });
+        })
+        .finally(() => hideLoader())
 }
 
 function openDeleteModal(id, nome) {
@@ -969,7 +991,7 @@ function openDeleteModal(id, nome) {
 }
 
 function deleteProposta(){
-
+    showLoader();
     deleteModal.show();
     const id = document.getElementById('delete-id').value;
 
@@ -980,21 +1002,81 @@ function deleteProposta(){
         },
         body: JSON.stringify({ id })
     })
-        .then(res => res.json())
-        .then(res => {
-            if (res.status === 'success') {
-                deleteModal.hide()
-                showToast("Proposta excluida com sucesso", "success");
-                loadPropostasByCardID();
-            } else {
-                showToast(res.message || "Erro ao excluir proposta", "danger");
-            }
-        })
-        .catch(err => {
-            showToast("Erro de conexão com o servidor", "danger");
-            console.error(err);
-        });
+    .then(res => res.json())
+    .then(res => {
+        if (res.status === 'success') {
+            deleteModal.hide()
+            showToast("Proposta excluida com sucesso", "success");
+            loadPropostasByCardID();
+        } else {
+            showToast(res.message || "Erro ao excluir proposta", "danger");
+        }
+    })
+    .catch(err => {
+        showToast("Erro de conexão com o servidor", "danger");
+        console.error(err);
+    })
+    .finally(() => hideLoader())
 }
+
+async function finalizarCard() {
+    goStep(4);
+
+    const response = await setCardStatusDigitacao();
+
+    if (!response || response.status !== 'success') {
+        showToast(
+            'Erro ao solicitar digitação, solicite a digitação manualmente!',
+            'danger'
+        );
+        return;
+    }
+
+    showToast('Card digitado com sucesso!', 'success');
+
+    document.getElementById("text-confirm").innerHTML = `
+        <h5 class="text-center">
+            <span class="text-primary">${currentCardOferta.codigo_interno}</span>
+            digitado com sucesso!
+        </h5>
+    `;
+}
+
+
+async function setCardStatusDigitacao() {
+    showLoader();
+
+    return fetch('/api/cards-oferta/', {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken(),
+        },
+        body: JSON.stringify({
+            id: currentCardOferta.id,
+            status: 'DIGITACAO'
+        })
+    })
+    .then(response => {
+        return response.json().then(data => {
+            if (!response.ok) {
+                throw new Error(data.message || 'Erro ao atualizar status');
+            }
+            return data;
+        });
+    })
+    .then(data => {
+        console.log('Status atualizado:', data);
+        return data;
+    })
+    .catch(error => {
+        console.error(error);
+    })
+    .finally(() => {
+        hideLoader();
+    });
+}
+
 
 /* ===============================
 ================================ */

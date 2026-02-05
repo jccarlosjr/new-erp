@@ -147,6 +147,7 @@ document.addEventListener('DOMContentLoaded', function () {
 })
 
 function loadOperacoes() {
+    showLoader();
     const tbody = document.getElementById('operacoes-table-body')
     renderLoading(tbody)
 
@@ -191,6 +192,7 @@ function loadOperacoes() {
             })
         })
         .catch(() => showToast('Erro de conexão com o servidor'))
+        .finally(() => hideLoader())
 }
 
 
@@ -226,6 +228,7 @@ function openEditModal(id, nome) {
 
 /* SAVE */
 function saveOperacao() {
+    showLoader();
     const id = document.getElementById('operacao-id').value
     const nome = document.getElementById('operacao-nome').value
 
@@ -250,6 +253,7 @@ function saveOperacao() {
         loadOperacoes()
     })
     .catch(err => showToast(err.message))
+    .finally(() => hideLoader())
 }
 
 
@@ -261,6 +265,7 @@ function openDeleteModal(id, nome) {
 }
 
 function deleteOperacao() {
+    showLoader();
     const id = document.getElementById('delete-operacao-id').value
 
     fetch('/api/operacoes/', {
@@ -290,6 +295,7 @@ function deleteOperacao() {
             showToast(err.message)
         }
     })
+    .finally(() => hideLoader())
 }
 </script>
 

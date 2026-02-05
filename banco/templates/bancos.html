@@ -152,6 +152,7 @@ document.addEventListener('DOMContentLoaded', function () {
 })
 
 function loadBancos() {
+    showLoader()
     const tbody = document.getElementById('bancos-table-body')
     renderLoading(tbody)
 
@@ -196,7 +197,8 @@ function loadBancos() {
             })
         })
         .catch(() => showToast('Erro de conexão com o servidor'))
-}
+        .finally(() => hideLoader())
+    }
 
 
 let bancoModal
@@ -233,6 +235,7 @@ function openEditModal(id, codigo, nome) {
 
 /* SAVE */
 function saveBanco() {
+    showLoader()
     const id = document.getElementById('banco-id').value
     const codigo = document.getElementById('banco-codigo').value
     const nome = document.getElementById('banco-nome').value
@@ -258,6 +261,7 @@ function saveBanco() {
         loadBancos()
     })
     .catch(err => showToast(err.message))
+    .finally(() => hideLoader())
 }
 
 
@@ -270,6 +274,7 @@ function openDeleteModal(id, nome) {
 
 
 function deleteBanco() {
+    showLoader()
     const id = document.getElementById('delete-banco-id').value
 
     fetch('/api/bancos/', {
@@ -299,6 +304,7 @@ function deleteBanco() {
             showToast(err.message)
         }
     })
+    .finally(() => hideLoader())
 }
 
 </script>
