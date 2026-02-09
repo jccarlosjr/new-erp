@@ -13,41 +13,66 @@ from convenio.models import Matricula
 class CardOfertaAPIView(LoginRequiredMixin, View):
 
     def get(self, request):
-        cpf = request.GET.get('cpf')
-        user_id = request.GET.get('user_id')
+            cpf = request.GET.get('cpf')
+            nome = request.GET.get('nome')
+            matricula = request.GET.get('matricula')
+            codigo_interno = request.GET.get('codigo_interno')
+            status = request.GET.get('status')
+            user_id = request.GET.get('user_id')
 
-        cards = CardOferta.objects.select_related(
-            'cliente', 'matricula', 'user'
-        )
+            cards = CardOferta.objects.select_related(
+                'cliente', 'matricula', 'user'
+            )
 
-        if cpf:
-            cards = cards.filter(cliente__cpf=cpf)
+            if user_id:
+                cards = cards.filter(user__id=user_id)
 
-        if user_id:
-            cards = cards.filter(user__id=user_id)
+            if cpf:
+                cards = cards.filter(cliente__cpf__icontains=cpf)
 
-        data = []
-        for card in cards:
-            data.append({
-                'id': card.id,
-                'codigo_interno': card.codigo_interno,
-                'status': card.status,
-                'status_nome': card.get_status_display(),
+            if nome:
+                cards = cards.filter(cliente__nome__icontains=nome)
 
-                'user__id': card.user.id if card.user else None,
-                'user__username': card.user.username if card.user else None,
+            if matricula:
+                cards = cards.filter(matricula__matricula__icontains=matricula)
 
-                'cliente__cpf': card.cliente.cpf,
-                'cliente__nome': card.cliente.nome,
+            if codigo_interno:
+                cards = cards.filter(codigo_interno__icontains=codigo_interno)
+            
+            STATUS_MAP = {
+                'Não Iniciado': 'NAO_INICIADO',
+                'Digitação Solicitada': 'DIGITACAO',
+                'Digitado': 'DIGITADO',
+                'Finalizado': 'FINALIZADO',
+                'Cancelado': 'CANCELADO',
+            }
 
-                'matricula__id': card.matricula.id,
-                'matricula__matricula': card.matricula.matricula,
+            if status:
+                status = STATUS_MAP.get(status, status)
+                cards = cards.filter(status=status)
+
+            data = []
+            for card in cards:
+                data.append({
+                    'id': card.id,
+                    'codigo_interno': card.codigo_interno,
+                    'status': card.status,
+                    'status_nome': card.get_status_display(),
+
+                    'user__id': card.user.id if card.user else None,
+                    'user__username': card.user.username if card.user else None,
+
+                    'cliente__cpf': card.cliente.cpf,
+                    'cliente__nome': card.cliente.nome,
+
+                    'matricula__id': card.matricula.id if card.matricula else None,
+                    'matricula__matricula': card.matricula.matricula if card.matricula else None,
+                })
+
+            return JsonResponse({
+                "status": "success",
+                "data": data
             })
-
-        return JsonResponse({
-            "status": "success",
-            "data": data
-        })
 
 
     def post(self, request):

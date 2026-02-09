@@ -60,18 +60,66 @@ i{
 </div>
 
 
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5>Excluir Card</h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body text-center">
+        <input type="hidden" id="delete-id">
+        <p>Deseja excluir <strong id="delete-nome"></strong>?</p>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-danger" onclick="deleteCard()">Excluir</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
 <script src="{% static 'js/utils.js' %}"></script>
 <script>
+
+let deleteModal
+
+function openDeleteModal(id, codig_interno) {
+    document.getElementById('delete-id').value = id
+    document.getElementById('delete-nome').innerText = codig_interno
+    deleteModal.show()
+}
+
 document.addEventListener('DOMContentLoaded', function () {
+    deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'))
     loadCards()
 })
 
+document.querySelector('.btn-primary').addEventListener('click', loadCards)
+
 function loadCards() {
-    showLoader();
+    showLoader()
+
     const tbody = document.getElementById('cards-table-body')
     renderLoading(tbody)
 
-    fetch(`/api/cards-oferta/?user_id=${currentUser}`)
+    const filterField = document.getElementById('filter-operacao').value
+    const filterValue = document.getElementById('filter-banco').value.trim()
+
+    const params = new URLSearchParams()
+
+    params.append('user_id', currentUser)
+
+    if (filterValue) {
+        params.append(filterField, filterValue)
+    }
+
+    fetch(`/api/cards-oferta/?${params.toString()}`)
         .then(res => res.json())
         .then(data => {
             if (data.status !== 'success') {
@@ -83,12 +131,12 @@ function loadCards() {
 
             if (data.data.length === 0) {
                 tbody.innerHTML = `
-                <tr>
-                    <td colspan="2" class="text-center text-muted">
-                        Nenhum card cadastrado
-                    </td>
-                </tr>
-            `
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">
+                            Nenhum card encontrado
+                        </td>
+                    </tr>
+                `
                 return
             }
 
@@ -96,24 +144,64 @@ function loadCards() {
                 const tr = document.createElement('tr')
 
                 tr.innerHTML = `
-                <td>${card.user__username}</td>
-                <td>${card.codigo_interno}</td>
-                <td>${card.cliente__nome}</td>
-                <td>${card.cliente__cpf}</td>
-                <td>${card.status_nome}</td>
-                <td>
-                    <i class="bi bi-files text-success" title="Abrir Propostas"></i>
-                    <i class="bi bi-pencil-square text-warning" title="Excluir"></i>
-                    <i class="bi bi-trash3 text-danger" title="Editar"></i>
-                </td>
-            `
+                    <td>${card.user__username ?? '-'}</td>
+                    <td>${card.codigo_interno}</td>
+                    <td>${card.cliente__nome}</td>
+                    <td>${card.cliente__cpf}</td>
+                    <td>${card.status_nome}</td>
+                    <td>
+                        <i class="bi bi-files text-success" title="Abrir Propostas"></i>
+                        <i class="bi bi-pencil-square text-warning" title="Editar"></i>
+                        <i class="bi bi-trash3 text-danger" title="Excluir" onclick="openDeleteModal('${card.id}','${card.codigo_interno}')"></i>
+                    </td>
+                `
                 tbody.appendChild(tr)
             })
         })
         .catch(() => showToast('Erro de conexão com o servidor'))
         .finally(() => hideLoader())
 }
+
+
+function deleteCard() {
+    showLoader()
+    const id = document.getElementById('delete-id').value
+
+    fetch('/api/cards-oferta/', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({ id })
+    })
+    .then(async res => {
+        const data = await res.json()
+        if (!res.ok || data.status === 'error') {
+            throw new Error(data.message || 'Erro ao excluir')
+        }
+        return data
+    })
+    .then(() => {
+        deleteModal.hide();
+        showToast('Card excluido com sucesso', 'success')
+        loadCards();
+    })
+    .catch(err => {
+        if(err.message.includes("Cannot delete some instances of model")){
+            deleteModal.hide();
+            showToast("Não é possível deletar um card com propostas ativas", 'danger')
+        } else {
+            deleteModal.hide();
+            showToast(err.message)
+        }
+    })
+    .finally(() => hideLoader())
+}
+
+
 </script>
+
 
 
 {% endblock %}
