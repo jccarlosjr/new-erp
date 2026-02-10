@@ -426,6 +426,8 @@ function renderPropostas(propostas){
 
 
 function loadPropostasByCardID(id) {
+    let propostasList = document.getElementById('propostas-table-body')
+    propostasList.innerHTML = ''
     showLoader();
     fetch(`/api/propostas/?card_id=${id}`)
         .then(res => res.json())
