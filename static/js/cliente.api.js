@@ -978,7 +978,7 @@ function loadPropostasByCardID() {
             }
         })
         .catch(err => {
-            showToast("Erro ao carregar matrículas", "danger");
+            showToast("Erro ao carregar propostas", "danger");
             console.error(err);
         })
         .finally(() => hideLoader())

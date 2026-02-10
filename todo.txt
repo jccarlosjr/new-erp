@@ -1,6 +1,42 @@
-Configurar os filtros na tela de cards de oferta
-Configurar os filtros na view de cards de oferta
+###################
+###### CARDS ######
+###################
 
-Criar tela de propostas vinculada a um card
+Adicionar is_blocked
+Configurar patch somente para is_blocked = false
 Criar tela de edição de card - Restrição para editar somente o Status
 Adicionar function para (deletar) Cards alterando o status para cancelado
+
+editar a api-view para retornar somente os cards e propostas vinculadas ao usuário específico
+
+adicionar histórico para o card
+
+configurar no backend, ao alterar status para digitação solicitada, digitado, finalizado, cancelado
+mudar is_blocked para true
+
+adicionar um ícone de cadeado com o status is_blocked no front
+
+###################
+#### PROPOSTAS ####
+###################
+
+configurar tela para editar uma propostas
+adicionar histórico para a proposta
+
+criar status padrões
+
+1 - Aberto
+2 - Digitação Solicitada
+3 - Pendente Pré-Digitação
+4 - Aguardando Banco
+5 - Pendente de Formalização
+6 - Aguardando Pagamento
+7 - Aguardando Retorno do Saldo
+8 - Aguardando Atuação do Atendente
+9 - Aguardando Atuação do Operacional
+11 - Saldo Devedor Pagamento
+12 - Pago - Troco Liberado para o Cliente
+13 - Cancelado - Possível Redigitar
+14 - Cancelado - Definitivo
+
+validar delete em propostas, negar o delete de qualquer status diferente de 1

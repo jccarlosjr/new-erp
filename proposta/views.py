@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from app.mixins import AdminRequiredMixin
 import json
 from .models import Status, Proposta
+from django.views.generic import TemplateView
 from cliente.models import Cliente
 from card_oferta.models import CardOferta
 from tabela.models import Tabela
@@ -412,3 +413,9 @@ class PropostaAPIView(LoginRequiredMixin, View):
                 "status": "error",
                 "message": str(e)
             }, status=400)
+
+
+class PropostaView(LoginRequiredMixin, TemplateView):
+    template_name = 'propostas.html'
+
+    
