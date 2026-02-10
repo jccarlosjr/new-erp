@@ -101,6 +101,9 @@ i{
                 <tr>
                     <th>ADE</th>
                     <th>Código Interno</th>
+                    <th>Banco</th>
+                    <th>Operação</th>
+                    <th>Parcela</th>
                     <th>Nome</th>
                     <th>CPF</th>
                     <th>Status</th>
@@ -412,11 +415,14 @@ function renderPropostas(propostas){
             <tr>
                 <td>${proposta.ade ?? '-'}</td>
                 <td>${proposta.codigo_interno}</td>
+                <td>${proposta.tabela__banco__nome}</td>
+                <td>${proposta.tabela__operacao__nome}</td>
+                <td>${proposta.parcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL'})}</td>
                 <td>${proposta.cliente__nome}</td>
                 <td>${proposta.cliente__cpf}</td>
                 <td>${proposta.status__nome}</td>
                 <td>
-                    <button class="btn btn-primary btn-sm bi bi-pencil-square" title="Editar"></button>
+                    <button class="btn btn-success btn-sm bi bi-pencil-square" title="Editar"></button>
                     <button class="btn btn-danger btn-sm bi bi-trash3" title="Excluir" onclick="openDeletePropostaModal('${proposta.id}', '${proposta.codigo_interno}')"></button>
                 </td>
             </tr>
