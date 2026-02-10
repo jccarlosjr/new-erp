@@ -161,8 +161,6 @@ i{
             <option value="" disabled>Selecione o status</option>
             <option value="NAO_INICIADO">Não Iniciado</option>
             <option value="DIGITACAO">Digitação Solicitada</option>
-            <option value="DIGITADO">Digitado</option>
-            <option value="FINALIZADO">Finalizado</option>
             <option value="CANCELADO">Cancelado</option>
         </select>
       </div>
@@ -176,6 +174,37 @@ i{
   </div>
 </div>
 
+
+<div class="modal fade" id="historicoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Histórico
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <div id="historico-loading" class="text-center py-3 d-none">
+                    <div class="spinner-border"></div>
+                </div>
+
+                <ul class="list-group" id="historicoList"></ul>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">
+                    Fechar
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
 <script src="{% static 'js/utils.js' %}"></script>
 <script>
 
@@ -183,10 +212,12 @@ let deleteModal
 let propostaModal
 let deletePropostaModal
 let editCardModal
+let historicoModal
 
-function openPropostaModal(id) {
+
+function openPropostaModal(id, is_blocked) {
     document.getElementById('card-id').value = id
-    loadPropostasByCardID(id)
+    loadPropostasByCardID(id, is_blocked)
     propostaModal.show()
 }
 
@@ -220,6 +251,7 @@ document.addEventListener('DOMContentLoaded', function () {
     propostaModal = new bootstrap.Modal(document.getElementById('propostaModal'))
     deletePropostaModal = new bootstrap.Modal(document.getElementById('deletePropostaModal'))
     editCardModal = new bootstrap.Modal(document.getElementById('editCardModal'))
+    historicoModal = new bootstrap.Modal(document.getElementById('historicoModal'))
     loadCards()
 })
 
@@ -233,8 +265,12 @@ function loadCards() {
     const tbody = document.getElementById('cards-table-body')
     renderLoading(tbody)
 
-    const filterField = document.getElementById('filter-operacao').value
-    const filterValue = document.getElementById('filter-banco').value.trim()
+    let filterField = document.getElementById('filter-operacao').value
+    let filterValue = document.getElementById('filter-banco').value.trim()
+
+    if(filterField == 'cpf') {
+        filterValue = filterValue.replace('.', '').replace('.', '').replace('-', '')
+    }
 
     const params = new URLSearchParams()
 
@@ -265,24 +301,58 @@ function loadCards() {
                 return
             }
 
-            data.data.forEach(card => {
-                const tr = document.createElement('tr')
+        data.data.forEach(card => {
+            const tr = document.createElement('tr')
 
-                tr.innerHTML = `
-                    <td>${card.user__username ?? '-'}</td>
-                    <td>${card.codigo_interno}</td>
-                    <td>${card.matricula__matricula}</td>
-                    <td>${card.cliente__nome}</td>
-                    <td>${maskCPF(card.cliente__cpf)}</td>
-                    <td>${card.status_nome}</td>
-                    <td>
-                        <button class="btn btn-sm btn-success bi bi-pencil-square" title="Editar Card" onclick="openEditModal('${card.id}', '${card.codigo_interno}', '${card.status}')"></button>
-                        <button class="btn btn-sm btn-primary bi bi-files" title="Abrir Propostas" onclick="openPropostaModal('${card.id}')"></button>
-                        <button class="btn btn-sm btn-danger bi bi-trash3" title="Excluir" onclick="openDeleteModal('${card.id}','${card.codigo_interno}')"></button>
-                    </td>
-                `
-                tbody.appendChild(tr)
-            })
+            const isBlocked = card.is_blocked
+
+            const lockBtn = `
+                <button disabled
+                    class="btn btn-sm btn-dark bi ${isBlocked ? 'bi-lock' : 'bi-unlock'}"
+                    title="Contrato ${isBlocked ? 'Bloqueado' : 'Desbloqueado'}">
+                </button>
+            `
+
+            const editBtn = `
+                <button ${isBlocked ? 'disabled' : ''}
+                    class="btn btn-sm btn-success bi bi-pencil-square"
+                    title="Editar Card"
+                    onclick="openEditModal('${card.id}', '${card.codigo_interno}', '${card.status}')">
+                </button>
+            `
+
+            const deleteBtn = `
+                <button ${isBlocked ? 'disabled' : ''}
+                    class="btn btn-sm btn-danger bi bi-trash3"
+                    title="Excluir"
+                    onclick="openDeleteModal('${card.id}','${card.codigo_interno}')">
+                </button>
+            `
+
+            tr.innerHTML = `
+                <td>${card.user__username ?? '-'}</td>
+                <td>${card.codigo_interno}</td>
+                <td>${card.matricula__matricula}</td>
+                <td>${card.cliente__nome}</td>
+                <td>${maskCPF(card.cliente__cpf)}</td>
+                <td>${card.status_nome}</td>
+                <td>
+                    <button class="btn btn-sm btn-warning bi bi-clock-history"
+                        title="Abrir Propostas"
+                        onclick="openHistoricoModal('${card.id }')">
+                    </button>
+                    ${lockBtn}
+                    ${editBtn}
+                    <button class="btn btn-sm btn-primary bi bi-files"
+                        title="Abrir Propostas"
+                        onclick="openPropostaModal('${card.id}',  ${card.is_blocked})">
+                    </button>
+                    ${deleteBtn}
+                </td>
+            `
+
+            tbody.appendChild(tr)
+        })
         })
         .catch(() => showToast('Erro de conexão com o servidor'))
         .finally(() => hideLoader())
@@ -293,6 +363,7 @@ function editarCard() {
     showLoader();
     const id = document.getElementById('edit-card-id').value;
     let status = document.getElementById('status-card-select').value;
+    let statusText = document.getElementById('status-card-select').options[document.getElementById('status-card-select').selectedIndex].text;
 
     fetch('/api/cards-oferta/', {
         method: 'PATCH',
@@ -314,7 +385,8 @@ function editarCard() {
     })
     .then(() => {
         editCardModal.hide();
-        showToast('Card excluido com sucesso', 'success')
+        showToast('Card atualizado com sucesso', 'success')
+        createHistorico(id, obs = statusText)
         loadCards();
     })
     .catch(err => {
@@ -404,11 +476,27 @@ function deleteProposta() {
 }
 
 
-function renderPropostas(propostas){
+function renderPropostas(propostas, is_blocked){
     let propostasList = document.getElementById('propostas-table-body')
     propostasList.innerHTML = ''
 
     propostas.forEach(proposta => {
+
+        const editBtn = `
+            <button ${is_blocked ? 'disabled' : ''}
+                class="btn btn-sm btn-success bi bi-pencil-square"
+                title="Editar Card">
+            </button>
+        `
+
+        const deleteBtn = `
+            <button ${is_blocked ? 'disabled' : ''}
+                class="btn btn-sm btn-danger bi bi-trash3"
+                title="Excluir"
+                onclick="openDeletePropostaModal('${proposta.id}','${proposta.codigo_interno}')">
+            </button>
+        `
+
         propostasList.innerHTML += `
             <tr>
                 <td>${proposta.ade ?? '-'}</td>
@@ -418,8 +506,8 @@ function renderPropostas(propostas){
                 <td>${proposta.parcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL'})}</td>
                 <td>${proposta.status__nome}</td>
                 <td>
-                    <button class="btn btn-success btn-sm bi bi-pencil-square" title="Editar"></button>
-                    <button class="btn btn-danger btn-sm bi bi-trash3" title="Excluir" onclick="openDeletePropostaModal('${proposta.id}', '${proposta.codigo_interno}')"></button>
+                    ${editBtn}
+                    ${deleteBtn}
                 </td>
             </tr>
         `
@@ -427,20 +515,96 @@ function renderPropostas(propostas){
 }
 
 
-function loadPropostasByCardID(id) {
+function loadPropostasByCardID(id, is_blocked) {
     let propostasList = document.getElementById('propostas-table-body')
     propostasList.innerHTML = ''
     showLoader();
     fetch(`/api/propostas/?card_id=${id}`)
         .then(res => res.json())
         .then(res => {
-            renderPropostas(res.data)
+            renderPropostas(res.data, is_blocked)
         })
         .catch(err => {
             showToast("Erro ao carregar propostas", "danger");
             console.error(err);
         })
         .finally(() => hideLoader())
+}
+
+
+function openHistoricoModal(cardId) {
+    const list = document.getElementById('historicoList')
+    const loading = document.getElementById('historico-loading')
+    list.innerHTML = ''
+    loading.classList.remove('d-none')
+
+    historicoModal.show()
+
+    fetch(`/api/historico-card/?card_id=${cardId}`)
+        .then(res => res.json())
+        .then(res => {
+            loading.classList.add('d-none')
+
+            if (res.status !== 'success') {
+                list.innerHTML = `
+                    <li class="list-group-item text-danger">
+                        Erro ao carregar histórico
+                    </li>
+                `
+                return
+            }
+
+            if (!res.data.length) {
+                list.innerHTML = `
+                    <li class="list-group-item text-muted text-center">
+                        Nenhum histórico encontrado
+                    </li>
+                `
+                return
+            }
+
+            res.data.forEach(item => {
+                list.insertAdjacentHTML('beforeend', `
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted">
+                                Alterado por ${item.user__username ?? 'Sistema'} em ${formatDate(item.date)}
+                            </small> 
+                        </div>
+
+                        ${item.obs ? `
+                            <div class="mt-1">
+                                ${item.obs}
+                            </div>
+                        ` : ''}
+                    </li>
+                `)
+            })
+        })
+        .catch(() => {
+            loading.classList.add('d-none')
+            list.innerHTML = `
+                <li class="list-group-item text-danger">
+                    Erro de conexão
+                </li>
+            `
+        })
+}
+
+
+function createHistorico(cardId, obs = '') {
+    return fetch('/api/historico-card/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({
+            card_id: cardId,
+            obs: obs
+        })
+    })
+    .then(res => res.json())
 }
 </script>
 

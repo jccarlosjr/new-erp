@@ -1,20 +1,9 @@
 ###################
-###### CARDS ######
+#### PROPOSTAS ####
 ###################
 
-Adicionar is_blocked
-Configurar patch somente para is_blocked = false
-Criar tela de edição de card - Restrição para editar somente o Status
-Adicionar function para (deletar) Cards alterando o status para cancelado
+Criar kanban para cards
 
-editar a api-view para retornar somente os cards e propostas vinculadas ao usuário específico
-
-adicionar histórico para o card
-
-configurar no backend, ao alterar status para digitação solicitada, digitado, finalizado, cancelado
-mudar is_blocked para true
-
-adicionar um ícone de cadeado com o status is_blocked no front
 
 ###################
 #### PROPOSTAS ####
@@ -25,21 +14,20 @@ adicionar histórico para a proposta
 
 criar status padrões
 
-1 - Aberto
-2 - Digitação Solicitada
-3 - Pendente Pré-Digitação
-4 - Aguardando Banco
-5 - Pendente de Formalização
-6 - Aguardando Pagamento
-7 - Aguardando Retorno do Saldo
-8 - Aguardando Atuação do Atendente
-9 - Aguardando Atuação do Operacional
-11 - Saldo Devedor Pagamento
-12 - Pago - Troco Liberado para o Cliente
-13 - Cancelado - Possível Redigitar
-14 - Cancelado - Definitivo
+1 - Aberto - seccondary
+2 - Digitação Solicitada - primary
+3 - Pendente Pré-Digitação - warning
+4 - Aguardando Banco - warning
+5 - Pendente de Formalização - warning 
+6 - Aguardando Pagamento - primary
+7 - Aguardando Retorno do Saldo - primary
+8 - Aguardando Atuação do Atendente - warning
+9 - Aguardando Atuação do Operacional - primary
+11 - Saldo Devedor Pago - primary
+12 - Pago - Troco Liberado para o Cliente - success
+13 - Cancelado - Possível Redigitar - danger
+14 - Cancelado - Definitivo - danger
 
 validar delete em propostas, negar o delete de qualquer status diferente de 1
 
-
-criar máscara para CPF no utils.py
+cancelar propostas quando o card for cancelado

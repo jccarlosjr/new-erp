@@ -104,3 +104,7 @@ function maskCPF(value) {
     .replace(/(\d{3})(\d)/, '$1.$2')
     .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
 }
+
+function formatDate(dateStr) {
+    return new Date(dateStr).toLocaleString('pt-BR')
+}

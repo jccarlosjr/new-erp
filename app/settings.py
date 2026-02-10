@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'convenio',
     'proposta',
     'card_oferta',
+    'historico',
 ]
 
 MIDDLEWARE = [

@@ -13,6 +13,8 @@ from convenio.models import Matricula
 class CardOfertaAPIView(LoginRequiredMixin, View):
 
     def get(self, request):
+            user = request.user
+
             cpf = request.GET.get('cpf')
             nome = request.GET.get('nome')
             matricula = request.GET.get('matricula')
@@ -23,6 +25,8 @@ class CardOfertaAPIView(LoginRequiredMixin, View):
             cards = CardOferta.objects.select_related(
                 'cliente', 'matricula', 'user'
             )
+
+            cards = cards.filter(user=user)
 
             if user_id:
                 cards = cards.filter(user__id=user_id)
@@ -41,8 +45,11 @@ class CardOfertaAPIView(LoginRequiredMixin, View):
             
             STATUS_MAP = {
                 'Não Iniciado': 'NAO_INICIADO',
-                'Digitação Solicitada': 'DIGITACAO',
-                'Digitado': 'DIGITADO',
+                'Aguardando Digitação': 'DIGITACAO',
+                'Andamento': 'ANDAMENTO',
+                'Aguardando Formalização': 'FORMALIZACAO',
+                'Finalizado': 'FINALIZADO',
+                'Precisa de Atenção': 'ATENCAO',
                 'Finalizado': 'FINALIZADO',
                 'Cancelado': 'CANCELADO',
             }
@@ -51,6 +58,8 @@ class CardOfertaAPIView(LoginRequiredMixin, View):
                 status = STATUS_MAP.get(status, status)
                 cards = cards.filter(status=status)
 
+            cards = cards.order_by('-id')
+
             data = []
             for card in cards:
                 data.append({
@@ -58,6 +67,7 @@ class CardOfertaAPIView(LoginRequiredMixin, View):
                     'codigo_interno': card.codigo_interno,
                     'status': card.status,
                     'status_nome': card.get_status_display(),
+                    'is_blocked': card.is_blocked,
 
                     'user__id': card.user.id if card.user else None,
                     'user__username': card.user.username if card.user else None,
@@ -101,6 +111,9 @@ class CardOfertaAPIView(LoginRequiredMixin, View):
             # UPDATE
             if card_id:
                 card = get_object_or_404(CardOferta, id=card_id)
+
+                if card.status != 'NAO_INICIADO':
+                    card.is_blocked = True
 
                 card.cliente = cliente
                 card.matricula = matricula
@@ -161,6 +174,9 @@ class CardOfertaAPIView(LoginRequiredMixin, View):
 
             if 'status' in body:
                 card.status = body.get('status')
+
+            if card.status != 'NAO_INICIADO':
+                card.is_blocked = True
 
             card.save()
 

@@ -6,8 +6,10 @@ from accounts.models import CustomUser
 
 STATUS_CHOICES = [
     ('NAO_INICIADO', 'Não Iniciado'),
-    ('DIGITACAO', 'Digitação Solicitada'),
-    ('DIGITADO', 'Digitado'),
+    ('DIGITACAO', 'Aguardando Digitação'),
+    ('ANDAMENTO', 'Andamento'),
+    ('FORMALIZACAO', 'Aguardando Formalização'),
+    ('ATENCAO', 'Precisa de Atenção'),
     ('FINALIZADO', 'Finalizado'),
     ('CANCELADO', 'Cancelado'),
 ]
@@ -24,6 +26,7 @@ class CardOferta(models.Model):
     codigo_interno = models.CharField(max_length=100, unique=True, null=True, blank=True)
     status = models.CharField(max_length=100, choices=STATUS_CHOICES, default='NAO_INICIADO')
     user = models.ForeignKey(CustomUser, on_delete=models.PROTECT, null=True, blank=True)
+    is_blocked = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if not self.id:
