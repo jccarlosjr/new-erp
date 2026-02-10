@@ -96,3 +96,11 @@ function floatFormat(input) {
     input.value = value;
   }
 }
+
+function maskCPF(value) {
+  return value
+    .replace(/\D/g, '')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d)/, '$1.$2')
+    .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+}

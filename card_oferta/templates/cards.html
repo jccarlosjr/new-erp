@@ -104,8 +104,6 @@ i{
                     <th>Banco</th>
                     <th>Operação</th>
                     <th>Parcela</th>
-                    <th>Nome</th>
-                    <th>CPF</th>
                     <th>Status</th>
                     <th>
                         Ações
@@ -275,7 +273,7 @@ function loadCards() {
                     <td>${card.codigo_interno}</td>
                     <td>${card.matricula__matricula}</td>
                     <td>${card.cliente__nome}</td>
-                    <td>${card.cliente__cpf}</td>
+                    <td>${maskCPF(card.cliente__cpf)}</td>
                     <td>${card.status_nome}</td>
                     <td>
                         <button class="btn btn-sm btn-success bi bi-pencil-square" title="Editar Card" onclick="openEditModal('${card.id}', '${card.codigo_interno}', '${card.status}')"></button>
@@ -418,8 +416,6 @@ function renderPropostas(propostas){
                 <td>${proposta.tabela__banco__nome}</td>
                 <td>${proposta.tabela__operacao__nome}</td>
                 <td>${proposta.parcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL'})}</td>
-                <td>${proposta.cliente__nome}</td>
-                <td>${proposta.cliente__cpf}</td>
                 <td>${proposta.status__nome}</td>
                 <td>
                     <button class="btn btn-success btn-sm bi bi-pencil-square" title="Editar"></button>
