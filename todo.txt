@@ -40,3 +40,6 @@ criar status padrões
 14 - Cancelado - Definitivo
 
 validar delete em propostas, negar o delete de qualquer status diferente de 1
+
+
+criar máscara para CPF no utils.py
