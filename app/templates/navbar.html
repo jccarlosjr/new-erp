@@ -27,9 +27,9 @@
             <i class="bi bi-chevron-right dropdown-arrow"></i>
           </a>
           <div class="dropdown-menu">
-            <a href="{% url 'clientes' %}" class="dropdown-item"><i class="bi bi-file-earmark-plus-fill"></i> Novo Card de Ofertas</a>
-            <a href="{% url 'cardoferta' %}" class="dropdown-item"><i class="bi bi-bar-chart-steps"></i> Meus Cards de Ofertas</a>
-            <a href="#" class="dropdown-item"><i class="bi bi-file-earmark-text"></i> Listagem de Propostas</a>
+            <a href="{% url 'clientes' %}" class="dropdown-item"><i class="bi bi-file-earmark-plus-fill"></i> Novo Card</a>
+            <a href="{% url 'meus_cards' %}" class="dropdown-item"><i class="bi bi-file-earmark-text"></i> Esteira de Cards</a>
+            <a href="{% url 'cardoferta' %}" class="dropdown-item"><i class="bi bi-bar-chart-steps"></i> Listagem de Cards</a>
           </div>
         </li>
         {% if user.is_staff %}

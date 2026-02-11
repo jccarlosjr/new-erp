@@ -228,3 +228,7 @@ class CardOfertaAPIView(LoginRequiredMixin, View):
 
 class CardView(LoginRequiredMixin, TemplateView):
     template_name = 'cards.html'
+
+
+class CardEsteiraView(LoginRequiredMixin, TemplateView):
+    template_name = 'meus_cards.html'
