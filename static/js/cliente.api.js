@@ -684,7 +684,8 @@ function createCardOferta() {
 
     const payload = {
         cpf: currentCliente.cpf,
-        matricula_id: selectedMatricula
+        matricula_id: selectedMatricula,
+        active: false
     };
 
     fetch('/api/cards-oferta/', {
@@ -1073,6 +1074,7 @@ async function setCardStatusDigitacao() {
         },
         body: JSON.stringify({
             id: currentCardOferta.id,
+            active: true,
             status: 'DIGITACAO'
         })
     })

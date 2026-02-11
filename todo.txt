@@ -2,6 +2,9 @@
 #### PROPOSTAS ####
 ###################
 
+Remover delete, substituir por inativar, retornar somente ativos no get
+Criar lixeira, para cards inativos
+Adicionar botão para criar mais propostas no modal do card
 Criar kanban para cards
 
 
@@ -9,10 +12,12 @@ Criar kanban para cards
 #### PROPOSTAS ####
 ###################
 
-configurar tela para editar uma propostas
-adicionar histórico para a proposta
+Remover delete, substituir por inativar e desvincular de um card, retornar somente ativos no get
+Criar lixeira, para propostas inativas
+Configurar tela para editar uma propostas
+Adicionar histórico para a proposta
 
-criar status padrões
+Criar status padrões
 
 1 - Aberto - seccondary
 2 - Digitação Solicitada - primary
@@ -28,6 +33,6 @@ criar status padrões
 13 - Cancelado - Possível Redigitar - danger
 14 - Cancelado - Definitivo - danger
 
-validar delete em propostas, negar o delete de qualquer status diferente de 1
+Validar delete em propostas, negar o delete de qualquer status diferente de 1
 
-cancelar propostas quando o card for cancelado
+Cancelar propostas quando o card for cancelado

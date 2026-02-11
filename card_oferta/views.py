@@ -3,7 +3,6 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
 import json
-from app.mixins import AdminRequiredMixin
 from django.views.generic import TemplateView
 from .models import CardOferta
 from cliente.models import Cliente
@@ -26,7 +25,7 @@ class CardOfertaAPIView(LoginRequiredMixin, View):
                 'cliente', 'matricula', 'user'
             )
 
-            cards = cards.filter(user=user)
+            cards = cards.filter(user=user, active=True)
 
             if user_id:
                 cards = cards.filter(user__id=user_id)
@@ -42,7 +41,7 @@ class CardOfertaAPIView(LoginRequiredMixin, View):
 
             if codigo_interno:
                 cards = cards.filter(codigo_interno__icontains=codigo_interno)
-            
+
             STATUS_MAP = {
                 'Não Iniciado': 'NAO_INICIADO',
                 'Aguardando Digitação': 'DIGITACAO',
@@ -91,6 +90,7 @@ class CardOfertaAPIView(LoginRequiredMixin, View):
             user = request.user
             card_id = body.get('id')
             cpf = body.get('cpf')
+            active = body.get('active')
             matricula_id = body.get('matricula_id')
 
             if not cpf:
@@ -115,6 +115,7 @@ class CardOfertaAPIView(LoginRequiredMixin, View):
                 if card.status != 'NAO_INICIADO':
                     card.is_blocked = True
 
+                card.active = active
                 card.cliente = cliente
                 card.matricula = matricula
                 card.save()
@@ -174,6 +175,9 @@ class CardOfertaAPIView(LoginRequiredMixin, View):
 
             if 'status' in body:
                 card.status = body.get('status')
+
+            if 'active' in body:
+                card.active = body.get('active')
 
             if card.status != 'NAO_INICIADO':
                 card.is_blocked = True

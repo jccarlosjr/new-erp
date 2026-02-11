@@ -27,6 +27,7 @@ class CardOferta(models.Model):
     status = models.CharField(max_length=100, choices=STATUS_CHOICES, default='NAO_INICIADO')
     user = models.ForeignKey(CustomUser, on_delete=models.PROTECT, null=True, blank=True)
     is_blocked = models.BooleanField(default=False)
+    active = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if not self.id:
