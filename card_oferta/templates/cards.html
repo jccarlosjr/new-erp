@@ -330,13 +330,13 @@ function loadCards() {
             `
 
             tr.innerHTML = `
-                <td>${card.user__username ?? '-'}</td>
-                <td>${card.codigo_interno}</td>
-                <td>${card.matricula__matricula}</td>
-                <td>${card.cliente__nome}</td>
-                <td>${maskCPF(card.cliente__cpf)}</td>
-                <td>${card.status_nome}</td>
-                <td>
+                <td class="small">${card.user__username ?? '-'}</td>
+                <td class="small">${card.codigo_interno}</td>
+                <td class="small">${card.matricula__matricula}</td>
+                <td class="small">${card.cliente__nome}</td>
+                <td class="small">${maskCPF(card.cliente__cpf)}</td>
+                <td class="small">${card.status_nome}</td>
+                <td class="small">
                     <button class="btn btn-sm btn-warning bi bi-clock-history"
                         title="Abrir Propostas"
                         onclick="openHistoricoModal('${card.id }')">

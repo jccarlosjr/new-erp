@@ -158,6 +158,7 @@ class PropostaAPIView(LoginRequiredMixin, View):
         if cpf:
             propostas = propostas.filter(cliente__cpf=cpf)
 
+        propostas = propostas.filter(ativo = True)
         propostas = propostas.order_by('-ultima_atualizacao')
 
         propostas = propostas.values(
@@ -401,7 +402,10 @@ class PropostaAPIView(LoginRequiredMixin, View):
                 }, status=400)
 
             proposta = get_object_or_404(Proposta, id=proposta_id)
-            proposta.delete()
+            proposta.ativo = False
+            proposta.card_oferta = None
+            proposta.usuario = None
+            proposta.save()
 
             return JsonResponse({
                 "status": "success",
@@ -417,5 +421,3 @@ class PropostaAPIView(LoginRequiredMixin, View):
 
 class PropostaView(LoginRequiredMixin, TemplateView):
     template_name = 'propostas.html'
-
-    

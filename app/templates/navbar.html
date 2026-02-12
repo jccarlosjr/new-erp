@@ -23,13 +23,13 @@
         
         <li class="nav-item dropdown">
           <a href="#" class="nav-link dropdown-toggle">
-            <i class="bi bi-journals"></i><span class="nav-label">Propostas</span>
+            <i class="bi bi-journals"></i><span class="nav-label">Cards</span>
             <i class="bi bi-chevron-right dropdown-arrow"></i>
           </a>
           <div class="dropdown-menu">
-            <a href="{% url 'clientes' %}" class="dropdown-item"><i class="bi bi-file-earmark-plus-fill"></i> Novo Card</a>
-            <a href="{% url 'meus_cards' %}" class="dropdown-item"><i class="bi bi-file-earmark-text"></i> Esteira de Cards</a>
-            <a href="{% url 'cardoferta' %}" class="dropdown-item"><i class="bi bi-bar-chart-steps"></i> Listagem de Cards</a>
+            <a href="{% url 'clientes' %}" class="dropdown-item"><i class="bi bi-card-checklist"></i> Novo Card</a>
+            <a href="{% url 'meus_cards' %}" class="dropdown-item"><i class="bi bi-card-heading"></i> Esteira de Cards</a>
+            <a href="{% url 'cardoferta' %}" class="dropdown-item"><i class="bi bi-card-list"></i> Listagem de Cards</a>
           </div>
         </li>
         {% if user.is_staff %}
@@ -39,7 +39,6 @@
             <i class="bi bi-chevron-right dropdown-arrow"></i>
           </a>
           <div class="dropdown-menu">
-          {% if user.is_staff %}
               <a href="{% url 'bancos' %}" class="dropdown-item"><i class="bi bi-bank"></i> Bancos</a>
               <a href="{% url 'operacoes' %}" class="dropdown-item"><i class="bi bi-collection"></i> Operações</a>
               <a href="{% url 'tabelas' %}" class="dropdown-item"><i class="bi bi-card-list"></i> Tabelas</a>
@@ -48,10 +47,8 @@
               <a href="{% url 'salas' %}" class="dropdown-item"><i class="bi bi-window-stack"></i> Salas</a>
               <a href="{% url 'funcoes' %}" class="dropdown-item"><i class="bi bi-person-workspace"></i> Funções</a>
               <a href="{% url 'usuarios' %}" class="dropdown-item"><i class="bi bi-people"></i> Usuários</a>
-            {% endif %}
           </div>
         </li>
-        {% if user.is_staff %}
         <li class="nav-item dropdown">
           <a href="#" class="nav-link dropdown-toggle">
             <i class="bi bi-person-workspace"></i><span class="nav-label">Operacional</span>
@@ -65,28 +62,6 @@
           </div>
         </li>
         {% endif %}
-        {% endif %}
-        {% if user.is_staff %}
-        <li class="nav-item dropdown">
-          <a href="#" class="nav-link dropdown-toggle">
-            <i class="bi bi-database-gear"></i><span class="nav-label">Dados</span>
-            <i class="bi bi-chevron-right dropdown-arrow"></i>
-          </a>
-          <div class="dropdown-menu">
-            <a href="#" class="dropdown-item"><i class="bi bi-file-earmark-arrow-down"></i> Exportação de Propostas</a>
-            <a href="#" class="dropdown-item"><i class="bi bi-person-down"></i> Exportação de Clientes</a>
-          </div>
-        </li>
-        {% endif %}
-        <li class="nav-item dropdown">
-          <a href="#" class="nav-link dropdown-toggle">
-            <i class="bi bi-folder-check"></i><span class="nav-label">Controle de Físicos</span>
-            <i class="bi bi-chevron-right dropdown-arrow"></i>
-          </a>
-          <div class="dropdown-menu">
-            <a href="#" class="dropdown-item"><i class="bi bi-file-earmark-lock"></i> Listagem de Pendências</a>
-          </div>
-        </li>
         <li class="nav-item dropdown">
           <a href="#" class="nav-link dropdown-toggle">
             <i class="bi bi-currency-dollar"></i><span class="nav-label">Financeiro</span>

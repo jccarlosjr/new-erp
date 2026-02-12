@@ -34,10 +34,12 @@ class Status(models.Model):
 
 class Proposta(models.Model):
     ade = models.CharField(max_length=100, null=True, blank=True)
+    ade_2 = models.CharField(max_length=100, null=True, blank=True)
     bloqueado = models.BooleanField(default=False)
     codigo_interno = models.CharField(max_length=100, unique=True, null=True, blank=True)
     obs = models.TextField(null=True, blank=True)
     ultima_atualizacao = models.DateTimeField(auto_now=True)
+    ativo = models.BooleanField(default=True)
     criacao = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     cms = models.FloatField(null=True, blank=True)
     parcela = models.FloatField()
@@ -50,8 +52,8 @@ class Proposta(models.Model):
     contrato_portado = models.CharField(max_length=100, null=True, blank=True)
     banco_origem = models.CharField(max_length=3, null=True, blank=True)
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT)
-    tabela = models.ForeignKey(Tabela, on_delete=models.PROTECT)
-    usuario = models.ForeignKey(CustomUser, on_delete=models.PROTECT)
+    tabela = models.ForeignKey(Tabela, on_delete=models.PROTECT, null=True, blank=True)
+    usuario = models.ForeignKey(CustomUser, on_delete=models.PROTECT, null=True, blank=True)
     status = models.ForeignKey(Status, on_delete=models.PROTECT, null=True, blank=True)
     card_oferta = models.ForeignKey(CardOferta, on_delete=models.PROTECT, null=True, blank=True)
 

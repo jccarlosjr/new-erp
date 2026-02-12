@@ -644,6 +644,7 @@ function renderPropostas(propostas) {
 /* ===============================
    CARD HISTORICO
 ================================ */ 
+
 function createHistorico(cardId, obs = '') {
     return fetch('/api/historico-card/', {
         method: 'POST',
@@ -658,6 +659,7 @@ function createHistorico(cardId, obs = '') {
     })
     .then(res => res.json())
 }
+
 /* ===============================
    CARD
 ================================ */ 
@@ -685,7 +687,7 @@ function createCardOferta() {
     const payload = {
         cpf: currentCliente.cpf,
         matricula_id: selectedMatricula,
-        active: false
+        active: true
     };
 
     fetch('/api/cards-oferta/', {
@@ -717,6 +719,66 @@ function createCardOferta() {
         })
         .finally(() => hideLoader())
 }
+
+async function finalizarCard() {
+    goStep(4);
+
+    const response = await setCardStatusDigitacao();
+
+    if (!response || response.status !== 'success') {
+        showToast(
+            'Erro ao solicitar digitação, solicite a digitação manualmente!',
+            'danger'
+        );
+        return;
+    }
+
+    showToast('Card digitado com sucesso!', 'success');
+
+    document.getElementById("text-confirm").innerHTML = `
+        <h5 class="text-center">
+            <span class="text-primary">${currentCardOferta.codigo_interno}</span>
+            digitado com sucesso!
+        </h5>
+    `;
+}
+
+async function setCardStatusDigitacao() {
+    showLoader();
+
+    return fetch('/api/cards-oferta/', {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken(),
+        },
+        body: JSON.stringify({
+            id: currentCardOferta.id,
+            active: true,
+            status: 'DIGITACAO'
+        })
+    })
+    .then(response => {
+        return response.json().then(data => {
+            if (!response.ok) {
+                throw new Error(data.message || 'Erro ao atualizar status');
+            }
+            return data;
+        });
+    })
+    .then(data => {
+        console.log('Status atualizado:', data);
+        createHistorico(currentCardOferta.id, obs = 'Digitação Solicitada')
+        return data;
+    })
+    .catch(error => {
+        console.error(error);
+    })
+    .finally(() => {
+        hideLoader();
+    });
+}
+
 
 
 /* ===============================
@@ -1037,66 +1099,6 @@ function deleteProposta(){
         console.error(err);
     })
     .finally(() => hideLoader())
-}
-
-async function finalizarCard() {
-    goStep(4);
-
-    const response = await setCardStatusDigitacao();
-
-    if (!response || response.status !== 'success') {
-        showToast(
-            'Erro ao solicitar digitação, solicite a digitação manualmente!',
-            'danger'
-        );
-        return;
-    }
-
-    showToast('Card digitado com sucesso!', 'success');
-
-    document.getElementById("text-confirm").innerHTML = `
-        <h5 class="text-center">
-            <span class="text-primary">${currentCardOferta.codigo_interno}</span>
-            digitado com sucesso!
-        </h5>
-    `;
-}
-
-
-async function setCardStatusDigitacao() {
-    showLoader();
-
-    return fetch('/api/cards-oferta/', {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken(),
-        },
-        body: JSON.stringify({
-            id: currentCardOferta.id,
-            active: true,
-            status: 'DIGITACAO'
-        })
-    })
-    .then(response => {
-        return response.json().then(data => {
-            if (!response.ok) {
-                throw new Error(data.message || 'Erro ao atualizar status');
-            }
-            return data;
-        });
-    })
-    .then(data => {
-        console.log('Status atualizado:', data);
-        createHistorico(currentCardOferta.id, obs = 'Digitação Solicitada')
-        return data;
-    })
-    .catch(error => {
-        console.error(error);
-    })
-    .finally(() => {
-        hideLoader();
-    });
 }
 
 

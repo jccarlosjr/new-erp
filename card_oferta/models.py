@@ -12,6 +12,7 @@ STATUS_CHOICES = [
     ('ATENCAO', 'Precisa de Atenção'),
     ('FINALIZADO', 'Finalizado'),
     ('CANCELADO', 'Cancelado'),
+    ('EXCLUIDO', 'Excluído'),
 ]
 
 def get_card_code(proposta):
@@ -28,6 +29,7 @@ class CardOferta(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.PROTECT, null=True, blank=True)
     is_blocked = models.BooleanField(default=False)
     active = models.BooleanField(default=False)
+    ultima_atualizacao = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
         if not self.id:

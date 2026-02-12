@@ -52,6 +52,7 @@ class CardOfertaAPIView(LoginRequiredMixin, View):
                 'Precisa de Atenção': 'ATENCAO',
                 'Finalizado': 'FINALIZADO',
                 'Cancelado': 'CANCELADO',
+                'Excluído': 'EXCLUIDO',
             }
 
             if status:
@@ -115,6 +116,9 @@ class CardOfertaAPIView(LoginRequiredMixin, View):
 
                 if card.status != 'NAO_INICIADO':
                     card.is_blocked = True
+
+                if card.status == 'NAO_INICIADO':
+                    card.is_blocked = False
 
                 card.active = active
                 card.cliente = cliente
@@ -182,6 +186,9 @@ class CardOfertaAPIView(LoginRequiredMixin, View):
 
             if card.status != 'NAO_INICIADO':
                 card.is_blocked = True
+            
+            if card.status == 'NAO_INICIADO':
+                card.is_blocked = False
 
             card.save()
 
@@ -213,7 +220,9 @@ class CardOfertaAPIView(LoginRequiredMixin, View):
                 }, status=400)
 
             card = get_object_or_404(CardOferta, id=card_id)
-            card.delete()
+            card.active = False
+            card.status = 'EXCLUIDO'
+            card.save()
 
             return JsonResponse({
                 "status": "success",
@@ -241,6 +250,7 @@ class CardProposalsOfertaAPIView(LoginRequiredMixin, View):
             'Finalizado': 'FINALIZADO',
             'Precisa de Atenção': 'ATENCAO',
             'Cancelado': 'CANCELADO',
+            'Excluído': 'EXCLUIDO',
         }
 
         ## Buscar cards do usuário
@@ -255,7 +265,7 @@ class CardProposalsOfertaAPIView(LoginRequiredMixin, View):
             status = STATUS_MAP.get(status, status)
             cards = cards.filter(status=status)
 
-        cards = cards.order_by('-id')
+        cards = cards.order_by('-ultima_atualizacao')
 
         # Pega ids dos cards
         card_ids = list(cards.values_list('id', flat=True))
@@ -350,7 +360,6 @@ class CardProposalsOfertaAPIView(LoginRequiredMixin, View):
             "status": "success",
             "data": data
         })
-
 
 
 class CardView(LoginRequiredMixin, TemplateView):

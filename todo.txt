@@ -1,38 +1,27 @@
 ###################
-#### PROPOSTAS ####
+###### CARDS ######
 ###################
 
-Remover delete, substituir por inativar, retornar somente ativos no get
 Criar lixeira, para cards inativos
-Adicionar botão para criar mais propostas no modal do card
-Criar kanban para cards
-
 
 ###################
 #### PROPOSTAS ####
 ###################
 
-Remover delete, substituir por inativar e desvincular de um card, retornar somente ativos no get
+Adicionar campo para link de formalização
 Criar lixeira, para propostas inativas
 Configurar tela para editar uma propostas
 Adicionar histórico para a proposta
 
-Criar status padrões
-
-1 - Aberto - seccondary
-2 - Digitação Solicitada - primary
-3 - Pendente Pré-Digitação - warning
-4 - Aguardando Banco - warning
-5 - Pendente de Formalização - warning 
-6 - Aguardando Pagamento - primary
-7 - Aguardando Retorno do Saldo - primary
-8 - Aguardando Atuação do Atendente - warning
-9 - Aguardando Atuação do Operacional - primary
-11 - Saldo Devedor Pago - primary
-12 - Pago - Troco Liberado para o Cliente - success
-13 - Cancelado - Possível Redigitar - danger
-14 - Cancelado - Definitivo - danger
-
 Validar delete em propostas, negar o delete de qualquer status diferente de 1
 
 Cancelar propostas quando o card for cancelado
+
+Configurar o contador para o last update somente com horas úteis de 08h às 17h em dias úteis
+Adicionar last update para cada proposta que aparece no card
+
+###################
+#### GERAL ########
+###################
+
+Organizar os js para evitar duplicidade de functions
