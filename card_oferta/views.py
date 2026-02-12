@@ -7,7 +7,7 @@ from django.views.generic import TemplateView
 from .models import CardOferta
 from cliente.models import Cliente
 from convenio.models import Matricula
-from proposta.models import Proposta
+from proposta.models import Proposta, Status
 
 
 class CardOfertaAPIView(LoginRequiredMixin, View):
@@ -177,6 +177,17 @@ class CardOfertaAPIView(LoginRequiredMixin, View):
                 card.matricula = Matricula.objects.filter(
                     id=body.get('matricula_id')
                 ).first()
+            
+            propostas = Proposta.objects.select_related(
+                'cliente',
+                'tabela__banco',
+                'tabela__operacao',
+                'usuario',
+                'status',
+                'card_oferta'
+            ).order_by('-ultima_atualizacao')
+
+            propostas = propostas.filter(card_oferta=card_id)
 
             if 'status' in body:
                 card.status = body.get('status')
@@ -186,9 +197,18 @@ class CardOfertaAPIView(LoginRequiredMixin, View):
 
             if card.status != 'NAO_INICIADO':
                 card.is_blocked = True
-            
+
             if card.status == 'NAO_INICIADO':
                 card.is_blocked = False
+                for proposta in propostas:
+                    proposta.status = Status.objects.get(codigo=1)
+                    proposta.save()
+
+            if card.status == 'CANCELADO':
+                card.is_blocked = False
+                for proposta in propostas:
+                    proposta.status = Status.objects.get(codigo=13)
+                    proposta.save()
 
             card.save()
 

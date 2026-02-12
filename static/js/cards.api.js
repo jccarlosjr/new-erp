@@ -42,31 +42,105 @@ document.getElementById("tabela-select").addEventListener("change", function () 
     document.getElementById('prazo').value = selectedOption.dataset.prazo
 });
 
-function calcularTroco(){
-    const select = document.getElementById('operacoes-select');
-    const selectedText = select.options[select.selectedIndex].text;
-
-    if(selectedText.includes('Cartão')){
-        const coeficiente = Number(document.getElementById('coeficiente').value);
-        const parcela = Number(document.getElementById('parcela').value);
-        const parcelaReal = parcela * 0.7;
-        const troco = (parcelaReal * coeficiente);
-        document.getElementById('troco').value = troco.toFixed(2);
-    } else {
-        const coeficiente = Number(document.getElementById('coeficiente').value);
-        const saldo_devedor = Number(document.getElementById('saldo_devedor')?.value ?? 0);
-        const parcela = Number(document.getElementById('parcela').value);
-        const troco = (parcela / coeficiente) - saldo_devedor;
-        document.getElementById('troco').value = troco.toFixed(2);
-    }
-
-
-}
 
 /* ===============================
 ================================ */
 
 
+/* ===============================
+   MODAL OPENERS
+================================ */
+
+function openDeletePropostaModal(id, codig_interno) {
+    propostaModal.hide()
+    document.getElementById('delete-proposta-id').value = id
+    document.getElementById('delete-proposta-nome').innerText = codig_interno
+    deletePropostaModal.show()
+}
+
+
+function openHistoricoModal(cardId) {
+    const list = document.getElementById('historicoList')
+    const loading = document.getElementById('historico-loading')
+    list.innerHTML = ''
+    loading.classList.remove('d-none')
+
+    historicoModal.show()
+
+    fetch(`/api/historico-card/?card_id=${cardId}`)
+        .then(res => res.json())
+        .then(res => {
+            loading.classList.add('d-none')
+
+            if (res.status !== 'success') {
+                list.innerHTML = `
+                    <li class="list-group-item text-danger">
+                        Erro ao carregar histórico
+                    </li>
+                `
+                return
+            }
+
+            if (!res.data.length) {
+                list.innerHTML = `
+                    <li class="list-group-item text-muted text-center">
+                        Nenhum histórico encontrado
+                    </li>
+                `
+                return
+            }
+
+            res.data.forEach(item => {
+                list.insertAdjacentHTML('beforeend', `
+                    <li class="list-group-item">
+                        <div class="d-flex justify-content-between">
+                            <small class="text-muted">
+                                Alterado por ${item.user__username ?? 'Sistema'} em ${formatDate(item.date)}
+                            </small> 
+                        </div>
+
+                        ${item.obs ? `
+                            <div class="mt-1">
+                                ${item.obs}
+                            </div>
+                        ` : ''}
+                    </li>
+                `)
+            })
+        })
+        .catch(() => {
+            loading.classList.add('d-none')
+            list.innerHTML = `
+                <li class="list-group-item text-danger">
+                    Erro de conexão
+                </li>
+            `
+        })
+}
+
+function openCreatePropostaModal(cpf, card_id) {
+    let formProposta = document.getElementById('form-proposta-fields');
+    formProposta.innerHTML = '';
+
+    document.getElementById('propostaModalTitle').innerText = "Nova Proposta";
+
+    document
+        .querySelectorAll('#propostaModal input, #propostaModal textarea')
+        .forEach(el => el.value = '');
+
+    document.getElementById('proposta-modal-card-id').value = card_id;
+    document.getElementById('proposta-modal-cliente-cpf').value = cpf;
+
+    document.getElementById('proposta-id').value = '';
+
+    loadBancosSelect();
+    loadOperacoesSelect();
+
+    propostaModal.show();
+}
+
+/* ===============================
+================================ */
 
 /* ===============================
    CONTADORES
@@ -106,7 +180,7 @@ function loadCards() {
         .finally(() => hideLoader())
 }
 
-function editarCard(id, status, historico, propostas) {
+function editarCard(id, status, historico) {
     showLoader();
 
     fetch('/api/cards-oferta/', {
@@ -130,11 +204,6 @@ function editarCard(id, status, historico, propostas) {
     .then(() => {
         showToast('Card atualizado com sucesso', 'success')
         createHistorico(id, obs = historico)
-        if(status == "CANCELADO") {
-            propostas.forEach(proposta => {
-                cancelarProposta(proposta.id, 14)
-            })
-        }
         loadCards();
     })
     .catch(err => {
@@ -221,6 +290,132 @@ function cancelarProposta(id, status) {
     .finally(() => hideLoader())
 }
 
+function saveProposta() {
+    let card_id = document.getElementById('proposta-modal-card-id').value;
+    let cpf = document.getElementById('proposta-modal-cliente-cpf').value;
+    
+    showLoader();
+    if (!cpf) {
+        showToast("Cliente não identificado", "danger");
+        return;
+    }
+
+    if (!card_id) {
+        showToast("Card de oferta não identificado", "danger");
+        return;
+    }
+
+    let saldoDevedor = Number(document.getElementById('saldo_devedor')?.value ?? 0);
+    let troco = Number(document.getElementById('troco').value);
+    let financiado = saldoDevedor + troco;
+
+    const payload = {
+        id: document.getElementById('proposta-id').value || null,
+
+        cpf: cpf,
+        card_oferta_id: card_id,
+        usuario_id: currentUser,
+
+        tabela_id: Number(document.getElementById('tabela-select').value),
+
+        parcela: Number(document.getElementById('parcela').value),
+        saldo_devedor: saldoDevedor,
+        prazo: Number(document.getElementById('prazo').value),
+        troco: troco,
+        financiado: financiado,
+        banco_origem: document.getElementById('banco_origem')?.value ?? null,
+        contrato_portado: document.getElementById('contrato_portado')?.value ?? null,
+        prazo_original: Number(document.getElementById('prazo_original')?.value) ?? null,
+        prazo_restante: Number(document.getElementById('prazo_restante')?.value) ?? null,
+        obs: document.getElementById('obs').value,
+    };
+
+    /* ===== VALIDAÇÕES ===== */
+    const select = document.getElementById('operacoes-select');
+    const selectedText = select.options[select.selectedIndex].text;
+
+    /* ===== MARGEM LIVRE ===== */
+    if(selectedText.includes('Margem Livre')) {
+        if(!payload.tabela_id || !payload.parcela){
+            showToast("Tabela e parcela são obrigatórios", "warning");
+            return;
+        }
+    }
+
+    /* ===== SAQUE COMPLEMENTAR ===== */
+    if(selectedText.includes('Saque')) {
+        if(!payload.tabela_id || !payload.parcela || !payload.troco){
+            showToast("Tabela, parcela e saque são obrigatórios", "warning");
+            return;
+        }
+    }
+
+    /* ===== REFINANCIAMENTO ===== */
+    if(selectedText.includes('Refinanciamento')) {
+        if(!payload.tabela_id || !payload.parcela || !payload.saldo_devedor){
+            showToast("Tabela, parcela e saldo devedor são obrigatórios", "warning");
+            return;
+        }
+    }
+
+    /* ===== PORTABILIDADE ===== */
+    if (selectedText.includes('Portabilidade')) {
+
+        const camposObrigatorios = {
+            tabela_id: 'Tabela',
+            parcela: 'Parcela',
+            saldo_devedor: 'Saldo devedor',
+            banco_origem: 'Banco de origem',
+            contrato_portado: 'Contrato portado',
+            prazo_original: 'Prazo original',
+            prazo_restante: 'Prazo restante'
+        };
+
+        const faltantes = Object.entries(camposObrigatorios)
+            .filter(([campo]) => !payload[campo])
+            .map(([, label]) => label);
+
+        if (faltantes.length) {
+            showToast(
+                `Campos obrigatórios não preenchidos: ${faltantes.join(', ')}`,
+                'warning'
+            );
+            return;
+        }
+    }
+
+    fetch('/api/propostas/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken(),
+        },
+        body: JSON.stringify(payload),
+    })
+        .then(res => res.json())
+        .then(res => {
+            if (res.status === 'success') {
+
+                showToast(
+                    payload.id
+                        ? "Proposta atualizada com sucesso"
+                        : "Proposta criada com sucesso",
+                    "success"
+                );
+
+                propostaModal.hide();
+                loadCards();
+
+            } else {
+                showToast(res.message || "Erro ao salvar proposta", "danger");
+            }
+        })
+        .catch(err => {
+            showToast("Erro de conexão com o servidor", "danger");
+            console.error(err);
+        })
+        .finally(() => hideLoader())
+}
 /* ===============================
 ================================ */
 
@@ -264,7 +459,7 @@ function updateCountersAndRenderAccordions(cards){
             andamentoInt++;
             renderCard(card, 'bg-info', cardAccordionAndamento);
         }
-        if(card.status == 'PRECISA_ATENCAO' || card.status == 'FORMALIZACAO'){
+        if(card.status == 'ATENCAO' || card.status == 'FORMALIZACAO'){
             precisaAtencaoInt++;
             renderCard(card, 'bg-warning-subtle', accordionPropostasAtencao);
         }
@@ -286,6 +481,26 @@ function updateCountersAndRenderAccordions(cards){
     countCancelados.innerText = canceladosInt ?? 0;
 }
 
+function calcularTroco(){
+    const select = document.getElementById('operacoes-select');
+    const selectedText = select.options[select.selectedIndex].text;
+
+    if(selectedText.includes('Cartão')){
+        const coeficiente = Number(document.getElementById('coeficiente').value);
+        const parcela = Number(document.getElementById('parcela').value);
+        const parcelaReal = parcela * 0.7;
+        const troco = (parcelaReal * coeficiente);
+        document.getElementById('troco').value = troco.toFixed(2);
+    } else {
+        const coeficiente = Number(document.getElementById('coeficiente').value);
+        const saldo_devedor = Number(document.getElementById('saldo_devedor')?.value ?? 0);
+        const parcela = Number(document.getElementById('parcela').value);
+        const troco = (parcela / coeficiente) - saldo_devedor;
+        document.getElementById('troco').value = troco.toFixed(2);
+    }
+
+
+}
 /* ===============================
    HELPERS END
 ================================ */
@@ -300,91 +515,11 @@ function renderCard(card, color, cardAccordion) {
     let propostasHTML = ''
 
     card.propostas.forEach(proposta => {
-        propostasHTML += `
-            <tr>
-                <td class="small">${proposta.codigo_interno}</td>
-                <td class="small">${proposta.tabela__banco__nome}</td>
-                <td class="small">${proposta.tabela__operacao__nome}</td>
-                <td class="small">${proposta.parcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL'})}</td>
-                <td class="small">${proposta.status__nome}</td>
-                <td>
-                    <button class="btn btn-sm btn-warning bi bi-clock-history" title="Histórico"></button>
-                    <button class="btn btn-sm btn-primary bi bi bi-files" title="Abrir Proposta"></button>
-                    <div class="btn-group dropend">
-                        <button type="button" class="btn btn-sm btn-info bi bi-gear dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <button class="dropdown-item" onclick="openDeletePropostaModal(${proposta.id}, '${proposta.codigo_interno}')"><i class="bi bi-trash3 text-danger"></i> Excluir proposta
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
-                </td>
-            </tr>
-        `
+        propostasHTML += renderProposta(proposta);
     })
 
-    let btnAdd = ''
-    let btnActions = ''
-
-    if(card.status == 'NAO_INICIADO'){
-        btnAdd = `
-            <button class="btn btn-sm btn-success bi bi-plus-circle"
-                    title="Adicionar Proposta"
-                    onclick="openCreatePropostaModal('${card.cliente__cpf}', '${card.id}')">
-            </button>
-        `
-
-        btnActions = `
-        <div class="btn-group dropend">
-            <button type="button" ${card.is_blocked ? 'disabled' : ''} class="btn btn-sm btn-info bi bi-gear dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-            </button>
-            <ul class="dropdown-menu">
-                <li>
-                    <button class="dropdown-item" onclick="editarCard(${card.id}, 'DIGITACAO', 'Digitação Solicitada', '${JSON.stringify(card.propostas)}')"><i class="bi bi-send text-success"></i> Enviar para digitação
-                    </button>
-                </li>
-                <li><button class="dropdown-item" onclick="editarCard(${card.id}, 'CANCELADO', 'Card Cancelado', '${JSON.stringify(card.propostas)}')"><i class="bi bi-exclamation-triangle text-warning"></i> Solicitar cancelamento</button></li>
-            </ul>
-        </div>
-        `
-    }
-
-    if(card.status == 'CANCELADO'){
-
-        btnActions = `
-        <div class="btn-group dropend">
-            <button type="button" class="btn btn-sm btn-info bi bi-gear dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-            </button>
-            <ul class="dropdown-menu">
-                <li>
-                    <button class="dropdown-item" onclick="editarCard(${card.id}, 'NAO_INICIADO', 'Card Reiniciado', '${JSON.stringify(card.propostas)}')"><i class="bi bi-arrow-up-left-circle""></i> Redigitar Card
-                    </button>
-                </li>
-            </ul>
-        </div>
-        `
-    }
+    const { btnAdd, btnActions } = renderCardActions(card);
     
-    
-    if(card.status == 'ATENCAO' || card.status == 'FORMALIZACAO'){
-
-        btnActions = `
-        <div class="btn-group dropend">
-            <button type="button" class="btn btn-sm btn-info bi bi-gear dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-            </button>
-            <ul class="dropdown-menu">
-                <li>
-                    <button class="dropdown-item" onclick="editarCard(${card.id}, 'ANDAMENTO', 'Pendência resolvida', '${JSON.stringify(card.propostas)}')"><i class="bi bi-check-lg text-success"></i> Informar Pendência Resolvida
-                    </button>
-                </li>
-            </ul>
-        </div>
-        `
-    }
-    
-
     cardAccordion.innerHTML += `
         <div class="accordion-item mt-2">
             <h2 class="accordion-header d-flex align-items-center justify-content-between px-3 py-2">
@@ -447,72 +582,112 @@ function renderCard(card, color, cardAccordion) {
     `
 }
 
-function openHistoricoModal(cardId) {
-    const list = document.getElementById('historicoList')
-    const loading = document.getElementById('historico-loading')
-    list.innerHTML = ''
-    loading.classList.remove('d-none')
-
-    historicoModal.show()
-
-    fetch(`/api/historico-card/?card_id=${cardId}`)
-        .then(res => res.json())
-        .then(res => {
-            loading.classList.add('d-none')
-
-            if (res.status !== 'success') {
-                list.innerHTML = `
-                    <li class="list-group-item text-danger">
-                        Erro ao carregar histórico
-                    </li>
-                `
-                return
-            }
-
-            if (!res.data.length) {
-                list.innerHTML = `
-                    <li class="list-group-item text-muted text-center">
-                        Nenhum histórico encontrado
-                    </li>
-                `
-                return
-            }
-
-            res.data.forEach(item => {
-                list.insertAdjacentHTML('beforeend', `
-                    <li class="list-group-item">
-                        <div class="d-flex justify-content-between">
-                            <small class="text-muted">
-                                Alterado por ${item.user__username ?? 'Sistema'} em ${formatDate(item.date)}
-                            </small> 
-                        </div>
-
-                        ${item.obs ? `
-                            <div class="mt-1">
-                                ${item.obs}
-                            </div>
-                        ` : ''}
-                    </li>
-                `)
-            })
-        })
-        .catch(() => {
-            loading.classList.add('d-none')
-            list.innerHTML = `
-                <li class="list-group-item text-danger">
-                    Erro de conexão
-                </li>
-            `
-        })
+function renderProposta(proposta) {
+        return `
+            <tr>
+                <td class="small">${proposta.codigo_interno}</td>
+                <td class="small">${proposta.tabela__banco__nome}</td>
+                <td class="small">${proposta.tabela__operacao__nome}</td>
+                <td class="small">${proposta.parcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL'})}</td>
+                <td class="small">${proposta.status__nome}</td>
+                <td>
+                    <button class="btn btn-sm btn-warning bi bi-clock-history" title="Histórico"></button>
+                    <button class="btn btn-sm btn-primary bi bi bi-files" title="Abrir Proposta"></button>
+                    <div class="btn-group dropend">
+                        <button type="button" class="btn btn-sm btn-info bi bi-gear dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <button class="dropdown-item" onclick="openDeletePropostaModal(${proposta.id}, '${proposta.codigo_interno}')"><i class="bi bi-trash3 text-danger"></i> Excluir proposta
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </td>
+            </tr>
+        `
 }
 
-function openDeletePropostaModal(id, codig_interno) {
-    propostaModal.hide()
-    document.getElementById('delete-proposta-id').value = id
-    document.getElementById('delete-proposta-nome').innerText = codig_interno
-    deletePropostaModal.show()
+function renderCardActions(card) {
+
+    let btnAdd = '';
+    let btnActions = '';
+    
+
+    if (card.status === 'NAO_INICIADO') {
+        btnAdd = `
+            <button class="btn btn-sm btn-success bi bi-plus-circle"
+                    title="Adicionar Proposta"
+                    onclick="openCreatePropostaModal('${card.cliente__cpf}', '${card.id}')">
+            </button>
+        `;
+    }
+
+    if (card.status === 'NAO_INICIADO') {
+        btnActions = dropdown(card, [
+            {
+                status: 'DIGITACAO',
+                label: 'Enviar para digitação',
+                icon: 'bi-send text-success',
+                historico: 'Digitação Solicitada'
+            },
+            {
+                status: 'CANCELADO',
+                label: 'Solicitar cancelamento',
+                icon: 'bi-exclamation-triangle text-warning',
+                historico: 'Card Cancelado'
+            }
+        ]);
+    }
+
+    else if (card.status === 'CANCELADO') {
+        btnActions = dropdown(card, [
+            {
+                status: 'NAO_INICIADO',
+                label: 'Redigitar Card',
+                icon: 'bi-arrow-up-left-circle',
+                historico: 'Card Reiniciado'
+            }
+        ]);
+    }
+
+    else if (card.status === 'ATENCAO' || card.status === 'FORMALIZACAO') {
+        btnActions = dropdown(card, [
+            {
+                status: 'ANDAMENTO',
+                label: 'Informar Pendência Resolvida',
+                icon: 'bi-check-lg text-success',
+                historico: 'Pendência resolvida'
+            }
+        ]);
+    }
+
+    return { btnAdd, btnActions };
 }
 
+function dropdown(card, actions) {
+    return `
+        <div class="btn-group dropend">
+            <button type="button"
+                    ${card.is_blocked ? 'disabled' : ''}
+                    class="btn btn-sm btn-info bi bi-gear dropdown-toggle"
+                    data-bs-toggle="dropdown">
+            </button>
+
+            <ul class="dropdown-menu">
+                ${actions.map(action => `
+                    <li>
+                        <button class="dropdown-item"
+                                onclick="editarCard(${card.id}, '${action.status}', '${action.historico}')">
+                            <i class="bi ${action.icon}"></i>
+                            ${action.label}
+                        </button>
+                    </li>
+                `).join('')}
+            </ul>
+        </div>
+    `;
+}
 
 function loadBancosSelect(selected = null) {
     showLoader();
@@ -742,166 +917,8 @@ function renderPropostaFields(){
     }
 }
 
+
+
 /* ===============================
    RENDERS END
 ================================ */
-
-
-/* ===============================
-   PROPOSTAS
-================================ */
-
-function openCreatePropostaModal(cpf, card_id) {
-    let formProposta = document.getElementById('form-proposta-fields');
-    formProposta.innerHTML = '';
-
-    document.getElementById('propostaModalTitle').innerText = "Nova Proposta";
-
-    document
-        .querySelectorAll('#propostaModal input, #propostaModal textarea')
-        .forEach(el => el.value = '');
-
-    document.getElementById('proposta-modal-card-id').value = card_id;
-    document.getElementById('proposta-modal-cliente-cpf').value = cpf;
-
-    document.getElementById('proposta-id').value = '';
-
-    loadBancosSelect();
-    loadOperacoesSelect();
-
-    propostaModal.show();
-}
-
-function saveProposta() {
-    let card_id = document.getElementById('proposta-modal-card-id').value;
-    let cpf = document.getElementById('proposta-modal-cliente-cpf').value;
-    
-    showLoader();
-    if (!cpf) {
-        showToast("Cliente não identificado", "danger");
-        return;
-    }
-
-    if (!card_id) {
-        showToast("Card de oferta não identificado", "danger");
-        return;
-    }
-
-    let saldoDevedor = Number(document.getElementById('saldo_devedor')?.value ?? 0);
-    let troco = Number(document.getElementById('troco').value);
-    let financiado = saldoDevedor + troco;
-
-    const payload = {
-        id: document.getElementById('proposta-id').value || null,
-
-        cpf: cpf,
-        card_oferta_id: card_id,
-        usuario_id: currentUser,
-
-        tabela_id: Number(document.getElementById('tabela-select').value),
-
-        parcela: Number(document.getElementById('parcela').value),
-        saldo_devedor: saldoDevedor,
-        prazo: Number(document.getElementById('prazo').value),
-        troco: troco,
-        financiado: financiado,
-        banco_origem: document.getElementById('banco_origem')?.value ?? null,
-        contrato_portado: document.getElementById('contrato_portado')?.value ?? null,
-        prazo_original: Number(document.getElementById('prazo_original')?.value) ?? null,
-        prazo_restante: Number(document.getElementById('prazo_restante')?.value) ?? null,
-        obs: document.getElementById('obs').value,
-    };
-
-    /* ===== VALIDAÇÕES ===== */
-    const select = document.getElementById('operacoes-select');
-    const selectedText = select.options[select.selectedIndex].text;
-
-    /* ===== MARGEM LIVRE ===== */
-    if(selectedText.includes('Margem Livre')) {
-        if(!payload.tabela_id || !payload.parcela){
-            showToast("Tabela e parcela são obrigatórios", "warning");
-            return;
-        }
-    }
-
-    /* ===== SAQUE COMPLEMENTAR ===== */
-    if(selectedText.includes('Saque')) {
-        if(!payload.tabela_id || !payload.parcela || !payload.troco){
-            showToast("Tabela, parcela e saque são obrigatórios", "warning");
-            return;
-        }
-    }
-
-    /* ===== REFINANCIAMENTO ===== */
-    if(selectedText.includes('Refinanciamento')) {
-        if(!payload.tabela_id || !payload.parcela || !payload.saldo_devedor){
-            showToast("Tabela, parcela e saldo devedor são obrigatórios", "warning");
-            return;
-        }
-    }
-
-    /* ===== PORTABILIDADE ===== */
-    if (selectedText.includes('Portabilidade')) {
-
-        const camposObrigatorios = {
-            tabela_id: 'Tabela',
-            parcela: 'Parcela',
-            saldo_devedor: 'Saldo devedor',
-            banco_origem: 'Banco de origem',
-            contrato_portado: 'Contrato portado',
-            prazo_original: 'Prazo original',
-            prazo_restante: 'Prazo restante'
-        };
-
-        const faltantes = Object.entries(camposObrigatorios)
-            .filter(([campo]) => !payload[campo])
-            .map(([, label]) => label);
-
-        if (faltantes.length) {
-            showToast(
-                `Campos obrigatórios não preenchidos: ${faltantes.join(', ')}`,
-                'warning'
-            );
-            return;
-        }
-    }
-
-    fetch('/api/propostas/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken(),
-        },
-        body: JSON.stringify(payload),
-    })
-        .then(res => res.json())
-        .then(res => {
-            if (res.status === 'success') {
-
-                showToast(
-                    payload.id
-                        ? "Proposta atualizada com sucesso"
-                        : "Proposta criada com sucesso",
-                    "success"
-                );
-
-                propostaModal.hide();
-                loadCards();
-
-            } else {
-                showToast(res.message || "Erro ao salvar proposta", "danger");
-            }
-        })
-        .catch(err => {
-            showToast("Erro de conexão com o servidor", "danger");
-            console.error(err);
-        })
-        .finally(() => hideLoader())
-}
-
-/* ===============================
-   PROPOSTAS END
-================================ */
-
-
-

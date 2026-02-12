@@ -3,6 +3,7 @@
 ###################
 
 Criar lixeira, para cards inativos
+Cancelar e redigitar todas as propostas quando cancelar um card
 
 ###################
 #### PROPOSTAS ####
