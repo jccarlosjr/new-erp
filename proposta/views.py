@@ -5,12 +5,14 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404
 from app.mixins import AdminRequiredMixin
 import json
-from .models import Status, Proposta
+from .models import Status
 from django.views.generic import TemplateView
-from cliente.models import Cliente
-from card_oferta.models import CardOferta
-from tabela.models import Tabela
-from accounts.models import CustomUser
+from .selectors.proposta_selector import list_propostas
+from .services.proposta_service import (
+    create_or_update_proposta,
+    patch_proposta,
+    delete_proposta
+)
 
 class StatusView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
     template_name = 'status.html'
@@ -124,84 +126,8 @@ class StatusAPIView(LoginRequiredMixin, AdminRequiredMixin, View):
 class PropostaAPIView(LoginRequiredMixin, View):
 
     def get(self, request):
-        ade = request.GET.get('ade')
-        codigo_interno = request.GET.get('codigo_interno')
-        card_codigo = request.GET.get('card_codigo_interno')
-        cpf = request.GET.get('cpf')
-        card_id = request.GET.get('card_id')
-
-        propostas = Proposta.objects.select_related(
-            'cliente',
-            'tabela',
-            'usuario',
-            'status',
-            'card_oferta'
-        )
-
-        # 🔎 Filtros
-        if ade:
-            propostas = propostas.filter(ade=ade)
-
-        if codigo_interno:
-            propostas = propostas.filter(codigo_interno=codigo_interno)
-
-        if card_codigo:
-            propostas = propostas.filter(
-                card_oferta__codigo_interno=card_codigo
-            )
-
-        if card_id:
-            propostas = propostas.filter(
-                card_oferta__id=card_id
-            )
-
-        if cpf:
-            propostas = propostas.filter(cliente__cpf=cpf)
-
-        propostas = propostas.filter(ativo = True)
-        propostas = propostas.order_by('-ultima_atualizacao')
-
-        propostas = propostas.values(
-            'id',
-            'ade',
-            'bloqueado',
-            'codigo_interno',
-            'obs',
-            'ultima_atualizacao',
-            'criacao',
-            'cms',
-            'parcela',
-            'prazo',
-            'financiado',
-            'saldo_devedor',
-            'troco',
-            'prazo_original',
-            'prazo_restante',
-            'contrato_portado',
-            'banco_origem',
-
-            'cliente__cpf',
-            'cliente__nome',
-
-            'tabela__id',
-            'tabela__nome',
-            'tabela__coeficiente',
-            'tabela__banco__id',
-            'tabela__banco__nome',
-            'tabela__operacao__nome',
-            'tabela__operacao__id',
-
-            'usuario__id',
-            'usuario__username',
-
-            'status__id',
-            'status__nome',
-            'status__codigo',
-
-            'card_oferta__id',
-            'card_oferta__codigo_interno',
-            'card_oferta__matricula__matricula',
-        )
+        filters = request.GET.dict()
+        propostas = list_propostas(filters)
 
         return JsonResponse({
             "status": "success",
@@ -212,91 +138,7 @@ class PropostaAPIView(LoginRequiredMixin, View):
     def post(self, request):
         try:
             body = json.loads(request.body)
-
-            proposta_id = body.get('id')
-
-            cpf = body.get('cpf')
-            tabela_id = body.get('tabela_id')
-            status_id = body.get('status_id')
-            usuario_id = body.get('usuario_id')
-            card_oferta_id = body.get('card_oferta_id')
-
-            parcela = body.get('parcela')
-            prazo = body.get('prazo')
-            troco = body.get('troco')
-
-            if not cpf:
-                return JsonResponse({
-                    "status": "error",
-                    "message": "CPF do cliente é obrigatório"
-                }, status=400)
-
-            if not tabela_id:
-                return JsonResponse({
-                    "status": "error",
-                    "message": "Tabela é obrigatória"
-                }, status=400)
-
-            if parcela is None or prazo is None or troco is None:
-                return JsonResponse({
-                    "status": "error",
-                    "message": "Parcela, prazo e troco são obrigatórios"
-                }, status=400)
-
-            cliente = get_object_or_404(Cliente, cpf=cpf)
-            tabela = get_object_or_404(Tabela, id=tabela_id)
-
-            try:
-                status = get_object_or_404(Status, id=status_id)
-            except:
-                status = None
-
-            usuario = get_object_or_404(CustomUser, id=usuario_id)
-
-            card_oferta = None
-            if card_oferta_id:
-                card_oferta = get_object_or_404(CardOferta, id=card_oferta_id)
-
-            data = {
-                "ade": body.get('ade'),
-                "bloqueado": body.get('bloqueado', False),
-                "obs": body.get('obs'),
-                "cms": body.get('cms'),
-                "parcela": parcela,
-                "prazo": prazo,
-                "financiado": body.get('financiado'),
-                "saldo_devedor": body.get('saldo_devedor'),
-                "troco": troco,
-                "prazo_original": body.get('prazo_original'),
-                "prazo_restante": body.get('prazo_restante'),
-                "contrato_portado": body.get('contrato_portado'),
-                "banco_origem": body.get('banco_origem'),
-                "cliente": cliente,
-                "tabela": tabela,
-                "status": status,
-                "usuario": usuario,
-                "card_oferta": card_oferta,
-            }
-
-            # UPDATE
-            if proposta_id:
-                proposta = get_object_or_404(Proposta, id=proposta_id)
-
-                for field, value in data.items():
-                    setattr(proposta, field, value)
-
-                proposta.save()
-
-                return JsonResponse({
-                    "status": "success",
-                    "data": {
-                        "id": proposta.id,
-                        "codigo_interno": proposta.codigo_interno
-                    }
-                })
-
-            # CREATE
-            proposta = Proposta.objects.create(**data)
+            proposta, created = create_or_update_proposta(body)
 
             return JsonResponse({
                 "status": "success",
@@ -304,7 +146,7 @@ class PropostaAPIView(LoginRequiredMixin, View):
                     "id": proposta.id,
                     "codigo_interno": proposta.codigo_interno
                 }
-            }, status=201)
+            }, status=201 if created else 200)
 
         except Exception as e:
             return JsonResponse({
@@ -316,64 +158,7 @@ class PropostaAPIView(LoginRequiredMixin, View):
     def patch(self, request):
         try:
             body = json.loads(request.body)
-            proposta_id = body.get('id')
-
-            if not proposta_id:
-                return JsonResponse({
-                    "status": "error",
-                    "message": "ID da proposta é obrigatório"
-                }, status=400)
-
-            proposta = get_object_or_404(Proposta, id=proposta_id)
-
-            # FKs
-            if 'cpf' in body:
-                proposta.cliente = Cliente.objects.filter(
-                    cpf=body.get('cpf')
-                ).first()
-
-            if 'tabela_id' in body:
-                proposta.tabela = Tabela.objects.filter(
-                    id=body.get('tabela_id')
-                ).first()
-
-            if 'status_id' in body:
-                proposta.status = Status.objects.filter(
-                    id=body.get('status_id')
-                ).first()
-
-            if 'usuario_id' in body:
-                proposta.usuario = CustomUser.objects.filter(
-                    id=body.get('usuario_id')
-                ).first()
-
-            if 'card_oferta_id' in body:
-                proposta.card_oferta = CardOferta.objects.filter(
-                    id=body.get('card_oferta_id')
-                ).first()
-
-            # Campos simples
-            fields = [
-                'ade',
-                'bloqueado',
-                'obs',
-                'cms',
-                'parcela',
-                'prazo',
-                'financiado',
-                'saldo_devedor',
-                'troco',
-                'prazo_original',
-                'prazo_restante',
-                'contrato_portado',
-                'banco_origem',
-            ]
-
-            for field in fields:
-                if field in body:
-                    setattr(proposta, field, body.get(field))
-
-            proposta.save()
+            proposta = patch_proposta(body)
 
             return JsonResponse({
                 "status": "success",
@@ -393,19 +178,7 @@ class PropostaAPIView(LoginRequiredMixin, View):
     def delete(self, request):
         try:
             body = json.loads(request.body)
-            proposta_id = body.get('id')
-
-            if not proposta_id:
-                return JsonResponse({
-                    "status": "error",
-                    "message": "ID da proposta é obrigatório"
-                }, status=400)
-
-            proposta = get_object_or_404(Proposta, id=proposta_id)
-            proposta.ativo = False
-            proposta.card_oferta = None
-            proposta.usuario = None
-            proposta.save()
+            delete_proposta(body)
 
             return JsonResponse({
                 "status": "success",
@@ -417,7 +190,6 @@ class PropostaAPIView(LoginRequiredMixin, View):
                 "status": "error",
                 "message": str(e)
             }, status=400)
-
 
 class PropostaView(LoginRequiredMixin, TemplateView):
     template_name = 'propostas.html'

@@ -518,7 +518,12 @@ function renderProposta(proposta) {
                     <button class="btn btn-sm btn-warning bi bi-clock-history" title="Histórico" onclick="openHistoricoPropostaModal(${proposta.id})"></button>
                     <button class="btn btn-sm btn-primary bi bi bi-files" title="Abrir Proposta"></button>
                     <div class="btn-group dropend">
-                        <button type="button" class="btn btn-sm btn-info bi bi-gear dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <button 
+                            type="button" 
+                            ${proposta.bloqueado ? 'disabled' : ''} 
+                            class="btn btn-sm bi ${proposta.bloqueado ? 'bi-lock btn-secondary' : 'bi-gear btn-info'} dropdown-toggle" 
+                            data-bs-toggle="dropdown" 
+                            aria-expanded="false">
                         </button>
                         <ul class="dropdown-menu">
                             <li>
