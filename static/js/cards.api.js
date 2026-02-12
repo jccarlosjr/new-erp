@@ -1,12 +1,10 @@
 /* ===============================
    EVENTOS
 ================================ */
-let historicoModal;
 let propostaModal;
 let deletePropostaModal;
 
 document.addEventListener('DOMContentLoaded', function () {
-    historicoModal = new bootstrap.Modal(document.getElementById('historicoModal'))
     propostaModal = new bootstrap.Modal(document.getElementById('propostaModal'))
     deletePropostaModal = new bootstrap.Modal(document.getElementById('deletePropostaModal'))
     loadCards()
@@ -58,65 +56,6 @@ function openDeletePropostaModal(id, codig_interno) {
     deletePropostaModal.show()
 }
 
-
-function openHistoricoModal(cardId) {
-    const list = document.getElementById('historicoList')
-    const loading = document.getElementById('historico-loading')
-    list.innerHTML = ''
-    loading.classList.remove('d-none')
-
-    historicoModal.show()
-
-    fetch(`/api/historico-card/?card_id=${cardId}`)
-        .then(res => res.json())
-        .then(res => {
-            loading.classList.add('d-none')
-
-            if (res.status !== 'success') {
-                list.innerHTML = `
-                    <li class="list-group-item text-danger">
-                        Erro ao carregar histórico
-                    </li>
-                `
-                return
-            }
-
-            if (!res.data.length) {
-                list.innerHTML = `
-                    <li class="list-group-item text-muted text-center">
-                        Nenhum histórico encontrado
-                    </li>
-                `
-                return
-            }
-
-            res.data.forEach(item => {
-                list.insertAdjacentHTML('beforeend', `
-                    <li class="list-group-item">
-                        <div class="d-flex justify-content-between">
-                            <small class="text-muted">
-                                Alterado por ${item.user__username ?? 'Sistema'} em ${formatDate(item.date)}
-                            </small> 
-                        </div>
-
-                        ${item.obs ? `
-                            <div class="mt-1">
-                                ${item.obs}
-                            </div>
-                        ` : ''}
-                    </li>
-                `)
-            })
-        })
-        .catch(() => {
-            loading.classList.add('d-none')
-            list.innerHTML = `
-                <li class="list-group-item text-danger">
-                    Erro de conexão
-                </li>
-            `
-        })
-}
 
 function openCreatePropostaModal(cpf, card_id) {
     let formProposta = document.getElementById('form-proposta-fields');
@@ -210,21 +149,6 @@ function editarCard(id, status, historico) {
         showToast(err.message)
     })
     .finally(() => hideLoader())
-}
-
-function createHistorico(cardId, obs = '') {
-    return fetch('/api/historico-card/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
-        },
-        body: JSON.stringify({
-            card_id: cardId,
-            obs: obs
-        })
-    })
-    .then(res => res.json())
 }
 
 function deleteProposta() {
@@ -591,7 +515,7 @@ function renderProposta(proposta) {
                 <td class="small">${proposta.parcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL'})}</td>
                 <td class="small">${proposta.status__nome}</td>
                 <td>
-                    <button class="btn btn-sm btn-warning bi bi-clock-history" title="Histórico" onclick="openHistoricoModal(${proposta.id})"></button>
+                    <button class="btn btn-sm btn-warning bi bi-clock-history" title="Histórico" onclick="openHistoricoPropostaModal(${proposta.id})"></button>
                     <button class="btn btn-sm btn-primary bi bi bi-files" title="Abrir Proposta"></button>
                     <div class="btn-group dropend">
                         <button type="button" class="btn btn-sm btn-info bi bi-gear dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">

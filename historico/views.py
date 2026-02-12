@@ -135,6 +135,7 @@ class HistoricoPropostaAPIView(LoginRequiredMixin, View):
             'status__id',
             'status__codigo',
             'status__nome',
+            'status__color',
             'user__id',
             'user__username',
         )

@@ -206,14 +206,13 @@ i{
 
 
 <script src="{% static 'js/utils.js' %}"></script>
+<script src="{% static 'js/historico.js' %}"></script>
 <script>
 
 let deleteModal
 let propostaModal
 let deletePropostaModal
 let editCardModal
-let historicoModal
-
 
 function openPropostaModal(id, is_blocked) {
     document.getElementById('card-id').value = id
@@ -251,7 +250,6 @@ document.addEventListener('DOMContentLoaded', function () {
     propostaModal = new bootstrap.Modal(document.getElementById('propostaModal'))
     deletePropostaModal = new bootstrap.Modal(document.getElementById('deletePropostaModal'))
     editCardModal = new bootstrap.Modal(document.getElementById('editCardModal'))
-    historicoModal = new bootstrap.Modal(document.getElementById('historicoModal'))
     loadCards()
 })
 
@@ -506,6 +504,11 @@ function renderPropostas(propostas, is_blocked){
                 <td>${proposta.parcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL'})}</td>
                 <td>${proposta.status__nome}</td>
                 <td>
+                <button
+                    class="btn btn-sm btn-warning bi bi-clock-history"
+                    title="Excluir"
+                    onclick="openHistoricoPropostaModal('${proposta.id}')">
+                </button>
                     ${editBtn}
                     ${deleteBtn}
                 </td>
@@ -532,80 +535,6 @@ function loadPropostasByCardID(id, is_blocked) {
 }
 
 
-function openHistoricoModal(cardId) {
-    const list = document.getElementById('historicoList')
-    const loading = document.getElementById('historico-loading')
-    list.innerHTML = ''
-    loading.classList.remove('d-none')
-
-    historicoModal.show()
-
-    fetch(`/api/historico-card/?card_id=${cardId}`)
-        .then(res => res.json())
-        .then(res => {
-            loading.classList.add('d-none')
-
-            if (res.status !== 'success') {
-                list.innerHTML = `
-                    <li class="list-group-item text-danger">
-                        Erro ao carregar histórico
-                    </li>
-                `
-                return
-            }
-
-            if (!res.data.length) {
-                list.innerHTML = `
-                    <li class="list-group-item text-muted text-center">
-                        Nenhum histórico encontrado
-                    </li>
-                `
-                return
-            }
-
-            res.data.forEach(item => {
-                list.insertAdjacentHTML('beforeend', `
-                    <li class="list-group-item">
-                        <div class="d-flex justify-content-between">
-                            <small class="text-muted">
-                                Alterado por ${item.user__username ?? 'Sistema'} em ${formatDate(item.date)}
-                            </small> 
-                        </div>
-
-                        ${item.obs ? `
-                            <div class="mt-1">
-                                ${item.obs}
-                            </div>
-                        ` : ''}
-                    </li>
-                `)
-            })
-        })
-        .catch(() => {
-            loading.classList.add('d-none')
-            list.innerHTML = `
-                <li class="list-group-item text-danger">
-                    Erro de conexão
-                </li>
-            `
-        })
-}
-
-
-function createHistorico(cardId, obs = '') {
-    return fetch('/api/historico-card/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
-        },
-        body: JSON.stringify({
-            card_id: cardId,
-            obs: obs
-        })
-    })
-    .then(res => res.json())
-}
 </script>
 
 

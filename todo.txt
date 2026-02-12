@@ -9,6 +9,7 @@ Cancelar e redigitar todas as propostas quando cancelar um card
 #### PROPOSTAS ####
 ###################
 
+Ao criar proposta, adicionar o histórico informando vinculo ao card e a criação
 Adicionar campo para link de formalização
 Criar lixeira, para propostas inativas
 Configurar tela para editar uma propostas
