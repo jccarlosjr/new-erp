@@ -6,4 +6,5 @@ urlpatterns = [
     path('api/cards-oferta/<int:id>/', views.CardOfertaAPIView.as_view()),
     path('cards-oferta/', views.CardView.as_view(), name='cardoferta'),
     path('meus-cards/', views.CardEsteiraView.as_view(), name='meus_cards'),
+    path('api/cards-propostas/', views.CardProposalsOfertaAPIView.as_view(), name='api_cards_propostas'),
 ]

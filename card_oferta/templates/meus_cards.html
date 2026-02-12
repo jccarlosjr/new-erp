@@ -3,7 +3,7 @@
 {% block head %}
 <title>Esteira de Cards</title>
 <style>
-    .card-nav{
+    .card-nav {
         width: 10rem;
         min-height: 5rem;
         max-height: 5rem;
@@ -20,120 +20,155 @@
 
 {% endblock %}
 {% block content %}
-    <main class="container">
-        <ul class="nav nav-tabs">
+<main class="container">
+    <ul class="nav nav-tabs">
 
-            <li class="nav-item">
-                <a class="nav-link active" href="#" onclick="goTab('nao-iniciado', this)">
-                    <div class="card card-nav bg-light-subtle">
-                        <div class="card-body text-center">
-                            <h6 class="card-title">Não Iniciado</h6>
-                            <span id="count-nao-iniciado" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
-                        </div>
+        <li class="nav-item">
+            <a class="nav-link active" href="#" onclick="goTab('nao-iniciado', this)">
+                <div class="card card-nav bg-light-subtle">
+                    <div class="card-body text-center">
+                        <h6 class="card-title">Não Iniciado</h6>
+                        <span id="count-nao-iniciado"
+                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
                     </div>
-                </a> 
-            </li>
-            
-            <li class="nav-item">
-                <a class="nav-link" href="#" onclick="goTab('digitacao', this)">
-                    <div class="card card-nav bg-info-subtle">
-                        <div class="card-body text-center">
-                            <h6 class="card-title">Aguardando Digitação</h6>
-                            <span id="count-aguardando-digitacao" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
-                        </div>
-                    </div> 
-                </a>
-            </li>
+                </div>
+            </a>
+        </li>
 
-            <li class="nav-item">
-                <a class="nav-link" href="#" onclick="goTab('andamento', this)">
-                    <div class="card card-nav bg-info">
-                        <div class="card-body text-center">
-                            <h6 class="card-title">Andamento</h6>
-                            <span id="count-andamento" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
-                        </div>
-                    </div> 
-                </a>
-            </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" onclick="goTab('digitacao', this)">
+                <div class="card card-nav bg-info-subtle">
+                    <div class="card-body text-center">
+                        <h6 class="card-title">Aguardando Digitação</h6>
+                        <span id="count-aguardando-digitacao"
+                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
+                    </div>
+                </div>
+            </a>
+        </li>
 
-            <li class="nav-item">
-                <a class="nav-link" href="#" onclick="goTab('precisa-atencao', this)">
-                    <div class="card card-nav bg-warning-subtle">
-                        <div class="card-body text-center">
-                            <h6 class="card-title">Precisa de Atenção</h6>
-                            <span id="count-precisa-atencao" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
-                        </div>
-                    </div> 
-                </a>
-            </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" onclick="goTab('andamento', this)">
+                <div class="card card-nav bg-info">
+                    <div class="card-body text-center">
+                        <h6 class="card-title">Andamento</h6>
+                        <span id="count-andamento"
+                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
+                    </div>
+                </div>
+            </a>
+        </li>
 
-            <li class="nav-item">
-                <a class="nav-link" href="#" onclick="goTab('finalizado', this)">
-                    <div class="card card-nav bg-success-subtle">
-                        <div class="card-body text-center">
-                            <h6 class="card-title">Finalizado</h6>
-                            <span id="count-finalizado" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
-                        </div>
-                    </div> 
-                </a>
-            </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" onclick="goTab('precisa-atencao', this)">
+                <div class="card card-nav bg-warning-subtle">
+                    <div class="card-body text-center">
+                        <h6 class="card-title">Precisa de Atenção</h6>
+                        <span id="count-precisa-atencao"
+                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
+                    </div>
+                </div>
+            </a>
+        </li>
 
-            <li class="nav-item">
-                <a class="nav-link" href="#" onclick="goTab('cancelado', this)">
-                    <div class="card card-nav bg-danger-subtle">
-                        <div class="card-body text-center">
-                            <h6 class="card-title">Cancelados</h6>
-                            <span id="count-cancelados" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
-                        </div>
-                    </div> 
-                </a>
-            </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#" onclick="goTab('finalizado', this)">
+                <div class="card card-nav bg-success-subtle">
+                    <div class="card-body text-center">
+                        <h6 class="card-title">Finalizado</h6>
+                        <span id="count-finalizado"
+                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
+                    </div>
+                </div>
+            </a>
+        </li>
 
-        </ul>
+        <li class="nav-item">
+            <a class="nav-link" href="#" onclick="goTab('cancelado', this)">
+                <div class="card card-nav bg-danger-subtle">
+                    <div class="card-body text-center">
+                        <h6 class="card-title">Cancelados</h6>
+                        <span id="count-cancelados"
+                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
+                    </div>
+                </div>
+            </a>
+        </li>
+
+    </ul>
 
 
-        <div id="cards-content" class="mt-4">
+    <div id="cards-content" class="mt-4">
 
-            <div id="nao-iniciado" class="tab-pane active">
-                {% include "partials/nao_iniciado.html" %}
+        <div id="nao-iniciado" class="tab-pane active">
+            {% include "partials/nao_iniciado.html" %}
+        </div>
+
+        <div id="digitacao" class="tab-pane">
+            {% include "partials/digitacao.html" %}
+        </div>
+
+        <div id="andamento" class="tab-pane">
+            {% include "partials/andamento.html" %}
+        </div>
+
+        <div id="precisa-atencao" class="tab-pane">
+            {% include "partials/precisa_atencao.html" %}
+        </div>
+
+        <div id="finalizado" class="tab-pane">
+            {% include "partials/finalizado.html" %}
+        </div>
+
+        <div id="cancelado" class="tab-pane">
+            {% include "partials/cancelado.html" %}
+        </div>
+
+    </div>
+
+</main>
+
+<div class="modal fade" id="historicoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Histórico
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 
-            <div id="digitacao" class="tab-pane">
-                {% include "partials/digitacao.html" %}
+            <div class="modal-body">
+                <div id="historico-loading" class="text-center py-3 d-none">
+                    <div class="spinner-border"></div>
+                </div>
+
+                <ul class="list-group" id="historicoList"></ul>
             </div>
 
-            <div id="andamento" class="tab-pane">
-                {% include "partials/andamento.html" %}
-            </div>
-
-            <div id="precisa-atencao" class="tab-pane">
-                {% include "partials/precisa_atencao.html" %}
-            </div>
-
-            <div id="finalizado" class="tab-pane">
-                {% include "partials/finalizado.html" %}
-            </div>
-
-            <div id="cancelado" class="tab-pane">
-                {% include "partials/cancelado.html" %}
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">
+                    Fechar
+                </button>
             </div>
 
         </div>
+    </div>
+</div>
 
-    </main>
-
-    <script src="{% static 'js/cards.api.js' %}"></script>
-    <script src="{% static 'js/utils.js' %}"></script>
-    <script>
-        function goTab(tabId, element) {
-            event.preventDefault();
-            document.querySelectorAll('.nav-link')
-                .forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-pane')
-                .forEach(el => el.classList.remove('active'));
-            element.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
-        }
-
-    </script>
+<script src="{% static 'js/cards.api.js' %}"></script>
+<script src="{% static 'js/utils.js' %}"></script>
+<script>
+    function goTab(tabId, element) {
+        loadCards();
+        event.preventDefault();
+        document.querySelectorAll('.nav-link')
+            .forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab-pane')
+            .forEach(el => el.classList.remove('active'));
+        element.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+    }
+</script>
 {% endblock %}

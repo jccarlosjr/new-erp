@@ -699,9 +699,9 @@ function createCardOferta() {
         .then(res => res.json())
         .then(res => {
             if (res.status === 'success') {
-                showToast("Card de oferta criado", "success");
+                showToast("Card de ofertas criado", "success");
                 currentCardOferta = res.data;
-                createHistorico(res.data.id, obs = 'Card de Oferta Criado')
+                createHistorico(res.data.id, obs = 'Card de ofertas Criado')
                 goStep(3);
                 document.getElementById('card-oferta').innerHTML = `
                     <h4 class="mb-4">${currentCliente.nome} - ${currentCliente.cpf}</h4>
