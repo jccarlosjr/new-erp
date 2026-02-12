@@ -591,7 +591,7 @@ function renderProposta(proposta) {
                 <td class="small">${proposta.parcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL'})}</td>
                 <td class="small">${proposta.status__nome}</td>
                 <td>
-                    <button class="btn btn-sm btn-warning bi bi-clock-history" title="Histórico"></button>
+                    <button class="btn btn-sm btn-warning bi bi-clock-history" title="Histórico" onclick="openHistoricoModal(${proposta.id})"></button>
                     <button class="btn btn-sm btn-primary bi bi bi-files" title="Abrir Proposta"></button>
                     <div class="btn-group dropend">
                         <button type="button" class="btn btn-sm btn-info bi bi-gear dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
