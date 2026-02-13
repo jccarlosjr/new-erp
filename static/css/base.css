@@ -8,6 +8,14 @@ body{
     font-style: normal;
 }
 
+
+
+.btn-sm{
+    --bs-btn-padding-y: 0.25rem!important;
+    --bs-btn-padding-x: 0.5rem;
+    --bs-btn-font-size: 0.575rem!important;
+    --bs-btn-border-radius: var(--bs-border-radius-sm);
+}
 .loader-overlay {
     position: fixed;
     inset: 0;

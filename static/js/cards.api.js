@@ -455,7 +455,7 @@ function renderCard(card, color, cardAccordion) {
                     </button>
                     ${btnAdd}
                     ${btnActions}
-                    <h6 class="mb-0 text-dark">
+                    <h6 class="mb-0 text-dark" id="accordion-title">
                         ${card.codigo_interno} - ${card.cliente__nome} - 
                         CPF: ${maskCPF(card.cliente__cpf)} - 
                         Matrícula: ${card.matricula__matricula}

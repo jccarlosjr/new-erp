@@ -335,17 +335,19 @@ function loadCards() {
                 <td class="small">${maskCPF(card.cliente__cpf)}</td>
                 <td class="small">${card.status_nome}</td>
                 <td class="small">
-                    <button class="btn btn-sm btn-warning bi bi-clock-history"
-                        title="Abrir Propostas"
-                        onclick="openHistoricoModal('${card.id }')">
-                    </button>
-                    ${lockBtn}
-                    ${editBtn}
-                    <button class="btn btn-sm btn-primary bi bi-files"
-                        title="Abrir Propostas"
-                        onclick="openPropostaModal('${card.id}',  ${card.is_blocked})">
-                    </button>
-                    ${deleteBtn}
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-warning bi bi-clock-history"
+                            title="Abrir Propostas"
+                            onclick="openHistoricoModal('${card.id }')">
+                        </button>
+                        ${lockBtn}
+                        ${editBtn}
+                        <button class="btn btn-sm btn-primary bi bi-files"
+                            title="Abrir Propostas"
+                            onclick="openPropostaModal('${card.id}',  ${card.is_blocked})">
+                        </button>
+                        ${deleteBtn}
+                    </div>
                 </td>
             `
 
