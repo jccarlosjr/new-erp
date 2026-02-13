@@ -3,21 +3,18 @@
 ###################
 
 Criar lixeira, para cards inativos
-Cancelar e redigitar todas as propostas quando cancelar um card
+Adicionar filtragem na tela de meus cards
 
 ###################
 #### PROPOSTAS ####
 ###################
 
+Criar tela de pendências
+Criar listagem de propostas
 Ao criar proposta, adicionar o histórico informando vinculo ao card e a criação
 Adicionar campo para link de formalização
 Criar lixeira, para propostas inativas
 Configurar tela para editar uma propostas
-Adicionar histórico para a proposta
-
-Validar delete em propostas, negar o delete de qualquer status diferente de 1
-
-Cancelar propostas quando o card for cancelado
 
 Configurar o contador para o last update somente com horas úteis de 08h às 17h em dias úteis
 Adicionar last update para cada proposta que aparece no card
@@ -27,3 +24,9 @@ Adicionar last update para cada proposta que aparece no card
 ###################
 
 Organizar os js para evitar duplicidade de functions
+
+###################
+### OPERACIONAL ###
+###################
+
+Criar tela kanban para atendimento dos cards
