@@ -516,7 +516,7 @@ function renderProposta(proposta) {
                 <td class="small">${proposta.status__nome}</td>
                 <td>
                     <button class="btn btn-sm btn-warning bi bi-clock-history" title="Histórico" onclick="openHistoricoPropostaModal(${proposta.id})"></button>
-                    <button class="btn btn-sm btn-primary bi bi bi-files" title="Abrir Proposta"></button>
+                    <button class="btn btn-sm btn-primary bi bi bi-files" title="Abrir Proposta" onclick="openProposta(${proposta.id})"></button>
                     <div class="btn-group dropend">
                         <button 
                             type="button" 
@@ -535,6 +535,11 @@ function renderProposta(proposta) {
                 </td>
             </tr>
         `
+}
+
+
+function openProposta(id){
+    window.open(`/propostas/${id}`, '_blank', 'noopener,noreferrer');
 }
 
 function renderCardActions(card) {

@@ -473,6 +473,10 @@ function deleteProposta() {
     .finally(() => hideLoader())
 }
 
+function openProposta(id){
+    window.open(`/propostas/${id}`, '_blank', 'noopener,noreferrer');
+}
+
 
 function renderPropostas(propostas, is_blocked){
     let propostasList = document.getElementById('propostas-table-body')
@@ -506,8 +510,13 @@ function renderPropostas(propostas, is_blocked){
                 <td>
                 <button
                     class="btn btn-sm btn-warning bi bi-clock-history"
-                    title="Excluir"
+                    title="Histórico"
                     onclick="openHistoricoPropostaModal('${proposta.id}')">
+                </button>
+                <button
+                    class="btn btn-sm btn-primary bi bi-files-alt"
+                    title="Abrir Proposta"
+                    onclick="openProposta('${proposta.id}')">
                 </button>
                     ${editBtn}
                     ${deleteBtn}

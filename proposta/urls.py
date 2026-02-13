@@ -7,4 +7,5 @@ urlpatterns = [
     path('status/', views.StatusView.as_view(), name='status'),
     path('api/propostas/', views.PropostaAPIView.as_view(), name='api_propostas'),
     path('propostas/', views.PropostaView.as_view(), name='propostas'),
+    path('propostas/<int:pk>/', views.PropostaDetailView.as_view(), name='propostas_detail'),
 ]

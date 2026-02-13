@@ -1,11 +1,11 @@
 from django.views import View
 from django.http import JsonResponse
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404
 from app.mixins import AdminRequiredMixin
 import json
-from .models import Status
+from .models import Status, Proposta
 from django.views.generic import TemplateView
 from .selectors.proposta_selector import list_propostas
 from .services.proposta_service import (
@@ -193,3 +193,11 @@ class PropostaAPIView(LoginRequiredMixin, View):
 
 class PropostaView(LoginRequiredMixin, TemplateView):
     template_name = 'propostas.html'
+
+
+class PropostaDetailView(LoginRequiredMixin, DetailView):
+    template_name = 'proposta.html'
+    model = Proposta
+    context_object_name = 'proposta'
+
+
