@@ -75,37 +75,37 @@
 
                 <div class="col-md-2">
                     <label class="form-label">Usuário</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.usuario }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.usuario }}" readonly disabled>
                 </div>
 
                 <div class="col-md-3">
                     <label class="form-label">ADE</label>
-                    <input type="text" class="form-control"
+                    <input type="text" class="form-control form-control-sm"
                             {% if proposta.ade %}
                                 value="{{ proposta.ade }}"
                             {% else %}
                                 value="Sem ADE"
                             {% endif %}
-                        readonly>
+                        readonly disabled>
                 </div>
 
                 <div class="col-md-3">
                     <label class="form-label">ADE Auxiliar</label>
-                    <input type="text" class="form-control"
+                    <input type="text" class="form-control form-control-sm"
                             {% if proposta.ade_2 %}
                                 value="{{ proposta.ade_2 }}"
                             {% else %}
                                 value="Sem ADE"
                             {% endif %} 
-                        readonly>
+                        readonly disabled>
                 </div>
 
                 {% if proposta.status %}
                 <div class="col-md-4">
                     <label class="form-label">Status</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.status.nome }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.status.nome }}" readonly disabled>
                 </div>
                 {% endif %}
 
@@ -122,44 +122,44 @@
 
                 <div class="col-md-5">
                     <label class="form-label">Nome</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.cliente.nome }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.nome }}" readonly disabled>
                 </div>
 
                 <div class="col-md-3">
                     <label class="form-label">CPF</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.cliente.cpf }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.cpf }}" readonly disabled>
                 </div>
 
                 <div class="col-md-2">
                     <label class="form-label">Nascimento</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.cliente.nascimento|date:'d/m/Y' }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.nascimento|date:'d/m/Y' }}" readonly disabled>
                 </div>
                 
                 <div class="col-md-2">
                     <label class="form-label">Sexo</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.cliente.sexo }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.sexo }}" readonly disabled>
                 </div>
 
                 <div class="col-md-2">
                     <label class="form-label">Celular</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.cliente.celular }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.celular }}" readonly disabled>
                 </div>
 
                 <div class="col-md-4">
                     <label class="form-label">Email</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.cliente.email }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.email }}" readonly disabled>
                 </div>
 
                 <div class="col-md-4">
                     <label class="form-label">Cidade</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.cliente.cidade }} - {{ proposta.cliente.uf_cidade }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.cidade }} - {{ proposta.cliente.uf_cidade }}" readonly disabled>
                 </div>
                 <div class="col-md-2">
                     <label class="form-label d-block">Iletrado</label>
@@ -179,64 +179,64 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Documento</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.cliente.numero_documento }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.numero_documento }}" readonly disabled>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Orgão Emissor</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.cliente.orgao_emissor }} - {{ proposta.cliente.uf_emissao }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.orgao_emissor }} - {{ proposta.cliente.uf_emissao }}" readonly disabled>
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">Data Emissão</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.cliente.data_emissao|date:'d/m/Y' }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.data_emissao|date:'d/m/Y' }}" readonly disabled>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Naturalidade</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.cliente.naturalidade }} - {{ proposta.cliente.uf_naturalidade }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.naturalidade }} - {{ proposta.cliente.uf_naturalidade }}" readonly disabled>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Mãe</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.cliente.mae }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.mae }}" readonly disabled>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Pai</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.cliente.pai }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.pai }}" readonly disabled>
                 </div>
                 
                 <div class="col-md-3">
                     <label class="form-label">CEP</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.cliente.cep }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.cep }}" readonly disabled>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Endereço</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.cliente.endereco }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.endereco }}" readonly disabled>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Número</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.cliente.numero }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.numero }}" readonly disabled>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Bairro</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.cliente.bairro }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.bairro }}" readonly disabled>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Complemento</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.cliente.complemento }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.complemento }}" readonly disabled>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">Cidade</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.cliente.cidade }} - {{ proposta.cliente.uf_cidade }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.cidade }} - {{ proposta.cliente.uf_cidade }}" readonly disabled>
                 </div>
 
             </div>
@@ -251,49 +251,49 @@
             <div class="row g-3">
                 <div class="col-md-3">
                     <label class="form-label">Matrícula</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.card_oferta.matricula.matricula }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.card_oferta.matricula.matricula }}" readonly disabled>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Convenio</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.card_oferta.matricula.convenio }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.card_oferta.matricula.convenio }}" readonly disabled>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Espécie/Secretaria</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.card_oferta.matricula.codigo_convenio }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.card_oferta.matricula.codigo_convenio }}" readonly disabled>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">UF</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.card_oferta.matricula.uf_convenio }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.card_oferta.matricula.uf_convenio }}" readonly disabled>
                 </div>
 
                 <div class="col-md-3">
                     <label class="form-label">Banco</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.card_oferta.matricula.banco }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.card_oferta.matricula.banco }}" readonly disabled>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Agência</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.card_oferta.matricula.agencia }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.card_oferta.matricula.agencia }}" readonly disabled>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Conta</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.card_oferta.matricula.conta }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.card_oferta.matricula.conta }}" readonly disabled>
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">Recebimento</label>
-                    <input type="text" class="form-control"
+                    <input type="text" class="form-control form-control-sm"
                         {% if proposta.card_oferta.matricula.recebimento == 'CC' %}
                             value="Conta Corrente"
                         {% elif proposta.card_oferta.matricula.recebimento == 'CP' %}
                             value="Conta Poupança"
                         {% endif %}
-                    readonly>
+                    readonly disabled>
                 </div>
             </div>
         </div>
@@ -308,73 +308,73 @@
                 {% if proposta.tabela %}
                 <div class="col-md-4">
                     <label class="form-label">Banco</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.tabela.banco }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.tabela.banco }}" readonly disabled>
                 </div>
 
                 <div class="col-md-4">
                     <label class="form-label">Operação</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.tabela.operacao }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.tabela.operacao }}" readonly disabled>
                 </div>
 
                 <div class="col-md-4">
                     <label class="form-label">Tabela</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.tabela.nome }} - {{ proposta.tabela.taxa }}%" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.tabela.nome }} - {{ proposta.tabela.taxa }}%" readonly disabled>
                 </div>
                 {% endif %}
 
                 <div class="col-md-3">
                     <label class="form-label">Parcela</label>
-                    <input type="text" class="form-control"
-                           value="R$ {{ proposta.parcela|floatformat:2 }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="R$ {{ proposta.parcela|floatformat:2 }}" readonly disabled>
                 </div>
 
                 <div class="col-md-3">
                     <label class="form-label">Prazo</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.prazo }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.prazo }}" readonly disabled>
                 </div>
 
                 <div class="col-md-3">
                     <label class="form-label">Financiado</label>
-                    <input type="text" class="form-control"
-                           value="R$ {{ proposta.financiado|floatformat:2 }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="R$ {{ proposta.financiado|floatformat:2 }}" readonly disabled>
                 </div>
 
                 <div class="col-md-3">
                     <label class="form-label">Troco</label>
-                    <input type="text" class="form-control"
-                           value="R$ {{ proposta.troco|floatformat:2 }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="R$ {{ proposta.troco|floatformat:2 }}" readonly disabled>
                 </div>
                 {% if proposta.contrato_portado %}
                 <div class="col-md-4">
                     <label class="form-label">Contrato Portado</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.contrato_portado }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.contrato_portado }}" readonly disabled>
                 </div>
                 {% endif %}
                 {% if proposta.banco_origem %}
                 <div class="col-md-2">
                     <label class="form-label">Banco Origem</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.banco_origem}}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.banco_origem}}" readonly disabled>
                 </div>
                 {% endif %}
                 {% if proposta.saldo_devedor %}
                 <div class="col-md-3">
                     <label class="form-label">Saldo Devedor</label>
-                    <input type="text" class="form-control"
-                           value="R$ {{ proposta.saldo_devedor|floatformat:2 }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="R$ {{ proposta.saldo_devedor|floatformat:2 }}" readonly disabled>
                 </div>
                 {% endif %}
 
                 {% if proposta.prazo_original %}
                 <div class="col-md-3">
                     <label class="form-label">Resta/Original</label>
-                    <input type="text" class="form-control"
-                           value="{{ proposta.prazo_restante }}/{{ proposta.prazo_original }}" readonly>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.prazo_restante }}/{{ proposta.prazo_original }}" readonly disabled>
                 </div>
                 {% endif %}
             
@@ -384,7 +384,7 @@
         <div class="form-section">
                 <div class="col-md-12">
                     <label class="form-label">Observações</label>
-                    <textarea class="form-control" rows="3" readonly>{{ proposta.obs }}</textarea>
+                    <textarea class="form-control form-control-sm" rows="3" readonly disabled>{{ proposta.obs }}</textarea>
                 </div>
         </div>
 

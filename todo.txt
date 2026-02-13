@@ -9,7 +9,6 @@ Adicionar filtragem na tela de meus cards
 #### PROPOSTAS ####
 ###################
 
-Criar tela de pendências
 Criar listagem de propostas
 Ao criar proposta, adicionar o histórico informando vinculo ao card e a criação
 Adicionar campo para link de formalização
@@ -30,3 +29,11 @@ Organizar os js para evitar duplicidade de functions
 ###################
 
 Criar tela kanban para atendimento dos cards
+
+
+###################
+### PENDENCIAS ####
+###################
+
+
+Criar app pendencias

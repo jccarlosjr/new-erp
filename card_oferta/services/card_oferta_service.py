@@ -5,7 +5,7 @@ from card_oferta.models import CardOferta
 from cliente.models import Cliente
 from convenio.models import Matricula
 from proposta.models import Proposta, Status
-
+from django.core.exceptions import ValidationError
 
 
 def create_or_update_card(user, body):
@@ -118,6 +118,17 @@ def delete_card(body):
         raise ValueError("ID do card é obrigatório")
 
     card = get_object_or_404(CardOferta, id=card_id)
+
+    has_propostas = Proposta.objects.filter(
+        card_oferta=card, 
+        ativo=True
+        ).exists()
+    
+    if has_propostas:
+        raise ValidationError(
+            "Este card possui propostas vinculadas e não pode ser inativado."
+        )
+
     card.active = False
     card.status = 'EXCLUIDO'
     card.save()
