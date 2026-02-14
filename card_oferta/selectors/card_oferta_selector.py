@@ -31,8 +31,11 @@ def list_cards(user, filters):
     if filters.get('matricula'):
         cards = cards.filter(matricula__matricula__icontains=filters['matricula'])
 
-    if filters.get('codigo_interno'):
+    if filters.get('codigo_interno_card'):
         cards = cards.filter(codigo_interno__icontains=filters['codigo_interno'])
+
+    if filters.get('codigo_interno_proposta'):
+        cards = cards.filter(proposta__codigo_interno__icontains=filters['codigo_interno'])
 
     if filters.get('banco'):
         cards = cards.filter(proposta__tabela__banco__nome__icontains=filters['banco']).distinct()
