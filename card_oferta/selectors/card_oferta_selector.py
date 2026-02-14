@@ -1,4 +1,5 @@
 from card_oferta.models import CardOferta
+from proposta.models import Proposta
 
 STATUS_MAP = {
     'Não Iniciado': 'NAO_INICIADO',
@@ -32,6 +33,12 @@ def list_cards(user, filters):
 
     if filters.get('codigo_interno'):
         cards = cards.filter(codigo_interno__icontains=filters['codigo_interno'])
+
+    if filters.get('banco'):
+        cards = cards.filter(proposta__tabela__banco__nome__icontains=filters['banco']).distinct()
+    
+    if filters.get('operacao'):
+        cards = cards.filter(proposta__tabela__operacao__nome__icontains=filters['operacao']).distinct()
 
     if filters.get('status'):
         status = STATUS_MAP.get(filters['status'], filters['status'])

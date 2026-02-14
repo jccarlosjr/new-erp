@@ -52,7 +52,7 @@ class Proposta(models.Model):
     contrato_portado = models.CharField(max_length=100, null=True, blank=True)
     banco_origem = models.CharField(max_length=3, null=True, blank=True)
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT)
-    tabela = models.ForeignKey(Tabela, on_delete=models.PROTECT, null=True, blank=True)
+    tabela = models.ForeignKey(Tabela, on_delete=models.PROTECT, null=True, blank=True, related_name='propostas')
     usuario = models.ForeignKey(CustomUser, on_delete=models.PROTECT, null=True, blank=True)
     status = models.ForeignKey(Status, on_delete=models.PROTECT, null=True, blank=True)
     card_oferta = models.ForeignKey(CardOferta, on_delete=models.PROTECT, null=True, blank=True)

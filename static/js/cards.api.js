@@ -40,6 +40,7 @@ document.getElementById("tabela-select").addEventListener("change", function () 
     document.getElementById('prazo').value = selectedOption.dataset.prazo
 });
 
+document.getElementById("filter-btn").addEventListener("click", loadCards);
 
 /* ===============================
 ================================ */
@@ -103,8 +104,19 @@ let countCancelados = document.getElementById('count-cancelados');
 
 function loadCards() {
     showLoader()
+    let filterField = document.getElementById('filter-operacao').value
+    let filterValue = document.getElementById('filter-banco').value.trim()
+    const params = new URLSearchParams()
 
-    fetch(`/api/cards-propostas/`)
+    if(filterField == 'cpf') {
+        filterValue = filterValue.replace('.', '').replace('.', '').replace('-', '')
+    }
+
+    if (filterValue) {
+        params.append(filterField, filterValue)
+    }
+
+    fetch(`/api/cards-propostas/?${params.toString()}`)
         .then(res => res.json())
         .then(data => {
             if (data.status !== 'success') {
@@ -449,7 +461,7 @@ function renderCard(card, color, cardAccordion) {
             <h2 class="accordion-header d-flex align-items-center justify-content-between px-3 py-2">
                 
                 <div class="d-flex align-items-center justify-content-center gap-2">
-                    <button class="btn btn-sm btn-warning bi bi-clock-history"
+                    <button class="btn btn-sm btn-sm-icon btn-warning bi bi-clock-history"
                             onclick="openHistoricoModal('${card.id }')"
                             title="Histórico">
                     </button>
@@ -515,13 +527,13 @@ function renderProposta(proposta) {
                 <td class="small">${proposta.parcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL'})}</td>
                 <td class="small">${proposta.status__nome}</td>
                 <td>
-                    <button class="btn btn-sm btn-warning bi bi-clock-history" title="Histórico" onclick="openHistoricoPropostaModal(${proposta.id})"></button>
-                    <button class="btn btn-sm btn-primary bi bi bi-files" title="Abrir Proposta" onclick="openProposta(${proposta.id})"></button>
+                    <button class="btn btn-sm btn-sm-icon btn-warning bi bi-clock-history" title="Histórico" onclick="openHistoricoPropostaModal(${proposta.id})"></button>
+                    <button class="btn btn-sm btn-sm-icon btn-primary bi bi bi-files" title="Abrir Proposta" onclick="openProposta(${proposta.id})"></button>
                     <div class="btn-group dropend">
                         <button 
                             type="button" 
                             ${proposta.bloqueado ? 'disabled' : ''} 
-                            class="btn btn-sm bi ${proposta.bloqueado ? 'bi-lock btn-secondary' : 'bi-gear btn-info'} dropdown-toggle" 
+                            class="btn btn-sm btn-sm-icon bi ${proposta.bloqueado ? 'bi-lock btn-secondary' : 'bi-gear btn-info'} dropdown-toggle" 
                             data-bs-toggle="dropdown" 
                             aria-expanded="false">
                         </button>
@@ -550,7 +562,7 @@ function renderCardActions(card) {
 
     if (card.status === 'NAO_INICIADO') {
         btnAdd = `
-            <button class="btn btn-sm btn-success bi bi-plus-circle"
+            <button class="btn btn-sm btn-sm-icon btn-success bi bi-plus-circle"
                     title="Adicionar Proposta"
                     onclick="openCreatePropostaModal('${card.cliente__cpf}', '${card.id}')">
             </button>
@@ -604,7 +616,7 @@ function dropdown(card, actions) {
         <div class="btn-group dropend">
             <button type="button"
                     ${card.is_blocked ? 'disabled' : ''}
-                    class="btn btn-sm btn-info bi bi-gear dropdown-toggle"
+                    class="btn btn-sm btn-sm-icon btn-info bi bi-gear dropdown-toggle"
                     data-bs-toggle="dropdown">
             </button>
 

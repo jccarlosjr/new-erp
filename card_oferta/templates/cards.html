@@ -306,14 +306,14 @@ function loadCards() {
 
             const lockBtn = `
                 <button disabled
-                    class="btn btn-sm btn-dark bi ${isBlocked ? 'bi-lock' : 'bi-unlock'}"
+                    class="btn btn-sm btn-sm-icon btn-dark bi ${isBlocked ? 'bi-lock' : 'bi-unlock'}"
                     title="Contrato ${isBlocked ? 'Bloqueado' : 'Desbloqueado'}">
                 </button>
             `
 
             const editBtn = `
                 <button ${isBlocked ? 'disabled' : ''}
-                    class="btn btn-sm btn-success bi bi-pencil-square"
+                    class="btn btn-sm btn-sm-icon btn-success bi bi-pencil-square"
                     title="Editar Card"
                     onclick="openEditModal('${card.id}', '${card.codigo_interno}', '${card.status}')">
                 </button>
@@ -321,7 +321,7 @@ function loadCards() {
 
             const deleteBtn = `
                 <button ${isBlocked ? 'disabled' : ''}
-                    class="btn btn-sm btn-danger bi bi-trash3"
+                    class="btn btn-sm btn-sm-icon btn-danger bi bi-trash3"
                     title="Excluir"
                     onclick="openDeleteModal('${card.id}','${card.codigo_interno}')">
                 </button>
@@ -336,13 +336,13 @@ function loadCards() {
                 <td class="small">${card.status_nome}</td>
                 <td class="small">
                     <div class="btn-group">
-                        <button class="btn btn-sm btn-warning bi bi-clock-history"
+                        <button class="btn btn-sm btn-sm-icon btn-warning bi bi-clock-history"
                             title="Abrir Propostas"
                             onclick="openHistoricoModal('${card.id }')">
                         </button>
                         ${lockBtn}
                         ${editBtn}
-                        <button class="btn btn-sm btn-primary bi bi-files"
+                        <button class="btn btn-sm btn-sm-icon btn-primary bi bi-files"
                             title="Abrir Propostas"
                             onclick="openPropostaModal('${card.id}',  ${card.is_blocked})">
                         </button>
@@ -488,14 +488,14 @@ function renderPropostas(propostas, is_blocked){
 
         const editBtn = `
             <button ${is_blocked ? 'disabled' : ''}
-                class="btn btn-sm btn-success bi bi-pencil-square"
+                class="btn btn-sm btn-sm-icon btn-success bi bi-pencil-square"
                 title="Editar Card">
             </button>
         `
 
         const deleteBtn = `
             <button ${is_blocked ? 'disabled' : ''}
-                class="btn btn-sm btn-danger bi bi-trash3"
+                class="btn btn-sm btn-sm-icon btn-danger bi bi-trash3"
                 title="Excluir"
                 onclick="openDeletePropostaModal('${proposta.id}','${proposta.codigo_interno}')">
             </button>
@@ -511,12 +511,12 @@ function renderPropostas(propostas, is_blocked){
                 <td>${proposta.status__nome}</td>
                 <td>
                 <button
-                    class="btn btn-sm btn-warning bi bi-clock-history"
+                    class="btn btn-sm btn-sm-icon btn-warning bi bi-clock-history"
                     title="Histórico"
                     onclick="openHistoricoPropostaModal('${proposta.id}')">
                 </button>
                 <button
-                    class="btn btn-sm btn-primary bi bi-files-alt"
+                    class="btn btn-sm btn-sm-icon btn-primary bi bi-files-alt"
                     title="Abrir Proposta"
                     onclick="openProposta('${proposta.id}')">
                 </button>

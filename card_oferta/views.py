@@ -105,31 +105,8 @@ class CardOfertaAPIView(LoginRequiredMixin, View):
 class CardProposalsOfertaAPIView(LoginRequiredMixin, View):
 
     def get(self, request):
-        user = request.user
-        status = request.GET.get('status')
-
-        STATUS_MAP = {
-            'Não Iniciado': 'NAO_INICIADO',
-            'Aguardando Digitação': 'DIGITACAO',
-            'Andamento': 'ANDAMENTO',
-            'Aguardando Formalização': 'FORMALIZACAO',
-            'Finalizado': 'FINALIZADO',
-            'Precisa de Atenção': 'ATENCAO',
-            'Cancelado': 'CANCELADO',
-            'Excluído': 'EXCLUIDO',
-        }
-
-        ## Buscar cards do usuário
-        cards = CardOferta.objects.select_related(
-            'user', 'cliente', 'matricula'
-        ).filter(
-            user=user,
-            active=True
-        )
-
-        if status:
-            status = STATUS_MAP.get(status, status)
-            cards = cards.filter(status=status)
+        filters = request.GET.dict()
+        cards = list_cards(request.user, filters)
 
         cards = cards.order_by('-ultima_atualizacao')
 
