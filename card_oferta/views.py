@@ -67,7 +67,8 @@ class CardOfertaAPIView(LoginRequiredMixin, View):
     def patch(self, request):
         try:
             body = json.loads(request.body)
-            card = patch_card(body)
+            card = patch_card(body, request)
+            print(request)
 
             return JsonResponse({
                 "status": "success",
@@ -88,7 +89,7 @@ class CardOfertaAPIView(LoginRequiredMixin, View):
     def delete(self, request):
         try:
             body = json.loads(request.body)
-            delete_card(body)
+            delete_card(body, request)
 
             return JsonResponse({
                 "status": "success",

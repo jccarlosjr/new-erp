@@ -168,8 +168,8 @@ class HistoricoPropostaAPIView(LoginRequiredMixin, View):
 
         proposta = get_object_or_404(Proposta, id=proposta_id)
 
-        historico = HistoricoCard.objects.create(
-            card=proposta,
+        historico = HistoricoProposta.objects.create(
+            proposta=proposta,
             user=request.user,
             status=status,
             obs=obs

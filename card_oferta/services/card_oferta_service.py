@@ -6,6 +6,7 @@ from cliente.models import Cliente
 from convenio.models import Matricula
 from proposta.models import Proposta, Status
 from django.core.exceptions import ValidationError
+from historico.models import HistoricoCard
 
 
 def create_or_update_card(user, body):
@@ -51,7 +52,7 @@ def create_or_update_card(user, body):
 
 
 @transaction.atomic
-def patch_card(body):
+def patch_card(body, request):
     card_id = body.get('id')
 
     if not card_id:
@@ -105,13 +106,19 @@ def patch_card(body):
             proposta.status = Status.objects.get(codigo=13)
             proposta.bloqueado = False
             proposta.save()
+    
+    HistoricoCard.objects.create(
+            card=card,
+            user=request.user,
+            obs=card.get_status_display()
+        )
 
     card.save()
 
     return card
 
 
-def delete_card(body):
+def delete_card(body, request):
     card_id = body.get('id')
 
     if not card_id:
@@ -123,6 +130,12 @@ def delete_card(body):
         card_oferta=card, 
         ativo=True
         ).exists()
+    
+    HistoricoCard.objects.create(
+            card=card,
+            user=request.user,
+            obs="Card excluído"
+        )
     
     if has_propostas:
         raise ValidationError(

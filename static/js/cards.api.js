@@ -142,7 +142,8 @@ function editarCard(id, status, historico) {
         },
         body: JSON.stringify({
             id: id,
-            status: status
+            status: status,
+            obs: historico
         })
     })
     .then(async res => {
@@ -154,7 +155,6 @@ function editarCard(id, status, historico) {
     })
     .then(() => {
         showToast('Card atualizado com sucesso', 'success')
-        createHistorico(id, obs = historico)
         loadCards();
     })
     .catch(err => {

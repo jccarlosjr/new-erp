@@ -6,6 +6,7 @@ from cliente.models import Cliente
 from tabela.models import Tabela
 from accounts.models import CustomUser
 from card_oferta.models import CardOferta
+from historico.models import HistoricoProposta
 
 
 
@@ -143,6 +144,80 @@ def patch_proposta(body):
     return proposta
 
 
+def patch_proposta_geral(body, request):
+    proposta_id = body.get('id')
+
+    if not proposta_id:
+        raise ValueError("ID da proposta é obrigatório")
+
+    proposta = get_object_or_404(Proposta, id=proposta_id)
+
+    # FKs
+    if 'cpf' in body:
+        proposta.cliente = Cliente.objects.filter(
+            cpf=body.get('cpf')
+        ).first()
+
+    if 'tabela_id' in body:
+        proposta.tabela = Tabela.objects.filter(
+            id=body.get('tabela_id')
+        ).first()
+
+    if 'status_id' in body:
+        proposta.status = Status.objects.filter(
+            id=body.get('status_id')
+        ).first()
+
+    if 'usuario_id' in body:
+        proposta.usuario = CustomUser.objects.filter(
+            id=body.get('usuario_id')
+        ).first()
+
+    if 'card_oferta_id' in body:
+        proposta.card_oferta = CardOferta.objects.filter(
+            id=body.get('card_oferta_id')
+        ).first()
+
+    if 'obs' in body:
+        obs = body.get('obs')
+    
+    if 'ade' in body:
+        proposta.ade = body.get('ade')
+    
+    if 'ade_2' in body:
+        proposta.ade_2 = body.get('ade_2')
+    
+    HistoricoProposta.objects.create(
+        proposta=proposta,
+        user=request.user,
+        status=Status.objects.filter(id=body.get('status_id')).first(),
+        obs=obs
+    )
+
+    fields = [
+        'ade',
+        'bloqueado',
+        'obs',
+        'cms',
+        'parcela',
+        'prazo',
+        'financiado',
+        'saldo_devedor',
+        'troco',
+        'prazo_original',
+        'prazo_restante',
+        'contrato_portado',
+        'banco_origem',
+    ]
+
+    for field in fields:
+        if field in body:
+            setattr(proposta, field, body.get(field))
+
+    proposta.save()
+    return proposta
+
+
 def delete_proposta(body):
     proposta_id = body.get('id')
 
@@ -156,7 +231,6 @@ def delete_proposta(body):
 
     proposta.ativo = False
     proposta.card_oferta = None
-    proposta.usuario = None
     proposta.save()
 
     return proposta

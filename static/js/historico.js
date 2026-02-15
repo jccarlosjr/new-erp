@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
     historicoModal = new bootstrap.Modal(document.getElementById('historicoModal'))
 })
 
-function createPropostaHistorico(propostaId, obs = '') {
+function createPropostaHistorico(propostaId, obs = '', propostaStatusId) {
     return fetch('/api/historico-proposta/', {
         method: 'POST',
         headers: {
@@ -13,7 +13,8 @@ function createPropostaHistorico(propostaId, obs = '') {
         },
         body: JSON.stringify({
             proposta_id: propostaId,
-            obs: obs
+            obs: obs,
+            status_codigo: propostaStatusId
         })
     })
     .then(res => res.json())
@@ -69,7 +70,8 @@ function openHistoricoPropostaModal(propostaId) {
                 `)
             })
         })
-        .catch(() => {
+        .catch(error => {
+            console.log(error)
             loading.classList.add('d-none')
             list.innerHTML = `
                 <li class="list-group-item text-danger">

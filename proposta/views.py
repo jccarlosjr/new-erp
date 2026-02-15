@@ -1,16 +1,16 @@
 from django.views import View
 from django.http import JsonResponse
-from django.views.generic import TemplateView, DetailView
+from django.views.generic import TemplateView, DetailView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404
 from app.mixins import AdminRequiredMixin
 import json
 from .models import Status, Proposta
 from django.views.generic import TemplateView
-from .selectors.proposta_selector import list_propostas
+from .selectors.proposta_selector import list_propostas, list_propostas_geral
 from .services.proposta_service import (
     create_or_update_proposta,
-    patch_proposta,
+    patch_proposta, patch_proposta_geral,
     delete_proposta
 )
 
@@ -127,7 +127,7 @@ class PropostaAPIView(LoginRequiredMixin, View):
 
     def get(self, request):
         filters = request.GET.dict()
-        propostas = list_propostas(filters)
+        propostas = list_propostas(filters, request.user)
 
         return JsonResponse({
             "status": "success",
@@ -191,6 +191,40 @@ class PropostaAPIView(LoginRequiredMixin, View):
                 "message": str(e)
             }, status=400)
 
+
+class PropostaGeralListAPIView(LoginRequiredMixin, AdminRequiredMixin, View):
+
+    def get(self, request):
+        filters = request.GET.dict()
+        propostas = list_propostas_geral(filters)
+
+        return JsonResponse({
+            "status": "success",
+            "data": list(propostas)
+        })
+
+    def patch(self, request):
+        try:
+            body = json.loads(request.body)
+            proposta = patch_proposta_geral(body, request)
+
+            return JsonResponse({
+                "status": "success",
+                "data": {
+                    "id": proposta.id,
+                    "codigo_interno": proposta.codigo_interno
+                }
+            })
+
+        except Exception as e:
+            return JsonResponse({
+                "status": "error",
+                "message": str(e)
+            }, status=400)
+
+
+
+
 class PropostaView(LoginRequiredMixin, TemplateView):
     template_name = 'propostas.html'
 
@@ -201,3 +235,5 @@ class PropostaDetailView(LoginRequiredMixin, DetailView):
     context_object_name = 'proposta'
 
 
+class PropostaGeralListView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
+    template_name = 'proposta_list.html'

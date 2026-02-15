@@ -641,24 +641,6 @@ function renderPropostas(propostas) {
 }
 
 
-/* ===============================
-   CARD HISTORICO
-================================ */ 
-
-function createHistorico(cardId, obs = '') {
-    return fetch('/api/historico-card/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
-        },
-        body: JSON.stringify({
-            card_id: cardId,
-            obs: obs
-        })
-    })
-    .then(res => res.json())
-}
 
 /* ===============================
    CARD
@@ -687,7 +669,8 @@ function createCardOferta() {
     const payload = {
         cpf: currentCliente.cpf,
         matricula_id: selectedMatricula,
-        active: true
+        active: true,
+        obs: "Digitação Solicitada"
     };
 
     fetch('/api/cards-oferta/', {
@@ -703,7 +686,6 @@ function createCardOferta() {
             if (res.status === 'success') {
                 showToast("Card de ofertas criado", "success");
                 currentCardOferta = res.data;
-                createHistorico(res.data.id, obs = 'Card de ofertas Criado')
                 goStep(3);
                 document.getElementById('card-oferta').innerHTML = `
                     <h4 class="mb-4">${currentCliente.nome} - ${currentCliente.cpf}</h4>
@@ -768,7 +750,6 @@ async function setCardStatusDigitacao() {
     })
     .then(data => {
         console.log('Status atualizado:', data);
-        createHistorico(currentCardOferta.id, obs = 'Digitação Solicitada')
         return data;
     })
     .catch(error => {
