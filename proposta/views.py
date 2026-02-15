@@ -223,8 +223,6 @@ class PropostaGeralListAPIView(LoginRequiredMixin, AdminRequiredMixin, View):
             }, status=400)
 
 
-
-
 class PropostaView(LoginRequiredMixin, TemplateView):
     template_name = 'propostas.html'
 

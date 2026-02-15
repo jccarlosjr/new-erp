@@ -9,8 +9,8 @@ from .models import Cliente
 
 
 
-class ClienteView(LoginRequiredMixin, TemplateView):
-    template_name = 'clientes/cliente_wizard.html'
+class CreateCardView(LoginRequiredMixin, TemplateView):
+    template_name = 'clientes/create_card.html'
 
 
 class ClienteAPIView(LoginRequiredMixin, View):

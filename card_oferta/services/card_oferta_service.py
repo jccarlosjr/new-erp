@@ -107,6 +107,9 @@ def patch_card(body, request):
             proposta.bloqueado = False
             proposta.save()
     
+    if 'is_blocked' in body:
+        card.is_blocked = body.get('is_blocked')
+    
     HistoricoCard.objects.create(
             card=card,
             user=request.user,

@@ -180,13 +180,13 @@ def patch_proposta_geral(body, request):
 
     if 'obs' in body:
         obs = body.get('obs')
-    
+
     if 'ade' in body:
         proposta.ade = body.get('ade')
     
     if 'ade_2' in body:
         proposta.ade_2 = body.get('ade_2')
-    
+
     HistoricoProposta.objects.create(
         proposta=proposta,
         user=request.user,

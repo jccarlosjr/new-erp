@@ -8,8 +8,7 @@ Criar lixeira, para cards inativos
 #### PROPOSTAS ####
 ###################
 
-Criar listagem de propostas
-Ao criar proposta, adicionar o histórico informando vinculo ao card e a criação
+Adicionar ações para propostas dependendo do status de cada uma
 Adicionar campo para link de formalização
 Criar lixeira, para propostas inativas
 Configurar tela para editar uma propostas

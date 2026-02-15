@@ -262,6 +262,15 @@ function loadPropostas() {
             data.data.forEach(proposta => {
                 const tr = document.createElement('tr')
 
+                let btn = ''
+
+                if(proposta.bloqueado){
+                    btn = `<button class="btn btn-sm btn-sm-icon btn-dark bi bi-lock" title="Desbloquear" onclick="desbloquearProposta(${proposta.id})"></button>`
+                } else {
+                    btn = `<button class="btn btn-sm btn-sm-icon btn-light bi bi-unlock" title="Bloquear" onclick="bloquearProposta(${proposta.id})"></button>`
+                }
+
+
                 tr.innerHTML = `
                     <td><span class="small">${proposta.usuario__username ?? '-'}</span></td>
                     <td><span class="small">${proposta.codigo_interno}</span></td>
@@ -270,6 +279,7 @@ function loadPropostas() {
                     <td><span class="small">${proposta.status__nome}</span></td>
                     <td>
                         <div class="btn-group">
+                        ${btn}
                         <button class="btn btn-sm btn-sm-icon btn-success bi bi-gear" title="Gerenciar" onclick='openConfigModal(${JSON.stringify(proposta)})'></button>
                         <button class="btn btn-sm btn-sm-icon btn-warning bi bi-clock-history" title="Histórico" onclick="openHistoricoPropostaModal(${proposta.id})"></button>
                         <button class="btn btn-sm btn-sm-icon btn-primary bi bi-files" title="Abrir Propostas" onclick="openProposta(${proposta.id})"></button>
@@ -368,12 +378,9 @@ function changeCard() {
             showToast('Erro ao alterar card')
             return
         }
-
-        createHistorico(carId, cardStatusText)
     })
     .catch(() => showToast('Erro de conexão com o servidor'))
     .finally(() => hideLoader())
-
 }
 
 
@@ -406,6 +413,60 @@ function changeProposta() {
             showToast('Erro ao alterar propostas')
             return
         }
+    })
+    .catch(() => showToast('Erro de conexão com o servidor'))
+    .finally(() => hideLoader())
+}
+
+
+function bloquearProposta(id) {
+
+    fetch('/api/propostas-geral/', {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({
+            id: id,
+            bloqueado: true,
+            obs: 'Proposta bloqueada para edição'
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status !== 'success') {
+            showToast('Erro ao alterar propostas')
+            return
+        }
+        loadPropostas();
+    })
+    .catch(() => showToast('Erro de conexão com o servidor'))
+    .finally(() => hideLoader())
+}
+
+
+function desbloquearProposta(id) {
+
+    fetch('/api/propostas-geral/', {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({
+            id: id,
+            bloqueado: false,
+            obs: 'Proposta desbloqueada para edição'
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status !== 'success') {
+            showToast('Erro ao alterar propostas')
+            return
+        }
+        loadPropostas();
     })
     .catch(() => showToast('Erro de conexão com o servidor'))
     .finally(() => hideLoader())
