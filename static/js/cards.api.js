@@ -3,10 +3,12 @@
 ================================ */
 let propostaModal;
 let deletePropostaModal;
+let changePropostaModal;
 
 document.addEventListener('DOMContentLoaded', function () {
     propostaModal = new bootstrap.Modal(document.getElementById('propostaModal'))
     deletePropostaModal = new bootstrap.Modal(document.getElementById('deletePropostaModal'))
+    changePropostaModal = new bootstrap.Modal(document.getElementById('changePropostaModal'))
     loadCards()
 })
 
@@ -55,6 +57,14 @@ function openDeletePropostaModal(id, codig_interno) {
     document.getElementById('delete-proposta-id').value = id
     document.getElementById('delete-proposta-nome').innerText = codig_interno
     deletePropostaModal.show()
+}
+
+
+function openChangePropostaModal(id, codig_interno){
+    document.getElementById('change-proposta-id').value = id
+    document.getElementById('change-proposta-nome').innerText = codig_interno
+    document.getElementById('obs-change-proposta').innerText = ''
+    changePropostaModal.show()
 }
 
 
@@ -195,6 +205,51 @@ function deleteProposta() {
             deletePropostaModal.hide();
             showToast(err.message)
         }
+    })
+    .finally(() => hideLoader())
+}
+
+
+function changeStatusProposta() {
+    showLoader()
+    const id = document.getElementById('change-proposta-id').value;
+    const status = document.getElementById('status-change-proposta').value;
+    const obs = document.getElementById('obs-change-proposta').value;
+
+    if(!status || !obs) {
+        showToast('Preencha todos os campos !', 'danger');
+        hideLoader();
+        return
+    }
+
+    fetch('/api/propostas/', {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+        },
+        body: JSON.stringify({ 
+            id: id,
+            status_id: status,
+            obs: obs,
+            bloqueado: true
+        })
+    })
+    .then(async res => {
+        const data = await res.json()
+        if (!res.ok || data.status === 'error') {
+            throw new Error(data.message || 'Erro ao excluir')
+        }
+        return data
+    })
+    .then(() => {
+        changePropostaModal.hide();
+        showToast('Status alterado com sucesso', 'success')
+        loadCards();
+    })
+    .catch(err => {
+        changePropostaModal.hide();
+        showToast(err.message)
     })
     .finally(() => hideLoader())
 }
@@ -527,6 +582,7 @@ function renderProposta(proposta) {
                 <td class="small">${proposta.parcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL'})}</td>
                 <td class="small">${proposta.status__nome}</td>
                 <td>
+                <div class="btn-group">
                     <button class="btn btn-sm btn-sm-icon btn-warning bi bi-clock-history" title="Histórico" onclick="openHistoricoPropostaModal(${proposta.id})"></button>
                     <button class="btn btn-sm btn-sm-icon btn-primary bi bi bi-files" title="Abrir Proposta" onclick="openProposta(${proposta.id})"></button>
                     <div class="btn-group dropend">
@@ -539,11 +595,14 @@ function renderProposta(proposta) {
                         </button>
                         <ul class="dropdown-menu">
                             <li>
+                                <button class="dropdown-item" onclick="openChangePropostaModal(${proposta.id}, '${proposta.codigo_interno}')"><i class="bi bi-gear text-primary"></i> Alterar Status
+                                </button>
                                 <button class="dropdown-item" onclick="openDeletePropostaModal(${proposta.id}, '${proposta.codigo_interno}')"><i class="bi bi-trash3 text-danger"></i> Excluir proposta
                                 </button>
                             </li>
                         </ul>
                     </div>
+                </div>
                 </td>
             </tr>
         `

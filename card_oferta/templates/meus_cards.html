@@ -285,6 +285,38 @@
 </div>
 
 
+<div class="modal modal-lg fade" id="changePropostaModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5>Alterar Proposta - <span id="change-proposta-nome"></span></h5>
+        <button class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <input type="hidden" id="change-proposta-id">
+        <div class="col-md-6">
+            <label for="status-change-proposta">Status</label>
+            <select name="status-change-proposta" id="status-change-proposta" class="form-select" required>
+                <option value="9">Aguardando Atuação do Operacional</option>
+                <option value="15">Desistência do Cliente</option>
+            </select>
+        </div>
+
+        <label for="obs-change-proposta">Observação</label>
+        <textarea name="" id="obs-change-proposta" class="form-control" required></textarea>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-success" onclick="changeStatusProposta()">Salvar</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
 <script src="{% static 'js/cards.api.js' %}"></script>
 <script src="{% static 'js/historico.js' %}"></script>
 <script src="{% static 'js/utils.js' %}"></script>

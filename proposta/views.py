@@ -158,7 +158,7 @@ class PropostaAPIView(LoginRequiredMixin, View):
     def patch(self, request):
         try:
             body = json.loads(request.body)
-            proposta = patch_proposta(body)
+            proposta = patch_proposta(body, request)
 
             return JsonResponse({
                 "status": "success",

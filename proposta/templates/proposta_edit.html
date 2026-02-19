@@ -1,0 +1,428 @@
+{% extends "base.html" %}
+{% load static %}
+{% block head %}
+<title>Proposta {{ proposta.codigo_interno }}</title>
+<style>
+    body {
+        background-color: #f4f6f9;
+    }
+
+    .form-section {
+        background: #ffffff;
+        border-radius: 14px;
+        padding: 25px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        margin-bottom: 25px;
+    }
+
+    .section-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 20px;
+        color: #495057;
+        border-bottom: 1px solid #e9ecef;
+        padding-bottom: 8px;
+    }
+
+    .form-control[readonly] {
+        background-color: #f8f9fa;
+    }
+
+    .header-card {
+        border-radius: 14px;
+        padding: 20px;
+        margin-bottom: 25px;
+    }
+
+    .badge-status {
+        font-size: 0.9rem;
+        padding: 8px 14px;
+    }
+</style>
+{% endblock %}
+{% block content %}
+
+<main class="container">
+    <!-- HEADER -->
+    <div class="header-card d-flex justify-content-between align-items-center">
+        <div>
+            <h4 class="mb-1">
+                <i class="bi bi-file-earmark-text"></i>
+                Proposta {{ proposta.codigo_interno }}
+            </h4>
+            <small>
+                Criado em {{ proposta.criacao|date:"d/m/Y H:i" }}
+            </small>
+        </div>
+        <div>
+            <button class="btn btn-warning bi bi-clock-history" onclick="openHistoricoPropostaModal('{{ proposta.id }}')">
+                Histórico
+            </button>
+        </div>
+    </div>
+
+
+    <form method="post">
+        {% csrf_token %}
+
+        <!-- INFORMAÇÕES INTERNAS -->
+        <div class="form-section">
+            <div class="section-title">
+                <i class="bi bi-gear me-2"></i>Informações Internas
+            </div>
+
+            <div class="row g-3">
+
+                <div class="col-md-2">
+                    <label class="form-label">Usuário</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.usuario }}" readonly disabled>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">ADE</label>
+                    <input type="text" class="form-control form-control-sm"
+                            {% if proposta.ade %}
+                                value="{{ proposta.ade }}"
+                            {% else %}
+                                value="Sem ADE"
+                            {% endif %}
+                        readonly disabled>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">ADE Auxiliar</label>
+                    <input type="text" class="form-control form-control-sm"
+                            {% if proposta.ade_2 %}
+                                value="{{ proposta.ade_2 }}"
+                            {% else %}
+                                value="Sem ADE"
+                            {% endif %} 
+                        readonly disabled>
+                </div>
+
+                {% if proposta.status %}
+                <div class="col-md-4">
+                    <label class="form-label">Status</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.status.nome }}" readonly disabled>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+
+        <!-- CLIENTE -->
+        <div class="form-section">
+            <div class="section-title">
+                <i class="bi bi-person me-2"></i>Cliente
+            </div>
+
+            <div class="row g-3">
+
+                <div class="col-md-5">
+                    <label class="form-label">Nome</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.nome }}" readonly disabled>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">CPF</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.cpf }}" readonly disabled>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Nascimento</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.nascimento|date:'d/m/Y' }}" readonly disabled>
+                </div>
+                
+                <div class="col-md-2">
+                    <label class="form-label">Sexo</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.sexo }}" readonly disabled>
+                </div>
+
+                <div class="col-md-2">
+                    <label class="form-label">Celular</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.celular }}" readonly disabled>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Email</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.email }}" readonly disabled>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Cidade</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.cidade }} - {{ proposta.cliente.uf_cidade }}" readonly disabled>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label d-block">Iletrado</label>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input"
+                            type="checkbox"
+                            {% if proposta.cliente.iletrado %}checked{% endif %}
+                            disabled>
+                        <label class="form-check-label">
+                            {% if proposta.cliente.iletrado %}
+                                Sim
+                            {% else %}
+                                Não
+                            {% endif %}
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Documento</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.numero_documento }}" readonly disabled>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Orgão Emissor</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.orgao_emissor }} - {{ proposta.cliente.uf_emissao }}" readonly disabled>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Data Emissão</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.data_emissao|date:'d/m/Y' }}" readonly disabled>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Naturalidade</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.naturalidade }} - {{ proposta.cliente.uf_naturalidade }}" readonly disabled>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Mãe</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.mae }}" readonly disabled>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Pai</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.pai }}" readonly disabled>
+                </div>
+                
+                <div class="col-md-3">
+                    <label class="form-label">CEP</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.cep }}" readonly disabled>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Endereço</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.endereco }}" readonly disabled>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Número</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.numero }}" readonly disabled>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Bairro</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.bairro }}" readonly disabled>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Complemento</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.complemento }}" readonly disabled>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Cidade</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.cliente.cidade }} - {{ proposta.cliente.uf_cidade }}" readonly disabled>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- DADOS CONVENIO -->
+        <div class="form-section">
+            <div class="section-title">
+                <i class="bi bi-buildings me-2"></i>Convênio
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Matrícula</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.card_oferta.matricula.matricula }}" readonly disabled>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Convenio</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.card_oferta.matricula.convenio }}" readonly disabled>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Espécie/Secretaria</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.card_oferta.matricula.codigo_convenio }}" readonly disabled>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">UF</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.card_oferta.matricula.uf_convenio }}" readonly disabled>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Banco</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.card_oferta.matricula.banco }}" readonly disabled>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Agência</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.card_oferta.matricula.agencia }}" readonly disabled>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Conta</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.card_oferta.matricula.conta }}" readonly disabled>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Recebimento</label>
+                    <input type="text" class="form-control form-control-sm"
+                        {% if proposta.card_oferta.matricula.recebimento == 'CC' %}
+                            value="Conta Corrente"
+                        {% elif proposta.card_oferta.matricula.recebimento == 'CP' %}
+                            value="Conta Poupança"
+                        {% endif %}
+                    readonly disabled>
+                </div>
+            </div>
+        </div>
+
+        <!-- DADOS FINANCEIROS -->
+        <div class="form-section">
+            <div class="section-title">
+                <i class="bi bi-cash-coin me-2"></i>Proposta
+            </div>
+
+            <div class="row g-3">
+                {% if proposta.tabela %}
+                <div class="col-md-4">
+                    <label class="form-label">Banco</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.tabela.banco }}" readonly disabled>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Operação</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.tabela.operacao }}" readonly disabled>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label">Tabela</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.tabela.nome }} - {{ proposta.tabela.taxa }}%" readonly disabled>
+                </div>
+                {% endif %}
+
+                <div class="col-md-3">
+                    <label class="form-label">Parcela</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="R$ {{ proposta.parcela|floatformat:2 }}" readonly disabled>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Prazo</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.prazo }}" readonly disabled>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Financiado</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="R$ {{ proposta.financiado|floatformat:2 }}" readonly disabled>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Troco</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="R$ {{ proposta.troco|floatformat:2 }}" readonly disabled>
+                </div>
+                {% if proposta.contrato_portado %}
+                <div class="col-md-4">
+                    <label class="form-label">Contrato Portado</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.contrato_portado }}" readonly disabled>
+                </div>
+                {% endif %}
+                {% if proposta.banco_origem %}
+                <div class="col-md-2">
+                    <label class="form-label">Banco Origem</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.banco_origem}}" readonly disabled>
+                </div>
+                {% endif %}
+                {% if proposta.saldo_devedor %}
+                <div class="col-md-3">
+                    <label class="form-label">Saldo Devedor</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="R$ {{ proposta.saldo_devedor|floatformat:2 }}" readonly disabled>
+                </div>
+                {% endif %}
+
+                {% if proposta.prazo_original %}
+                <div class="col-md-3">
+                    <label class="form-label">Resta/Original</label>
+                    <input type="text" class="form-control form-control-sm"
+                           value="{{ proposta.prazo_restante }}/{{ proposta.prazo_original }}" readonly disabled>
+                </div>
+                {% endif %}
+            
+            </div>
+        </div>
+
+        <div class="form-section">
+                <div class="col-md-12">
+                    <label class="form-label">Observações</label>
+                    <textarea class="form-control form-control-sm" rows="3" readonly disabled>{{ proposta.obs }}</textarea>
+                </div>
+        </div>
+
+
+    </form>
+
+</main>
+
+
+<div class="modal fade" id="historicoModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Histórico
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <div id="historico-loading" class="text-center py-3 d-none">
+                    <div class="spinner-border"></div>
+                </div>
+
+                <ul class="list-group" id="historicoList"></ul>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">
+                    Fechar
+                </button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/utils.js' %}"></script>
+<script src="{% static 'js/historico.js' %}"></script>
+{% endblock %}

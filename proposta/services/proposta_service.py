@@ -83,7 +83,7 @@ def create_or_update_proposta(body):
 
 
 @transaction.atomic
-def patch_proposta(body):
+def patch_proposta(body, request):
     proposta_id = body.get('id')
 
     if not proposta_id:
@@ -119,6 +119,16 @@ def patch_proposta(body):
         proposta.card_oferta = CardOferta.objects.filter(
             id=body.get('card_oferta_id')
         ).first()
+    
+    if 'obs' in body:
+        obs = body.get('obs')
+    
+    HistoricoProposta.objects.create(
+        proposta=proposta,
+        user=request.user,
+        status=Status.objects.filter(id=body.get('status_id')).first(),
+        obs=obs
+    )
 
     fields = [
         'ade',

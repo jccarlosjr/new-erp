@@ -21,6 +21,7 @@ def criar_status_iniciais(sender, **kwargs):
         (12, "Pago - Troco Liberado para o Cliente", "success"),
         (13, "Cancelado - Possível Redigitar", "danger"),
         (14, "Cancelado - Definitivo", "danger"),
+        (15, "Desistência do Cliente", "danger"),
     ]
 
     for codigo, nome, color in status_list:
