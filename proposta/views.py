@@ -7,7 +7,7 @@ from app.mixins import AdminRequiredMixin
 import json
 from .models import Status, Proposta
 from django.views.generic import TemplateView
-from .selectors.proposta_selector import list_propostas, list_propostas_geral
+from .selectors.proposta_selector import list_propostas, list_propostas_detail, list_propostas_geral
 from .services.proposta_service import (
     create_or_update_proposta,
     patch_proposta, patch_proposta_geral,
@@ -223,6 +223,24 @@ class PropostaGeralListAPIView(LoginRequiredMixin, AdminRequiredMixin, View):
             }, status=400)
 
 
+class PropostaDetailAPIView(LoginRequiredMixin, AdminRequiredMixin, View):
+
+    def get(self, request, pk, *args, **kwargs):
+        proposta = list_propostas_detail(pk)
+
+        if not proposta:
+            return JsonResponse(
+                {"status": "error", "message": "Proposta não encontrada"},
+                status=404
+            )
+
+        return JsonResponse({
+            "status": "success",
+            "data": proposta
+        })
+
+
+
 class PropostaView(LoginRequiredMixin, TemplateView):
     template_name = 'propostas.html'
 
@@ -235,3 +253,7 @@ class PropostaDetailView(LoginRequiredMixin, DetailView):
 
 class PropostaGeralListView(LoginRequiredMixin, AdminRequiredMixin, TemplateView):
     template_name = 'proposta_list.html'
+
+
+class PropostaEditView(LoginRequiredMixin, TemplateView):
+    template_name = 'proposta_edit.html'

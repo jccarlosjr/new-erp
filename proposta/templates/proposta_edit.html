@@ -48,10 +48,10 @@
         <div>
             <h4 class="mb-1">
                 <i class="bi bi-file-earmark-text"></i>
-                Proposta {{ proposta.codigo_interno }}
+                Proposta <span id="id-codigo_interno"></span>
             </h4>
             <small>
-                Criado em {{ proposta.criacao|date:"d/m/Y H:i" }}
+                Criado em <span id="id-criacao"></span>
             </small>
         </div>
         <div>
@@ -62,334 +62,296 @@
     </div>
 
 
-    <form method="post">
-        {% csrf_token %}
-
-        <!-- INFORMAÇÕES INTERNAS -->
-        <div class="form-section">
-            <div class="section-title">
-                <i class="bi bi-gear me-2"></i>Informações Internas
-            </div>
-
-            <div class="row g-3">
-
-                <div class="col-md-2">
-                    <label class="form-label">Usuário</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.usuario }}" readonly disabled>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">ADE</label>
-                    <input type="text" class="form-control form-control-sm"
-                            {% if proposta.ade %}
-                                value="{{ proposta.ade }}"
-                            {% else %}
-                                value="Sem ADE"
-                            {% endif %}
-                        readonly disabled>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">ADE Auxiliar</label>
-                    <input type="text" class="form-control form-control-sm"
-                            {% if proposta.ade_2 %}
-                                value="{{ proposta.ade_2 }}"
-                            {% else %}
-                                value="Sem ADE"
-                            {% endif %} 
-                        readonly disabled>
-                </div>
-
-                {% if proposta.status %}
-                <div class="col-md-4">
-                    <label class="form-label">Status</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.status.nome }}" readonly disabled>
-                </div>
-                {% endif %}
-
-            </div>
+    <!-- INFORMAÇÕES INTERNAS -->
+    <div class="form-section">
+        <div class="section-title">
+            <i class="bi bi-gear me-2"></i>Informações Internas
         </div>
 
-        <!-- CLIENTE -->
-        <div class="form-section">
-            <div class="section-title">
-                <i class="bi bi-person me-2"></i>Cliente
+        <div class="row g-3">
+
+            <div class="col-md-2">
+                <label class="form-label">Usuário</label>
+                <input type="text" class="form-control form-control-sm" id="id-usuario" readonly disabled>
             </div>
 
-            <div class="row g-3">
-
-                <div class="col-md-5">
-                    <label class="form-label">Nome</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.cliente.nome }}" readonly disabled>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">CPF</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.cliente.cpf }}" readonly disabled>
-                </div>
-
-                <div class="col-md-2">
-                    <label class="form-label">Nascimento</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.cliente.nascimento|date:'d/m/Y' }}" readonly disabled>
-                </div>
-                
-                <div class="col-md-2">
-                    <label class="form-label">Sexo</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.cliente.sexo }}" readonly disabled>
-                </div>
-
-                <div class="col-md-2">
-                    <label class="form-label">Celular</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.cliente.celular }}" readonly disabled>
-                </div>
-
-                <div class="col-md-4">
-                    <label class="form-label">Email</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.cliente.email }}" readonly disabled>
-                </div>
-
-                <div class="col-md-4">
-                    <label class="form-label">Cidade</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.cliente.cidade }} - {{ proposta.cliente.uf_cidade }}" readonly disabled>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label d-block">Iletrado</label>
-                    <div class="form-check form-switch">
-                        <input class="form-check-input"
-                            type="checkbox"
-                            {% if proposta.cliente.iletrado %}checked{% endif %}
-                            disabled>
-                        <label class="form-check-label">
-                            {% if proposta.cliente.iletrado %}
-                                Sim
-                            {% else %}
-                                Não
-                            {% endif %}
-                        </label>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Documento</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.cliente.numero_documento }}" readonly disabled>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Orgão Emissor</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.cliente.orgao_emissor }} - {{ proposta.cliente.uf_emissao }}" readonly disabled>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label">Data Emissão</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.cliente.data_emissao|date:'d/m/Y' }}" readonly disabled>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Naturalidade</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.cliente.naturalidade }} - {{ proposta.cliente.uf_naturalidade }}" readonly disabled>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Mãe</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.cliente.mae }}" readonly disabled>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Pai</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.cliente.pai }}" readonly disabled>
-                </div>
-                
-                <div class="col-md-3">
-                    <label class="form-label">CEP</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.cliente.cep }}" readonly disabled>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Endereço</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.cliente.endereco }}" readonly disabled>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Número</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.cliente.numero }}" readonly disabled>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Bairro</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.cliente.bairro }}" readonly disabled>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Complemento</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.cliente.complemento }}" readonly disabled>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Cidade</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.cliente.cidade }} - {{ proposta.cliente.uf_cidade }}" readonly disabled>
-                </div>
-
+            <div class="col-md-3">
+                <label class="form-label">ADE</label>
+                <input type="text" class="form-control form-control-sm" id="id-ade" readonly disabled>
             </div>
+
+            <div class="col-md-3">
+                <label class="form-label">ADE Auxiliar</label>
+                <input type="text" class="form-control form-control-sm" id="id-ade_2" readonly disabled>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Status</label>
+                <input type="text" class="form-control form-control-sm" id="id-status__nome" readonly disabled>
+            </div>
+
+            <input type="text" id="header_card_id" hidden>
+            <input type="text" id="header_proposta_id" hidden>
+            <input type="text" id="header_cliente_id" hidden>
+            <input type="text" id="header_matricula_id" hidden>
+
+        </div>
+    </div>
+
+    <!-- CLIENTE -->
+    <div class="form-section">
+        <div class="section-title">
+            <i class="bi bi-person me-2"></i>Cliente
         </div>
 
-        <!-- DADOS CONVENIO -->
-        <div class="form-section">
-            <div class="section-title">
-                <i class="bi bi-buildings me-2"></i>Convênio
+        <div class="row g-3">
+
+            <div class="col-md-5">
+                <label class="form-label">Nome</label>
+                <input type="text" class="form-control form-control-sm" id="id-cliente_nome">
             </div>
 
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label">Matrícula</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.card_oferta.matricula.matricula }}" readonly disabled>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Convenio</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.card_oferta.matricula.convenio }}" readonly disabled>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Espécie/Secretaria</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.card_oferta.matricula.codigo_convenio }}" readonly disabled>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">UF</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.card_oferta.matricula.uf_convenio }}" readonly disabled>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">Banco</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.card_oferta.matricula.banco }}" readonly disabled>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Agência</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.card_oferta.matricula.agencia }}" readonly disabled>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Conta</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.card_oferta.matricula.conta }}" readonly disabled>
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">Recebimento</label>
-                    <input type="text" class="form-control form-control-sm"
-                        {% if proposta.card_oferta.matricula.recebimento == 'CC' %}
-                            value="Conta Corrente"
-                        {% elif proposta.card_oferta.matricula.recebimento == 'CP' %}
-                            value="Conta Poupança"
-                        {% endif %}
-                    readonly disabled>
-                </div>
-            </div>
-        </div>
-
-        <!-- DADOS FINANCEIROS -->
-        <div class="form-section">
-            <div class="section-title">
-                <i class="bi bi-cash-coin me-2"></i>Proposta
+            <div class="col-md-3">
+                <label class="form-label">CPF</label>
+                <input type="text" oninput="formatCPF(this)" class="form-control form-control-sm" id="id-cliente_cpf">
             </div>
 
-            <div class="row g-3">
-                {% if proposta.tabela %}
-                <div class="col-md-4">
-                    <label class="form-label">Banco</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.tabela.banco }}" readonly disabled>
-                </div>
-
-                <div class="col-md-4">
-                    <label class="form-label">Operação</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.tabela.operacao }}" readonly disabled>
-                </div>
-
-                <div class="col-md-4">
-                    <label class="form-label">Tabela</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.tabela.nome }} - {{ proposta.tabela.taxa }}%" readonly disabled>
-                </div>
-                {% endif %}
-
-                <div class="col-md-3">
-                    <label class="form-label">Parcela</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="R$ {{ proposta.parcela|floatformat:2 }}" readonly disabled>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">Prazo</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.prazo }}" readonly disabled>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">Financiado</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="R$ {{ proposta.financiado|floatformat:2 }}" readonly disabled>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">Troco</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="R$ {{ proposta.troco|floatformat:2 }}" readonly disabled>
-                </div>
-                {% if proposta.contrato_portado %}
-                <div class="col-md-4">
-                    <label class="form-label">Contrato Portado</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.contrato_portado }}" readonly disabled>
-                </div>
-                {% endif %}
-                {% if proposta.banco_origem %}
-                <div class="col-md-2">
-                    <label class="form-label">Banco Origem</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.banco_origem}}" readonly disabled>
-                </div>
-                {% endif %}
-                {% if proposta.saldo_devedor %}
-                <div class="col-md-3">
-                    <label class="form-label">Saldo Devedor</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="R$ {{ proposta.saldo_devedor|floatformat:2 }}" readonly disabled>
-                </div>
-                {% endif %}
-
-                {% if proposta.prazo_original %}
-                <div class="col-md-3">
-                    <label class="form-label">Resta/Original</label>
-                    <input type="text" class="form-control form-control-sm"
-                           value="{{ proposta.prazo_restante }}/{{ proposta.prazo_original }}" readonly disabled>
-                </div>
-                {% endif %}
+            <div class="col-md-2">
+                <label class="form-label">Nascimento</label>
+                <input type="date" class="form-control form-control-sm" id="id-cliente_nascimento">
+            </div>
             
+            <div class="col-md-2">
+                <label class="form-label">Sexo</label>
+                <select name="id-cliente_sexo" id="id-cliente_sexo" class="form-select form-select-sm">
+                    <option value="">Selecione</option>
+                    <option value="F">Feminino</option>
+                    <option value="M">Masculino</option>
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Celular</label>
+                <input type="text" oninput="formatCelphone(this)" class="form-control form-control-sm" id="id-cliente_celular">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Email</label>
+                <input type="text" class="form-control form-control-sm" id="id-cliente_email">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Naturalidade</label>
+                <input type="text" class="form-control form-control-sm" id="id-cliente_naturalidade">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">UF Naturalidade</label>
+                <select name="id-cliente_uf_naturalidade" id="id-cliente_uf_naturalidade" class="form-select form-select-sm">
+                    <option value="">Selecione</option>
+                    <option value="AC">AC</option>
+                    <option value="AL">AL</option>
+                    <option value="AP">AP</option>
+                    <option value="AM">AM</option>
+                    <option value="BA">BA</option>
+                    <option value="CE">CE</option>
+                    <option value="DF">DF</option>
+                    <option value="ES">ES</option>
+                    <option value="GO">GO</option>
+                    <option value="MA">MA</option>
+                    <option value="MT">MT</option>
+                    <option value="MS">MS</option>
+                    <option value="MG">MG</option>
+                    <option value="PA">PA</option>
+                    <option value="PB">PB</option>
+                    <option value="PR">PR</option>
+                    <option value="PE">PE</option>
+                    <option value="PI">PI</option>
+                    <option value="RJ">RJ</option>
+                    <option value="RN">RN</option>
+                    <option value="RS">RS</option>
+                    <option value="RO">RO</option>
+                    <option value="RR">RR</option>
+                    <option value="SC">SC</option>
+                    <option value="SP">SP</option>
+                    <option value="SE">SE</option>
+                    <option value="TO">TO</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label d-block">Iletrado</label>
+                <div class="form-check form-switch">
+                    <input class="form-check-input" id="id-iletrado" type="checkbox">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Documento</label>
+                <input type="text" class="form-control form-control-sm" id="id-cliente_documento">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Orgão Emissor</label>
+                <input type="text" class="form-control form-control-sm" id="id-cliente_orgao_emissor">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Data Emissão</label>
+                <input type="date" class="form-control form-control-sm" id="id-cliente_data_emissao">
+            </div>
+            <div class="col-md-4">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Mãe</label>
+                <input type="text" class="form-control form-control-sm" id="id-cliente_mae">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Pai</label>
+                <input type="text" class="form-control form-control-sm" id="id-cliente_pai">
+            </div>
+            
+            <div class="col-md-3">
+                <label class="form-label">CEP</label>
+                <input type="text" oninput="formatCEP(this)" class="form-control form-control-sm" id="id-cliente_cep">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Endereço</label>
+                <input type="text" class="form-control form-control-sm" id="id-cliente_endereco">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Número</label>
+                <input type="text" class="form-control form-control-sm" id="id-cliente_numero_endereco">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Bairro</label>
+                <input type="text" class="form-control form-control-sm" id="id-cliente_bairro">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">Complemento</label>
+                <input type="text" class="form-control form-control-sm" id="id-cliente_complemento">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Cidade</label>
+                <input type="text" class="form-control form-control-sm" id="id-cliente_endereco_cidade">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">UF</label>
+                <select name="id-cliente_endereco_uf" id="id-cliente_endereco_uf" class="form-select form-select-sm">
+                    <option value="">Selecione</option>
+                    <option value="AC">AC</option>
+                    <option value="AL">AL</option>
+                    <option value="AP">AP</option>
+                    <option value="AM">AM</option>
+                    <option value="BA">BA</option>
+                    <option value="CE">CE</option>
+                    <option value="DF">DF</option>
+                    <option value="ES">ES</option>
+                    <option value="GO">GO</option>
+                    <option value="MA">MA</option>
+                    <option value="MT">MT</option>
+                    <option value="MS">MS</option>
+                    <option value="MG">MG</option>
+                    <option value="PA">PA</option>
+                    <option value="PB">PB</option>
+                    <option value="PR">PR</option>
+                    <option value="PE">PE</option>
+                    <option value="PI">PI</option>
+                    <option value="RJ">RJ</option>
+                    <option value="RN">RN</option>
+                    <option value="RS">RS</option>
+                    <option value="RO">RO</option>
+                    <option value="RR">RR</option>
+                    <option value="SC">SC</option>
+                    <option value="SP">SP</option>
+                    <option value="SE">SE</option>
+                    <option value="TO">TO</option>
+                </select>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- DADOS CONVENIO -->
+    <div class="form-section">
+        <div class="section-title">
+            <i class="bi bi-buildings me-2"></i>Convênio
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Matrícula</label>
+                <select name="id-matricula" id="id-matricula" class="form-select form-select-sm">
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Convenio</label>
+                <input type="text" class="form-control form-control-sm" id="id-card_oferta_convenio">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Espécie/Secretaria</label>
+                <input type="text" class="form-control form-control-sm" id="id-card_oferta_especie">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">UF</label>
+                <input type="text" class="form-control form-control-sm" id="id-card_oferta_uf">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Banco</label>
+                <input type="text" class="form-control form-control-sm" id="id-banco_convenio" maxlength="3" oninput="formatNumbersOnly(this)">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Agência</label>
+                <input type="text" class="form-control form-control-sm" id="id-agencia_convenio">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Conta</label>
+                <input type="text" class="form-control form-control-sm" id="id-conta_convenio">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">Recebimento</label>
+                <select name="id-recebimento" id="id-recebimento" class="form-select form-select-sm">
+                    <option value=""></option>
+                    <option value="CC">Conta Corrente</option>
+                    <option value="CP">Conta Poupança</option>
+                </select>
             </div>
         </div>
+    </div>
 
-        <div class="form-section">
-                <div class="col-md-12">
-                    <label class="form-label">Observações</label>
-                    <textarea class="form-control form-control-sm" rows="3" readonly disabled>{{ proposta.obs }}</textarea>
-                </div>
+    <!-- DADOS FINANCEIROS -->
+    <div class="form-section">
+        <div class="section-title">
+            <i class="bi bi-cash-coin me-2"></i>Proposta
         </div>
 
+        <div class="row g-3">
+            <div class="col-md-2">
+                <label class="form-label">Banco</label>
+                <select name="banco-select" id="banco-select" class="form-select form-select-sm">
+                </select>
+            </div>
 
-    </form>
+            <div class="col-md-4">
+                <label class="form-label">Operação</label>
+                <select name="operacoes-select" id="operacoes-select" class="form-select form-select-sm"></select>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Tabela</label>
+                <select name="tabela-select" id="tabela-select" class="form-select form-select-sm"></select>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Prazo</label>
+                <input type="text" class="form-control form-control-sm" id="id-prazo" readonly>
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">Coeficiente</label>
+                <input type="text" class="form-control form-control-sm" id="id-coeficiente" readonly>
+            </div>
+
+            <span id="form-proposta-fields"></span>
+        
+        </div>
+    </div>
 
 </main>
 
@@ -422,7 +384,479 @@
         </div>
     </div>
 </div>
+{{ view.kwargs.pk|json_script:"proposta-id" }}
 
 <script src="{% static 'js/utils.js' %}"></script>
 <script src="{% static 'js/historico.js' %}"></script>
+<script>
+
+    
+    
+document.addEventListener('DOMContentLoaded', function () {
+    const propostaId = JSON.parse(
+        document.getElementById('proposta-id').textContent
+    );
+    getPropostaData(propostaId)
+})
+
+
+function getPropostaData(pk) {
+    showLoader()
+
+    fetch(`/api/propostas/${pk}/detail/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success" && data.data) {
+
+                renderClienteData(data.data.cliente)
+                renderMatriculaFields(data.data.cliente.cpf, data.data.card_oferta.matricula)
+                loadBancosSelect(data.data.tabela.banco.id)
+                loadOperacoesSelect(data.data.tabela.operacao.id)
+                loadTabela(data.data.tabela.id, data.data)
+
+                document.getElementById("header_card_id").value = data.data.card_oferta.id
+                document.getElementById("header_proposta_id").value = data.data.id
+                document.getElementById("header_cliente_id").value = data.data.cliente.id
+                document.getElementById("header_matricula_id").value = data.data.card_oferta.matricula.id
+            } else {
+                showToast("Proposta não encontrada", "warning")
+            }
+        })
+        .catch(err => {
+            showToast("Erro ao carregar proposta", "danger")
+            console.error(err)
+        })
+        .finally(() => {
+            hideLoader()
+        })
+}
+
+
+let matriculasCache = [];
+
+function getMatricula(cpf, id){
+    fetch(`/api/matriculas/?cpf=${cpf}`)
+    .then(res => res.json())
+    .then(res => {
+        if (res.data) {
+            matriculasCache = res.data;
+            renderMatriculaData(res.data, id);
+        }
+    })
+    .catch(err => {
+        showToast("Erro ao carregar proposta", "danger");
+        console.error(err);
+    })
+    .finally(() => hideLoader());
+}
+
+
+function renderClienteData(data){
+    document.getElementById('id-cliente_nome').value = data.nome;
+    document.getElementById('id-cliente_cpf').value = maskCPF(data.cpf);
+    document.getElementById('id-cliente_nascimento').value = data.nascimento;
+    document.getElementById('id-cliente_sexo').value = data.sexo;
+    document.getElementById('id-cliente_celular').value = maskCelphone(data.celular);
+    document.getElementById('id-cliente_email').value = data.email;
+    document.getElementById('id-cliente_naturalidade').value = data.naturalidade;
+    document.getElementById('id-cliente_uf_naturalidade').value = data.uf_naturalidade;
+    document.getElementById('id-iletrado').value = data.iletrado;
+    document.getElementById('id-cliente_documento').value = data.numero_documento;
+    document.getElementById('id-cliente_orgao_emissor').value = data.orgao_emissor;
+    document.getElementById('id-cliente_data_emissao').value = data.data_emissao;
+    document.getElementById('id-cliente_mae').value = data.mae;
+    document.getElementById('id-cliente_pai').value = data.pai;
+    document.getElementById('id-cliente_cep').value = maskCEP(data.cep);
+    document.getElementById('id-cliente_endereco').value = data.endereco;
+    document.getElementById('id-cliente_numero_endereco').value = data.numero;
+    document.getElementById('id-cliente_bairro').value = data.bairro;
+    document.getElementById('id-cliente_complemento').value = data.complemento;
+    document.getElementById('id-cliente_endereco_cidade').value = data.cidade;
+    document.getElementById('id-cliente_endereco_uf').value = data.uf_cidade;
+}
+
+
+function renderMatriculaData(data){
+    let selectMatricula = document.getElementById('id-matricula');
+
+    data.forEach(matricula => {
+        const option = document.createElement('option')
+        option.value = matricula.id
+        option.text = matricula.matricula
+        selectMatricula.appendChild(option)
+    })
+
+}
+
+
+function renderMatriculaFields(cpf, data){
+
+    let selectMatricula = document.getElementById('id-matricula');
+
+    const option = document.createElement('option')
+    option.value = data.id
+    option.text = data.matricula
+    selectMatricula.appendChild(option)
+
+    selectMatricula.value = data.id
+
+    document.getElementById('id-card_oferta_convenio').value = data.nome_convenio;
+    document.getElementById('id-card_oferta_especie').value = data.codigo_convenio;
+    document.getElementById('id-card_oferta_uf').value = data.uf_convenio;
+    document.getElementById('id-banco_convenio').value = data.banco;
+    document.getElementById('id-agencia_convenio').value = data.agencia;
+    document.getElementById('id-conta_convenio').value = data.conta;
+    document.getElementById('id-recebimento').value = data.recebimento;
+}
+
+
+function loadBancosSelect(selected = null){
+    showLoader();
+    const select = document.getElementById('banco-select')
+    select.innerHTML = `<option value="">Selecione um banco</option>`
+
+    fetch('/api/bancos/')
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== 'success') {
+                showToast('Erro ao carregar bancos')
+                return
+            }
+
+            data.data.forEach(banco => {
+                const option = document.createElement('option')
+                option.value = banco.id
+                option.textContent = `${banco.codigo} - ${banco.nome}`
+
+                if (selected && selected == banco.id) {
+                    option.selected = true
+                }
+
+                select.appendChild(option)
+            })
+        })
+        .finally(() => hideLoader())
+}
+
+
+function loadOperacoesSelect(selected = null) {
+    showLoader();
+    const select = document.getElementById('operacoes-select')
+    select.innerHTML = `<option value="">Selecione uma operação</option>`
+
+    fetch('/api/operacoes/')
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== 'success') {
+                showToast('Erro ao carregar operações')
+                return
+            }
+
+            data.data.forEach(operacao => {
+                const option = document.createElement('option')
+                option.value = operacao.id
+                option.textContent = `${operacao.nome}`
+
+                if (selected && selected == operacao.id) {
+                    option.selected = true
+                }
+
+                select.appendChild(option)
+            })
+        })
+        .finally(() => hideLoader());
+}
+
+
+function loadTabela(tabelaId, dataProposta) {
+    showLoader();
+
+    let params = new URLSearchParams()
+
+    params.append('id', tabelaId)
+    params.append('ativo', 'true')
+
+    let url = '/api/tabelas/'
+
+    if ([...params].length) {
+        url += `?${params.toString()}`
+    }
+
+    const select = document.getElementById('tabela-select')
+    select.innerHTML = `<option value="">Selecione uma tabela</option>`
+
+    fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== 'success') {
+                showToast('Erro ao carregar tabelas para esse banco e operação')
+                return
+            }
+            data.data.forEach(tabela => {
+                const option = document.createElement('option')
+                option.value = tabela.id
+                option.textContent = `${tabela.nome} - ${tabela.prazo}x`
+                option.dataset.coeficiente = tabela.coeficiente
+                option.dataset.prazo = tabela.prazo
+
+                if (tabelaId && tabelaId == tabela.id) {
+                    option.selected = true
+                    document.getElementById('id-coeficiente').value = tabela.coeficiente
+                    document.getElementById('id-prazo').value = tabela.prazo
+                }
+                renderPropostaFields();
+                renderProposta(dataProposta);
+
+                select.appendChild(option)
+            })
+        })
+        .finally(() => hideLoader())
+}
+
+
+function loadTabelasSelect(selected = null) {
+    showLoader();
+    const bancoId = document.getElementById('banco-select').value
+    const operacaoId = document.getElementById('operacoes-select').value
+
+    if(bancoId == "" || operacaoId == "") {
+        showToast('Selecione um banco e uma operação');
+        hideLoader();
+        return
+    }
+
+    let params = new URLSearchParams()
+
+    params.append('banco', bancoId)
+    params.append('operacao', operacaoId)
+    params.append('ativo', 'true')
+
+    let url = '/api/tabelas/'
+
+    if ([...params].length) {
+        url += `?${params.toString()}`
+    }
+
+    const select = document.getElementById('tabela-select')
+    select.innerHTML = `<option value="">Selecione uma tabela</option>`
+
+    fetch(url)
+        .then(res => res.json())
+        .then(data => {
+            if (data.status !== 'success') {
+                showToast('Erro ao carregar tabelas para esse banco e operação')
+                return
+            }
+            data.data.forEach(tabela => {
+                const option = document.createElement('option')
+                option.value = tabela.id
+                option.textContent = `${tabela.nome} - ${tabela.prazo}x`
+                option.dataset.coeficiente = tabela.coeficiente
+                option.dataset.prazo = tabela.prazo
+                option.dataset.cms = tabela.cms
+
+                if (selected && selected == tabela.id) {
+                    option.selected = true
+                    document.getElementById('coeficiente').value = tabela.coeficiente
+                    document.getElementById('prazo').value = tabela.prazo
+                    document.getElementById('cms').value = tabela.cms
+                }
+
+                select.appendChild(option)
+            })
+        })
+        .finally(() => hideLoader())
+}
+
+
+document.getElementById('operacoes-select').addEventListener('change', () => {
+    loadTabelasSelect()
+    renderPropostaFields()
+})
+
+document.getElementById('banco-select').addEventListener('change', () => {
+    loadTabelasSelect()
+})
+
+document.getElementById("operacoes-select").addEventListener("change", () => {
+    document.getElementById('id-coeficiente').value = ''
+    document.getElementById('id-prazo').value = ''
+});
+
+document.getElementById("banco-select").addEventListener("change", () => {
+    document.getElementById('id-coeficiente').value = ''
+    document.getElementById('id-prazo').value = ''
+});
+
+document.getElementById("tabela-select").addEventListener("change", function () {
+    const selectedOption = this.options[this.selectedIndex]
+
+    if (!selectedOption || !selectedOption.dataset.coeficiente) {
+        document.getElementById('id-coeficiente').value = ''
+        return
+    }
+    
+    if (!selectedOption || !selectedOption.dataset.prazo) {
+        document.getElementById('id-prazo').value = ''
+        return
+    }
+
+    document.getElementById('id-coeficiente').value = selectedOption.dataset.coeficiente
+    document.getElementById('id-prazo').value = selectedOption.dataset.prazo
+});
+
+function calcularTroco(){
+    const select = document.getElementById('operacoes-select');
+    const selectedText = select.options[select.selectedIndex].text;
+
+    if(selectedText.includes('Cartão')){
+        const coeficiente = Number(document.getElementById('id-coeficiente').value);
+        const parcela = Number(document.getElementById('parcela').value);
+        const parcelaReal = parcela * 0.7;
+        const troco = (parcelaReal * coeficiente);
+        document.getElementById('troco').value = troco.toFixed(2);
+    } else {
+        const coeficiente = Number(document.getElementById('id-coeficiente').value);
+        const saldo_devedor = Number(document.getElementById('saldo_devedor')?.value ?? 0);
+        const parcela = Number(document.getElementById('parcela').value);
+        const troco = (parcela / coeficiente) - saldo_devedor;
+        document.getElementById('troco').value = troco.toFixed(2);
+    }
+}
+
+
+function renderProposta(data){
+    if(data.parcela) document.getElementById("parcela").value = data.parcela.toFixed(2);
+    if(data.troco) document.getElementById("troco").value = data.troco.toFixed(2);
+    if(data.saldo_devedor) document.getElementById("saldo_devedor").value = data.saldo_devedor.toFixed(2);
+    if(data.banco_origem) document.getElementById("banco_origem").value = data.banco_origem;
+    if(data.contrato_portado) document.getElementById("contrato_portado").value = data.contrato_portado;
+    if(data.prazo_original) document.getElementById("prazo_original").value = data.prazo_original;
+    if(data.prazo_restante) document.getElementById("prazo_restante").value = data.prazo_restante;
+    if(data.obs) document.getElementById("obs").value = data.obs;
+}
+
+function renderPropostaFields(){
+    let formProposta = document.getElementById('form-proposta-fields');
+    const select = document.getElementById('operacoes-select');
+    const selectedText = select.options[select.selectedIndex].text;
+
+    formProposta.innerHTML = '';
+
+    if(selectedText.includes('Margem Livre')){
+        formProposta.innerHTML = `
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <label>Parcela</label>
+                <input type="text" id="parcela" class="form-control form-control-sm" onchange="calcularTroco()" oninput="floatFormat(this)" required maxlength="9">
+            </div>
+            <div class="col-md-6">
+                <label>Troco</label>
+                <input type="text" id="troco" class="form-control form-control-sm" maxlength="9">
+            </div>
+            <div class="col-md-12">
+                <label>Observação</label>
+                <textarea type="text" id="obs" class="form-control form-control-sm"></textarea>
+            </div>
+        </div>
+        `
+    } else if(selectedText.includes('Refinanciamento')){
+        formProposta.innerHTML = `
+        <div class="row mt-3">
+            <div class="col-md-4">
+                <label>Parcela</label>
+                <input type="text" id="parcela" class="form-control form-control-sm" onchange="calcularTroco()" oninput="floatFormat(this)" required maxlength="9">
+            </div>
+            <div class="col-md-4">
+                <label>Saldo Devedor</label>
+                <input type="text" id="saldo_devedor" class="form-control form-control-sm" onchange="calcularTroco()" oninput="floatFormat(this)" required maxlength="9">
+            </div>
+            <div class="col-md-4">
+                <label>Troco</label>
+                <input type="text" id="troco" class="form-control form-control-sm" oninput="floatFormat(this)" maxlength="9">
+            </div>
+            <div class="col-md-12">
+                <label>Observação</label>
+                <textarea type="text" id="obs" class="form-control"></textarea>
+            </div>
+        </div>
+        `
+    } else if(selectedText.includes('Portabilidade')){
+        formProposta.innerHTML = `
+        <div class="row mt-3">
+            <div class="col-md-3">
+                <label>Banco Origem</label>
+                <input type="text" id="banco_origem" class="form-control form-control-sm" required maxlength="3" oninput="formatNumbersOnly(this)">
+            </div>
+            <div class="col-md-6">
+                <label>Nº Contrato</label>
+                <input type="text" id="contrato_portado" class="form-control form-control-sm" required>
+            </div>
+            <div class="col-md-3">
+                <label>Saldo Devedor</label>
+                <input type="text" id="saldo_devedor" class="form-control form-control-sm" onchange="calcularTroco()" oninput="floatFormat(this)" required maxlength="9">
+            </div>
+            <!-- -->
+            <div class="col-md-3">
+                <label>Prazo Original</label>
+                <input type="text" id="prazo_original" class="form-control form-control-sm" required maxlength="3" oninput="formatNumbersOnly(this)">
+            </div>
+            <div class="col-md-3">
+                <label>Prazo Restante</label>
+                <input type="text" id="prazo_restante" class="form-control form-control-sm" required maxlength="3" oninput="formatNumbersOnly(this)">
+            </div>
+            <div class="col-md-3">
+                <label>Parcela</label>
+                <input type="text" id="parcela" class="form-control form-control-sm" onchange="calcularTroco()" oninput="floatFormat(this)" required maxlength="9">
+            </div>
+            <div class="col-md-3">
+                <label>Troco</label>
+                <input type="text" id="troco" class="form-control form-control-sm" oninput="floatFormat(this)" maxlength="9">
+            </div>
+            <div class="col-md-12">
+                <label>Observação</label>
+                <textarea type="text" id="obs" class="form-control"></textarea>
+            </div>
+        </div>
+        `
+    } else if(selectedText.includes('Cartão')){
+        formProposta.innerHTML = `
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <label>Parcela</label>
+                <input type="text" id="parcela" class="form-control form-control-sm" onchange="calcularTroco()" oninput="floatFormat(this)" required maxlength="9">
+            </div>
+            <div class="col-md-6">
+                <label>Saque</label>
+                <input type="text" id="troco" class="form-control form-control-sm" maxlength="9" oninput="floatFormat(this)">
+            </div>
+            <div class="col-md-12">
+                <label>Observação</label>
+                <textarea type="text" id="obs" class="form-control"></textarea>
+            </div>
+        </div>
+        `
+    } else if(selectedText.includes('Saque')){
+        formProposta.innerHTML = `
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <label>Parcela</label>
+                <input type="text" id="parcela" class="form-control form-control-sm" oninput="floatFormat(this)" required maxlength="9">
+            </div>
+            <div class="col-md-6">
+                <label>Saque</label>
+                <input type="text" id="troco" class="form-control form-control-sm" oninput="floatFormat(this)" required maxlength="9">
+            </div>
+            <div class="col-md-12">
+                <label>Observação</label>
+                <textarea type="text" id="obs" class="form-control"></textarea>
+            </div>
+        </div>
+        `
+    }
+}
+
+
+
+</script>
 {% endblock %}

@@ -105,6 +105,27 @@ function maskCPF(value) {
     .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
 }
 
+function maskCelphone(value){
+  return value
+    .replace(/\D/g, '')
+    .replace(/(\d{2})(\d)/, '($1) $2')
+    .replace(/(\d{5})(\d{4})$/, '$1-$2');
+}
+
 function formatDate(dateStr) {
     return new Date(dateStr).toLocaleString('pt-BR')
+}
+
+
+function maskData(dataISO) {
+    if (!dataISO) return '';
+
+    const partes = dataISO.split('-');
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+}
+
+function maskCEP(value){
+  return value
+    .replace(/\D/g, '')
+    .replace(/(\d{5})(\d{3})$/, '$1-$2');
 }

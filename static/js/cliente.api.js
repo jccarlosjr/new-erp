@@ -81,8 +81,6 @@ function calcularTroco(){
         const troco = (parcela / coeficiente) - saldo_devedor;
         document.getElementById('troco').value = troco.toFixed(2);
     }
-
-
 }
 
 
