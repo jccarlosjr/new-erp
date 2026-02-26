@@ -5,15 +5,17 @@ document.addEventListener('DOMContentLoaded', function () {
 })
 
 document.getElementById("operacoes-select").addEventListener("change", () => {
-    loadTabelasSelect();
-    renderPropostaFields();
     document.getElementById('coeficiente').value = ''
     document.getElementById('prazo').value = ''
+    loadTabelasSelect()
+    renderPropostaFields()
 });
 
 document.getElementById("banco-select").addEventListener("change", () => {
     document.getElementById('coeficiente').value = ''
     document.getElementById('prazo').value = ''
+    document.getElementById('tabela-select').value = ''
+    document.getElementById('operacoes-select').value = ''
 });
 
 document.getElementById("tabela-select").addEventListener("change", function () {
@@ -211,13 +213,11 @@ function loadTabelasSelect(selected = null) {
                 option.textContent = `${tabela.nome} - ${tabela.prazo}x`
                 option.dataset.coeficiente = tabela.coeficiente
                 option.dataset.prazo = tabela.prazo
-                option.dataset.cms = tabela.cms
 
                 if (selected && selected == tabela.id) {
                     option.selected = true
                     document.getElementById('coeficiente').value = tabela.coeficiente
                     document.getElementById('prazo').value = tabela.prazo
-                    document.getElementById('cms').value = tabela.cms
                 }
 
                 select.appendChild(option)
@@ -226,61 +226,88 @@ function loadTabelasSelect(selected = null) {
         .finally(() => hideLoader())
 }
 
-function loadBancosSelect(selected = null) {
-    showLoader();
+async function loadBancosSelect(selected = null) {
     const select = document.getElementById('banco-select')
     select.innerHTML = `<option value="">Selecione um banco</option>`
 
-    fetch('/api/bancos/')
-        .then(res => res.json())
-        .then(data => {
-            if (data.status !== 'success') {
-                showToast('Erro ao carregar bancos')
-                return
-            }
+    let bancos = await getBancos();
 
-            data.data.forEach(banco => {
-                const option = document.createElement('option')
-                option.value = banco.id
-                option.textContent = `${banco.codigo} - ${banco.nome}`
+    bancos.data.forEach(banco => {
+        const option = document.createElement('option')
+        option.value = banco.id
+        option.textContent = `${banco.codigo} - ${banco.nome}`
 
-                if (selected && selected == banco.id) {
-                    option.selected = true
-                }
+        if (selected && selected == banco.id) {
+            option.selected = true
+        }
 
-                select.appendChild(option)
-            })
-        })
-        .finally(() => hideLoader())
+        select.appendChild(option)
+    })
 }
 
-function loadOperacoesSelect(selected = null) {
-    showLoader();
+async function loadOperacoesSelect(selected = null) {
     const select = document.getElementById('operacoes-select')
     select.innerHTML = `<option value="">Selecione uma operação</option>`
 
-    fetch('/api/operacoes/')
-        .then(res => res.json())
-        .then(data => {
-            if (data.status !== 'success') {
-                showToast('Erro ao carregar operações')
-                return
-            }
+    let operacoes = await getOperations();
 
-            data.data.forEach(operacao => {
-                const option = document.createElement('option')
-                option.value = operacao.id
-                option.textContent = `${operacao.nome}`
+    operacoes.data.forEach(operacao => {
+        const option = document.createElement('option')
+        option.value = operacao.id
+        option.textContent = `${operacao.nome}`
 
-                if (selected && selected == operacao.id) {
-                    option.selected = true
-                }
+        if (selected && selected == operacao.id) {
+            option.selected = true
+        }
 
-                select.appendChild(option)
-            })
-        })
-        .finally(() => hideLoader());
+        select.appendChild(option)
+    })
 }
+
+
+async function getBancos(){
+    try {
+        showLoader();
+        const res = await fetch('/api/bancos/');
+        const data = await res.json();
+
+        if (data.status !== 'success') {
+            showToast('Erro ao carregar operações');
+            return null;
+        }
+
+        return data;
+    } catch (error) {
+        console.error(error);
+        showToast('Erro na requisição');
+        return null;
+    } finally {
+        hideLoader();
+    }
+}
+
+
+async function getOperations(){
+    try {
+        showLoader();
+        const res = await fetch('/api/operacoes/');
+        const data = await res.json();
+
+        if (data.status !== 'success') {
+            showToast('Erro ao carregar operações');
+            return null;
+        }
+
+        return data;
+    } catch (error) {
+        console.error(error);
+        showToast('Erro na requisição');
+        return null;
+    } finally {
+        hideLoader();
+    }
+}
+
 
 function calcularTroco(){
     const select = document.getElementById('operacoes-select');
@@ -535,16 +562,44 @@ function cancelarProposta(id, status) {
     .finally(() => hideLoader())
 }
 
-function openEditPropostaModal(element) {
+async function openEditPropostaModal(element) {
     const proposta = JSON.parse(element.dataset.proposta);
 
-    loadBancosSelect();
-    loadOperacoesSelect();
+    await Promise.all([
+        loadBancosSelect(proposta.tabela__banco__id),
+        loadOperacoesSelect(proposta.tabela__operacao__id),
+    ]);
 
-    document.getElementById('banco-select').value = proposta.tabela__banco__id
+    await loadTabelasSelect(proposta.tabela__id);
 
+    renderPropostaFields(proposta);
+    renderDataEditModal(proposta);
     propostaModal.show();
-    
-    document.getElementById('operacoes-select').value = proposta.tabela__operacao__id
-    console.log(proposta);
+}
+
+function renderDataEditModal(proposta){
+    if(proposta.tabela__operacao__nome.includes('Margem Livre')){
+        document.getElementById('parcela').value = proposta.parcela.toFixed(2);
+        document.getElementById('troco').value = proposta.troco.toFixed(2);
+    } else if(proposta.tabela__operacao__nome.includes('Refinanciamento')){
+        document.getElementById('parcela').value = proposta.parcela.toFixed(2);
+        document.getElementById('troco').value = proposta.troco.toFixed(2);
+        document.getElementById('saldo_devedor').value = proposta.saldo_devedor.toFixed(2);
+    } else if(proposta.tabela__operacao__nome.includes('Portabilidade')){
+        document.getElementById('banco_origem').value = proposta.banco_origem;
+        document.getElementById('contrato_portado').value = proposta.contrato_portado;
+        document.getElementById('saldo_devedor').value = proposta.saldo_devedor.toFixed(2);
+        document.getElementById('prazo_original').value = proposta.prazo_original;
+        document.getElementById('prazo_restante').value = proposta.prazo_restante;
+        document.getElementById('parcela').value = proposta.parcela.toFixed(2);
+        document.getElementById('troco').value = proposta.troco.toFixed(2);
+        document.getElementById('obs').value = proposta.obs;
+    } else if(proposta.tabela__operacao__nome.includes('Cartão')){
+        document.getElementById('parcela').value = proposta.parcela.toFixed(2);
+        document.getElementById('troco').value = proposta.troco.toFixed(2);
+    } else if(proposta.tabela__operacao__nome.includes('Saque')){
+        document.getElementById('parcela').value = proposta.parcela.toFixed(2);
+        document.getElementById('troco').value = proposta.troco.toFixed(2);
+    }
+
 }
