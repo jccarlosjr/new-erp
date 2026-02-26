@@ -53,7 +53,7 @@ function openHistoricoPropostaModal(propostaId) {
 
             res.data.forEach(item => {
                 list.insertAdjacentHTML('beforeend', `
-                    <li class="list-group-item mt-2 bg-${item.status__color}-subtle ">
+                    <li class="list-group-item mt-2 bg-${item.status__color}-subtle shadow-lg">
                         <div class="d-flex justify-content-between p-2">
                             <small class="text-muted">
                                 ${item.user__username ?? 'Sistema'}: <strong class="text-dark">${item.status__nome}</strong> em ${formatDate(item.date)}
@@ -131,7 +131,7 @@ function openHistoricoModal(cardId) {
 
             res.data.forEach(item => {
                 list.insertAdjacentHTML('beforeend', `
-                    <li class="list-group-item">
+                    <li class="list-group-item mt-2 shadow-lg">
                         <div class="d-flex justify-content-between">
                             <small class="text-muted">
                                 Alterado por ${item.user__username ?? 'Sistema'} em ${formatDate(item.date)}

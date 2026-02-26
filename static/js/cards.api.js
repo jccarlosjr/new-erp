@@ -1,46 +1,15 @@
 /* ===============================
    EVENTOS
 ================================ */
-let propostaModal;
 let deletePropostaModal;
 let changePropostaModal;
 
 document.addEventListener('DOMContentLoaded', function () {
-    propostaModal = new bootstrap.Modal(document.getElementById('propostaModal'))
     deletePropostaModal = new bootstrap.Modal(document.getElementById('deletePropostaModal'))
     changePropostaModal = new bootstrap.Modal(document.getElementById('changePropostaModal'))
     loadCards()
 })
 
-document.getElementById("operacoes-select").addEventListener("change", loadTabelasSelect);
-document.getElementById("operacoes-select").addEventListener("change", renderPropostaFields);
-
-document.getElementById("operacoes-select").addEventListener("change", () => {
-    document.getElementById('coeficiente').value = ''
-    document.getElementById('prazo').value = ''
-});
-
-document.getElementById("banco-select").addEventListener("change", () => {
-    document.getElementById('coeficiente').value = ''
-    document.getElementById('prazo').value = ''
-});
-
-document.getElementById("tabela-select").addEventListener("change", function () {
-    const selectedOption = this.options[this.selectedIndex]
-
-    if (!selectedOption || !selectedOption.dataset.coeficiente) {
-        document.getElementById('coeficiente').value = ''
-        return
-    }
-    
-    if (!selectedOption || !selectedOption.dataset.prazo) {
-        document.getElementById('prazo').value = ''
-        return
-    }
-
-    document.getElementById('coeficiente').value = selectedOption.dataset.coeficiente
-    document.getElementById('prazo').value = selectedOption.dataset.prazo
-});
 
 document.getElementById("filter-btn").addEventListener("click", loadCards);
 
@@ -67,27 +36,6 @@ function openChangePropostaModal(id, codig_interno){
     changePropostaModal.show()
 }
 
-
-function openCreatePropostaModal(cpf, card_id) {
-    let formProposta = document.getElementById('form-proposta-fields');
-    formProposta.innerHTML = '';
-
-    document.getElementById('propostaModalTitle').innerText = "Nova Proposta";
-
-    document
-        .querySelectorAll('#propostaModal input, #propostaModal textarea')
-        .forEach(el => el.value = '');
-
-    document.getElementById('proposta-modal-card-id').value = card_id;
-    document.getElementById('proposta-modal-cliente-cpf').value = cpf;
-
-    document.getElementById('proposta-id').value = '';
-
-    loadBancosSelect();
-    loadOperacoesSelect();
-
-    propostaModal.show();
-}
 
 /* ===============================
 ================================ */
@@ -173,240 +121,7 @@ function editarCard(id, status, historico) {
     .finally(() => hideLoader())
 }
 
-function deleteProposta() {
-    showLoader()
-    const id = document.getElementById('delete-proposta-id').value
 
-    fetch('/api/propostas/', {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
-        },
-        body: JSON.stringify({ id })
-    })
-    .then(async res => {
-        const data = await res.json()
-        if (!res.ok || data.status === 'error') {
-            throw new Error(data.message || 'Erro ao excluir')
-        }
-        return data
-    })
-    .then(() => {
-        deletePropostaModal.hide();
-        showToast('Proposta excluida com sucesso', 'success')
-        loadCards();
-    })
-    .catch(err => {
-        if(err.message.includes("Cannot delete some instances of model")){
-            deletePropostaModal.hide();
-            showToast("Não é possível deletar uma proposta ativa", 'danger')
-        } else {
-            deletePropostaModal.hide();
-            showToast(err.message)
-        }
-    })
-    .finally(() => hideLoader())
-}
-
-
-function changeStatusProposta() {
-    showLoader()
-    const id = document.getElementById('change-proposta-id').value;
-    const status = document.getElementById('status-change-proposta').value;
-    const obs = document.getElementById('obs-change-proposta').value;
-
-    if(!status || !obs) {
-        showToast('Preencha todos os campos !', 'danger');
-        hideLoader();
-        return
-    }
-
-    fetch('/api/propostas/', {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
-        },
-        body: JSON.stringify({ 
-            id: id,
-            status_id: status,
-            obs: obs,
-            bloqueado: true
-        })
-    })
-    .then(async res => {
-        const data = await res.json()
-        if (!res.ok || data.status === 'error') {
-            throw new Error(data.message || 'Erro ao excluir')
-        }
-        return data
-    })
-    .then(() => {
-        changePropostaModal.hide();
-        showToast('Status alterado com sucesso', 'success')
-        loadCards();
-    })
-    .catch(err => {
-        changePropostaModal.hide();
-        showToast(err.message)
-    })
-    .finally(() => hideLoader())
-}
-
-function cancelarProposta(id, status) {
-    showLoader();
-
-    fetch('/api/propostas/', {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken()
-        },
-        body: JSON.stringify({
-            id: id,
-            status: status
-        })
-    })
-    .then(async res => {
-        const data = await res.json()
-        if (!res.ok || data.status === 'error') {
-            throw new Error(data.message || 'Erro ao atualizar')
-        }
-        return data
-    })
-    .catch(err => {
-        showToast(err.message)
-    })
-    .finally(() => hideLoader())
-}
-
-function saveProposta() {
-    let card_id = document.getElementById('proposta-modal-card-id').value;
-    let cpf = document.getElementById('proposta-modal-cliente-cpf').value;
-    
-    showLoader();
-    if (!cpf) {
-        showToast("Cliente não identificado", "danger");
-        return;
-    }
-
-    if (!card_id) {
-        showToast("Card de oferta não identificado", "danger");
-        return;
-    }
-
-    let saldoDevedor = Number(document.getElementById('saldo_devedor')?.value ?? 0);
-    let troco = Number(document.getElementById('troco').value);
-    let financiado = saldoDevedor + troco;
-
-    const payload = {
-        id: document.getElementById('proposta-id').value || null,
-
-        cpf: cpf,
-        card_oferta_id: card_id,
-        usuario_id: currentUser,
-
-        tabela_id: Number(document.getElementById('tabela-select').value),
-
-        parcela: Number(document.getElementById('parcela').value),
-        saldo_devedor: saldoDevedor,
-        prazo: Number(document.getElementById('prazo').value),
-        troco: troco,
-        financiado: financiado,
-        banco_origem: document.getElementById('banco_origem')?.value ?? null,
-        contrato_portado: document.getElementById('contrato_portado')?.value ?? null,
-        prazo_original: Number(document.getElementById('prazo_original')?.value) ?? null,
-        prazo_restante: Number(document.getElementById('prazo_restante')?.value) ?? null,
-        obs: document.getElementById('obs').value,
-    };
-
-    /* ===== VALIDAÇÕES ===== */
-    const select = document.getElementById('operacoes-select');
-    const selectedText = select.options[select.selectedIndex].text;
-
-    /* ===== MARGEM LIVRE ===== */
-    if(selectedText.includes('Margem Livre')) {
-        if(!payload.tabela_id || !payload.parcela){
-            showToast("Tabela e parcela são obrigatórios", "warning");
-            return;
-        }
-    }
-
-    /* ===== SAQUE COMPLEMENTAR ===== */
-    if(selectedText.includes('Saque')) {
-        if(!payload.tabela_id || !payload.parcela || !payload.troco){
-            showToast("Tabela, parcela e saque são obrigatórios", "warning");
-            return;
-        }
-    }
-
-    /* ===== REFINANCIAMENTO ===== */
-    if(selectedText.includes('Refinanciamento')) {
-        if(!payload.tabela_id || !payload.parcela || !payload.saldo_devedor){
-            showToast("Tabela, parcela e saldo devedor são obrigatórios", "warning");
-            return;
-        }
-    }
-
-    /* ===== PORTABILIDADE ===== */
-    if (selectedText.includes('Portabilidade')) {
-
-        const camposObrigatorios = {
-            tabela_id: 'Tabela',
-            parcela: 'Parcela',
-            saldo_devedor: 'Saldo devedor',
-            banco_origem: 'Banco de origem',
-            contrato_portado: 'Contrato portado',
-            prazo_original: 'Prazo original',
-            prazo_restante: 'Prazo restante'
-        };
-
-        const faltantes = Object.entries(camposObrigatorios)
-            .filter(([campo]) => !payload[campo])
-            .map(([, label]) => label);
-
-        if (faltantes.length) {
-            showToast(
-                `Campos obrigatórios não preenchidos: ${faltantes.join(', ')}`,
-                'warning'
-            );
-            return;
-        }
-    }
-
-    fetch('/api/propostas/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken(),
-        },
-        body: JSON.stringify(payload),
-    })
-        .then(res => res.json())
-        .then(res => {
-            if (res.status === 'success') {
-
-                showToast(
-                    payload.id
-                        ? "Proposta atualizada com sucesso"
-                        : "Proposta criada com sucesso",
-                    "success"
-                );
-
-                propostaModal.hide();
-                loadCards();
-
-            } else {
-                showToast(res.message || "Erro ao salvar proposta", "danger");
-            }
-        })
-        .catch(err => {
-            showToast("Erro de conexão com o servidor", "danger");
-            console.error(err);
-        })
-        .finally(() => hideLoader())
-}
 /* ===============================
 ================================ */
 
@@ -472,26 +187,6 @@ function updateCountersAndRenderAccordions(cards){
     countCancelados.innerText = canceladosInt ?? 0;
 }
 
-function calcularTroco(){
-    const select = document.getElementById('operacoes-select');
-    const selectedText = select.options[select.selectedIndex].text;
-
-    if(selectedText.includes('Cartão')){
-        const coeficiente = Number(document.getElementById('coeficiente').value);
-        const parcela = Number(document.getElementById('parcela').value);
-        const parcelaReal = parcela * 0.7;
-        const troco = (parcelaReal * coeficiente);
-        document.getElementById('troco').value = troco.toFixed(2);
-    } else {
-        const coeficiente = Number(document.getElementById('coeficiente').value);
-        const saldo_devedor = Number(document.getElementById('saldo_devedor')?.value ?? 0);
-        const parcela = Number(document.getElementById('parcela').value);
-        const troco = (parcela / coeficiente) - saldo_devedor;
-        document.getElementById('troco').value = troco.toFixed(2);
-    }
-
-
-}
 /* ===============================
    HELPERS END
 ================================ */
@@ -512,21 +207,21 @@ function renderCard(card, color, cardAccordion) {
     const { btnAdd, btnActions } = renderCardActions(card);
     
     cardAccordion.innerHTML += `
-        <div class="accordion-item mt-2">
-            <h2 class="accordion-header d-flex align-items-center justify-content-between px-3 py-2">
-                
+        <div class="accordion-item mt-2 shadow-lg">
+            <span class="accordion-header d-flex align-items-center justify-content-between px-3 py-2">
                 <div class="d-flex align-items-center justify-content-center gap-2">
+                <div class="btn-group">
                     <button class="btn btn-sm btn-sm-icon btn-warning bi bi-clock-history"
                             onclick="openHistoricoModal('${card.id }')"
                             title="Histórico">
                     </button>
                     ${btnAdd}
                     ${btnActions}
-                    <h6 class="mb-0 text-dark" id="accordion-title">
-                        ${card.codigo_interno} - ${card.cliente__nome} - 
-                        CPF: ${maskCPF(card.cliente__cpf)} - 
-                        Matrícula: ${card.matricula__matricula}
-                    </h6>
+                </div>
+                    <small class="card p-2 text-dark">${card.codigo_interno}</small>
+                    <small class="card p-2 text-dark">${card.cliente__nome}</small>
+                    <small class="card p-2 text-dark">CPF: ${maskCPF(card.cliente__cpf)}</small>
+                    <small class="card p-2 text-dark">Matrícula: ${card.matricula__matricula}</small>
                 </div>
 
                 <button class="accordion-button collapsed shadow-none p-0 bg-transparent"
@@ -537,8 +232,7 @@ function renderCard(card, color, cardAccordion) {
                         aria-controls="collapse${card.id}"
                         style="width: auto;">
                 </button>
-
-            </h2>
+            </span>
 
             <div id="collapse${card.id}" 
                 class="accordion-collapse collapse"
@@ -574,38 +268,46 @@ function renderCard(card, color, cardAccordion) {
 }
 
 function renderProposta(proposta) {
-        return `
-            <tr>
-                <td class="small">${proposta.codigo_interno}</td>
-                <td class="small">${proposta.tabela__banco__nome}</td>
-                <td class="small">${proposta.tabela__operacao__nome}</td>
-                <td class="small">${proposta.parcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL'})}</td>
-                <td class="small">${proposta.status__nome}</td>
-                <td>
-                <div class="btn-group">
-                    <button class="btn btn-sm btn-sm-icon btn-warning bi bi-clock-history" title="Histórico" onclick="openHistoricoPropostaModal(${proposta.id})"></button>
-                    <button class="btn btn-sm btn-sm-icon btn-primary bi bi bi-files" title="Abrir Proposta" onclick="openProposta(${proposta.id})"></button>
-                    <div class="btn-group dropend">
-                        <button 
-                            type="button" 
-                            ${proposta.bloqueado ? 'disabled' : ''} 
-                            class="btn btn-sm btn-sm-icon bi ${proposta.bloqueado ? 'bi-lock btn-secondary' : 'bi-gear btn-info'} dropdown-toggle" 
-                            data-bs-toggle="dropdown" 
-                            aria-expanded="false">
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <button class="dropdown-item" onclick="openChangePropostaModal(${proposta.id}, '${proposta.codigo_interno}')"><i class="bi bi-gear text-primary"></i> Alterar Status
-                                </button>
-                                <button class="dropdown-item" onclick="openDeletePropostaModal(${proposta.id}, '${proposta.codigo_interno}')"><i class="bi bi-trash3 text-danger"></i> Excluir proposta
-                                </button>
-                            </li>
-                        </ul>
-                    </div>
+    return `
+        <tr>
+            <td class="small">${proposta.codigo_interno}</td>
+            <td class="small">${proposta.tabela__banco__nome}</td>
+            <td class="small">${proposta.tabela__operacao__nome}</td>
+            <td class="small">${proposta.parcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL'})}</td>
+            <td class="small">${proposta.status__nome}</td>
+            <td>
+            <div class="btn-group">
+                <button class="btn btn-sm btn-sm-icon btn-warning bi bi-clock-history" title="Histórico" onclick="openHistoricoPropostaModal(${proposta.id})"></button>
+                <button class="btn btn-sm btn-sm-icon btn-primary bi bi bi-files" title="Abrir Proposta" onclick="openProposta(${proposta.id})"></button>
+                <div class="btn-group dropend">
+                    <button 
+                        type="button" 
+                        ${proposta.bloqueado ? 'disabled' : ''} 
+                        class="btn btn-sm btn-sm-icon bi ${proposta.bloqueado ? 'bi-lock btn-secondary' : 'bi-gear btn-info'} dropdown-toggle" 
+                        data-bs-toggle="dropdown" 
+                        aria-expanded="false">
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <button 
+                                class="dropdown-item" 
+                                data-proposta='${JSON.stringify(proposta).replace(/'/g, "&apos;")}'
+                                onclick="openEditPropostaModal(this)">
+                                <i class="bi bi-pen text-success"></i> Editar Proposta
+                            </button>
+                            <button class="dropdown-item" onclick="openChangePropostaModal(${proposta.id}, '${proposta.codigo_interno}')">
+                                <i class="bi bi-gear text-primary"></i> Alterar Status
+                            </button>
+                            <button class="dropdown-item" onclick="openDeletePropostaModal(${proposta.id}, '${proposta.codigo_interno}')">
+                                <i class="bi bi-trash3 text-danger"></i> Excluir proposta
+                            </button>
+                        </li>
+                    </ul>
                 </div>
-                </td>
-            </tr>
-        `
+            </div>
+            </td>
+        </tr>
+    `
 }
 
 

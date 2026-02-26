@@ -3,15 +3,19 @@
 ###################
 
 Criar lixeira, para cards inativos
+Criar tela de editar cards
+Configurar botão da esteira de cards para ações quando não estiver bloqueado
+Configurar opção para edição do card no botão de ações
 
 ###################
 #### PROPOSTAS ####
 ###################
 
+Configurar modal para editar uma proposta
 Adicionar ações para propostas dependendo do status de cada uma
 Adicionar campo para link de formalização
 Criar lixeira, para propostas inativas
-Configurar tela para editar uma propostas
+
 
 Configurar o contador para o last update somente com horas úteis de 08h às 17h em dias úteis
 Adicionar last update para cada proposta que aparece no card

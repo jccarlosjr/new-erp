@@ -308,8 +308,8 @@ function loadCards() {
             const isBlocked = card.is_blocked
 
             const lockBtn = `
-                <button disabled
-                    class="btn btn-sm btn-sm-icon btn-dark bi ${isBlocked ? 'bi-lock' : 'bi-unlock'}"
+                <button
+                    class="btn btn-sm btn-sm-icon bi ${isBlocked ? 'bi-lock btn-dark' : 'bi-unlock btn-info'}"
                     title="Contrato ${isBlocked ? 'Bloqueado' : 'Desbloqueado'}">
                 </button>
             `
@@ -340,7 +340,7 @@ function loadCards() {
                 <td class="small">
                     <div class="btn-group">
                         <button class="btn btn-sm btn-sm-icon btn-warning bi bi-clock-history"
-                            title="Abrir Propostas"
+                            title="Histórico"
                             onclick="openHistoricoModal('${card.id }')">
                         </button>
                         ${lockBtn}
@@ -513,6 +513,7 @@ function renderPropostas(propostas, is_blocked){
                 <td>${proposta.parcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL'})}</td>
                 <td>${proposta.status__nome}</td>
                 <td>
+                <div class="btn-group">
                 <button
                     class="btn btn-sm btn-sm-icon btn-warning bi bi-clock-history"
                     title="Histórico"
@@ -526,6 +527,7 @@ function renderPropostas(propostas, is_blocked){
                     ${editBtn}
                     ${deleteBtn}
                 </td>
+                </div>
             </tr>
         `
     })
