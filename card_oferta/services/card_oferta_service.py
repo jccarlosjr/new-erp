@@ -6,7 +6,7 @@ from cliente.models import Cliente
 from convenio.models import Matricula
 from proposta.models import Proposta, Status
 from django.core.exceptions import ValidationError
-from historico.models import HistoricoCard
+from historico.models import HistoricoCard, HistoricoProposta
 
 
 def create_or_update_card(user, body):
@@ -95,16 +95,28 @@ def patch_card(body, request):
     if card.status == 'NAO_INICIADO':
         card.is_blocked = False
         for proposta in propostas:
-            proposta.status = Status.objects.get(codigo=1)
+            proposta.status = "Aberto"
             proposta.bloqueado = False
             proposta.save()
+            HistoricoProposta.objects.create(
+                proposta=proposta,
+                user=request.user,
+                title=proposta.status,
+                obs="Proposta alterada para 'Aberto' através do card de ofertas"
+            )
 
     if card.status == 'CANCELADO':
         card.is_blocked = False
         for proposta in propostas:
-            proposta.status = Status.objects.get(codigo=13)
+            proposta.status = "Cancelado"
             proposta.bloqueado = False
             proposta.save()
+            HistoricoProposta.objects.create(
+                proposta=proposta,
+                user=request.user,
+                title=proposta.status,
+                obs="Proposta alterada para 'Cancelado' através do card de ofertas"
+            )
     
     if 'is_blocked' in body:
         card.is_blocked = body.get('is_blocked')

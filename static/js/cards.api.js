@@ -59,7 +59,11 @@ function loadCards() {
             updateCountersAndRenderAccordions(data.data)
 
         })
-        .catch(() => showToast('Erro de conexão com o servidor'))
+        .catch((error) => {
+            showToast('Erro de conexão com o servidor');
+            console.log(error);
+        }
+        )
         .finally(() => hideLoader())
 }
 
@@ -178,24 +182,36 @@ function renderCard(card, color, cardAccordion) {
         propostasHTML += renderProposta(proposta);
     })
 
-    const { btnAdd, btnActions } = renderCardActions(card);
-    
+    const { btnAdd, divActions } = renderButtonsCard(card);
+
     cardAccordion.innerHTML += `
         <div class="accordion-item mt-2 shadow-lg">
             <span class="accordion-header d-flex align-items-center justify-content-between px-3 py-2">
                 <div class="d-flex align-items-center justify-content-center gap-2">
-                <div class="btn-group">
-                    <button class="btn btn-sm btn-sm-icon btn-warning bi bi-clock-history"
-                            onclick="openHistoricoModal('${card.id }')"
-                            title="Histórico">
-                    </button>
-                    ${btnAdd}
-                    ${btnActions}
-                </div>
-                    <small class="card p-2 text-dark">${card.codigo_interno}</small>
-                    <small class="card p-2 text-dark">${card.cliente__nome}</small>
-                    <small class="card p-2 text-dark">CPF: ${maskCPF(card.cliente__cpf)}</small>
-                    <small class="card p-2 text-dark">Matrícula: ${card.matricula__matricula}</small>
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-sm-icon btn-warning bi bi-clock-history"
+                                onclick="openHistoricoModal('${card.id }')"
+                                title="Histórico">
+                        </button>
+                        ${btnAdd}
+                        ${divActions}
+                    </div>
+                    <div class="form-floating">
+                        <input type="text" readonly class="form-control" value="${card.codigo_interno}">
+                        <label>Código Interno</label>
+                    </div>
+                    <div class="form-floating">
+                        <input type="text" style="width: 300px;" readonly class="form-control" value="${card.cliente__nome}">
+                        <label>Nome</label>
+                    </div>
+                    <div class="form-floating">
+                        <input type="text" readonly class="form-control" value="${maskCPF(card.cliente__cpf)}">
+                        <label>CPF</label>
+                    </div>
+                    <div class="form-floating">
+                        <input type="text" readonly class="form-control" value="${card.matricula__matricula}">
+                        <label>Matrícula</label>
+                    </div>
                 </div>
 
                 <button class="accordion-button collapsed shadow-none p-0 bg-transparent"
@@ -248,7 +264,7 @@ function renderProposta(proposta) {
             <td class="small">${proposta.tabela__banco__nome}</td>
             <td class="small">${proposta.tabela__operacao__nome}</td>
             <td class="small">${proposta.parcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL'})}</td>
-            <td class="small">${proposta.status__nome}</td>
+            <td class="small">${proposta.status}</td>
             <td>
             <div class="btn-group">
                 <button class="btn btn-sm btn-sm-icon btn-warning bi bi-clock-history" title="Histórico" onclick="openHistoricoPropostaModal(${proposta.id})"></button>
@@ -289,85 +305,107 @@ function openProposta(id){
     window.open(`/propostas/${id}`, '_blank', 'noopener,noreferrer');
 }
 
-function renderCardActions(card) {
 
-    let btnAdd = '';
-    let btnActions = '';
-    
-
-    if (card.status === 'NAO_INICIADO') {
-        btnAdd = `
-            <button class="btn btn-sm btn-sm-icon btn-success bi bi-plus-circle"
-                    title="Adicionar Proposta"
-                    onclick="openCreatePropostaModal('${card.cliente__cpf}', '${card.id}')">
-            </button>
-        `;
-    }
-
-    if (card.status === 'NAO_INICIADO') {
-        btnActions = dropdown(card, [
-            {
-                status: 'DIGITACAO',
-                label: 'Enviar para digitação',
-                icon: 'bi-send text-success',
-                historico: 'Digitação Solicitada'
-            },
-            {
-                status: 'CANCELADO',
-                label: 'Solicitar cancelamento',
-                icon: 'bi-exclamation-triangle text-warning',
-                historico: 'Card Cancelado'
-            }
-        ]);
-    }
-
-    else if (card.status === 'CANCELADO') {
-        btnActions = dropdown(card, [
-            {
-                status: 'NAO_INICIADO',
-                label: 'Redigitar Card',
-                icon: 'bi-arrow-up-left-circle',
-                historico: 'Card Reiniciado'
-            }
-        ]);
-    }
-
-    else if (card.status === 'ATENCAO' || card.status === 'FORMALIZACAO') {
-        btnActions = dropdown(card, [
-            {
-                status: 'ANDAMENTO',
-                label: 'Informar Pendência Resolvida',
-                icon: 'bi-check-lg text-success',
-                historico: 'Pendência resolvida'
-            }
-        ]);
-    }
-
-    return { btnAdd, btnActions };
-}
-
-function dropdown(card, actions) {
-    return `
-        <div class="btn-group dropend">
-            <button type="button"
-                    ${card.is_blocked ? 'disabled' : ''}
-                    class="btn btn-sm btn-sm-icon btn-info bi bi-gear dropdown-toggle"
-                    data-bs-toggle="dropdown">
-            </button>
-
-            <ul class="dropdown-menu">
-                ${actions.map(action => `
-                    <li>
-                        <button class="dropdown-item"
-                                onclick="editarCard(${card.id}, '${action.status}', '${action.historico}')">
-                            <i class="bi ${action.icon}"></i>
-                            ${action.label}
-                        </button>
-                    </li>
-                `).join('')}
-            </ul>
-        </div>
+function renderButtonsCard(card){
+    let btnAdd = `
+        <button 
+            class="btn btn-sm btn-sm-icon btn-success bi bi-plus-circle" 
+            title="Adicionar Proposta" 
+            onclick="openCreatePropostaModal(${card.cliente__cpf}, ${card.id})">
+        </button>
     `;
+
+    let liBtnDigitacao = `
+        <li>
+            <button class="dropdown-item" onclick="editarCard(${card.id}, 'DIGITACAO', 'Digitação Solicitada')">
+                <i class="bi bi-send text-success"></i>
+                Enviar para digitação
+            </button>
+        </li>
+    `
+    
+    let liBtnPendente = `
+        <li>
+            <button class="dropdown-item" onclick="editarCard(${card.id}, 'ANDAMENTO', 'Pendência Solucionada')">
+                <i class="bi bi-check2-circle text-success"></i>
+                Remover da pendência
+            </button>
+        </li>
+    `
+
+    let liBtnEditar = `
+        <li>
+            <button class="dropdown-item">
+                <i class="bi bi-pencil text-primary"></i>
+                Editar Card
+            </button>
+        </li>
+    `
+
+    let liBtnExcluir = `
+        <li>
+            <button class="dropdown-item" onclick="editarCard(${card.id}, 'CANCELADO', 'Card Cancelado')">
+                <i class="bi bi-exclamation-triangle text-warning"></i>
+                Solicitar cancelamento
+            </button>
+        </li>
+    `
+    
+    let liBtnReiniciar = `
+        <li>
+            <button class="dropdown-item" onclick="editarCard(${card.id}, 'NAO_INICIADO', 'Card Reiniciado')">
+                <i class="bi bi-arrow-90deg-left text-success"></i>
+                Reiniciar Card
+            </button>
+        </li>
+    `
+
+    let divActions = "";
+
+    if(card.status == 'NAO_INICIADO'){
+        divActions = `
+            <div class="btn-group dropend">
+                <button type="button" class="btn btn-sm btn-sm-icon btn-info bi bi-gear dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                </button>
+                <ul class="dropdown-menu" style="">
+                    ${liBtnDigitacao}
+                    ${liBtnEditar}
+                    ${liBtnExcluir}
+                </ul>
+            </div>
+        `
+    }
+    if(card.status == 'DIGITACAO' || card.status == 'ANDAMENTO' || card.status == 'FINALIZADO'){
+        btnAdd= ''
+        divActions = ''
+    }
+    if(card.status == 'ATENCAO' || card.status == 'FORMALIZACAO'){
+        divActions = `
+            <div class="btn-group dropend">
+                <button type="button" class="btn btn-sm btn-sm-icon btn-info bi bi-gear dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                </button>
+                <ul class="dropdown-menu" style="">
+                    ${liBtnPendente}
+                    ${liBtnEditar}
+                </ul>
+            </div>
+        
+        `
+    }
+    if(card.status == 'CANCELADO'){
+        divActions = `
+            <div class="btn-group dropend">
+                <button type="button" class="btn btn-sm btn-sm-icon btn-info bi bi-gear dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                </button>
+                <ul class="dropdown-menu" style="">
+                    ${liBtnReiniciar}
+                </ul>
+            </div>
+        `
+        btnAdd= ''
+    }
+
+    return { btnAdd, divActions };
 }
 
 function loadBancosSelect(selected = null) {

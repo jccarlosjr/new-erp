@@ -1,49 +1,15 @@
 /* ===============================
    EVENTOS
 ================================ */
-let propostaModal;
-let deletePropostaModal;
 let geranciarCardModal;
 let gerenciarPropostaModal;
 
 document.addEventListener('DOMContentLoaded', function () {
-    propostaModal = new bootstrap.Modal(document.getElementById('propostaModal'));
-    deletePropostaModal = new bootstrap.Modal(document.getElementById('deletePropostaModal'));
     geranciarCardModal = new bootstrap.Modal(document.getElementById('geranciarCardModal'));
     gerenciarPropostaModal = new bootstrap.Modal(document.getElementById('gerenciarPropostaModal'));
     loadCards();
     loadStatus();
 })
-
-document.getElementById("operacoes-select").addEventListener("change", loadTabelasSelect);
-document.getElementById("operacoes-select").addEventListener("change", renderPropostaFields);
-
-document.getElementById("operacoes-select").addEventListener("change", () => {
-    document.getElementById('coeficiente').value = ''
-    document.getElementById('prazo').value = ''
-});
-
-document.getElementById("banco-select").addEventListener("change", () => {
-    document.getElementById('coeficiente').value = ''
-    document.getElementById('prazo').value = ''
-});
-
-document.getElementById("tabela-select").addEventListener("change", function () {
-    const selectedOption = this.options[this.selectedIndex]
-
-    if (!selectedOption || !selectedOption.dataset.coeficiente) {
-        document.getElementById('coeficiente').value = ''
-        return
-    }
-    
-    if (!selectedOption || !selectedOption.dataset.prazo) {
-        document.getElementById('prazo').value = ''
-        return
-    }
-
-    document.getElementById('coeficiente').value = selectedOption.dataset.coeficiente
-    document.getElementById('prazo').value = selectedOption.dataset.prazo
-});
 
 document.getElementById("filter-btn").addEventListener("click", loadCards);
 
@@ -55,13 +21,6 @@ document.getElementById("filter-btn").addEventListener("click", loadCards);
    MODAL OPENERS
 ================================ */
 
-function openDeletePropostaModal(id, codig_interno) {
-    propostaModal.hide()
-    document.getElementById('delete-proposta-id').value = id
-    document.getElementById('delete-proposta-nome').innerText = codig_interno
-    deletePropostaModal.show()
-}
-
 function openGerenciarModal(id, status, codigo_interno){
     document.getElementById('gerenciar-card-id').value = id
     document.getElementById('gerenciar-card-status').value = status
@@ -72,7 +31,7 @@ function openGerenciarModal(id, status, codigo_interno){
 function openConfigModal(proposta) {
     console.log(proposta);
     document.getElementById('config-id').value = proposta.id
-    document.getElementById('config-status').value = proposta.status__id
+    document.getElementById('config-status').value = proposta.status
     document.getElementById('config-observacao').value = ''
     document.getElementById('config-ade').value = proposta.ade
     document.getElementById('config-ade-2').value = proposta.ade_2
@@ -165,7 +124,7 @@ function loadStatus() {
             document.getElementById('config-status').innerHTML = ''
             data.data.forEach(status => {
                 const option = document.createElement('option')
-                option.value = status.id
+                option.value = status.nome
                 option.innerText = `${status.codigo} - ${status.nome}`
                 document.getElementById('config-status').appendChild(option)
             })
@@ -217,7 +176,7 @@ function changeCard() {
 
 function changeProposta() {
     const propostaId = document.getElementById('config-id').value
-    const propostaStatusId = document.getElementById('config-status').value
+    const propostaStatus = document.getElementById('config-status').value
     const propostaStatusText = document.getElementById('config-status').options[document.getElementById('config-status').selectedIndex].text
     const ade = document.getElementById('config-ade')?.value || null
     const ade2 = document.getElementById('config-ade-2')?.value || null
@@ -232,7 +191,7 @@ function changeProposta() {
         },
         body: JSON.stringify({
             id: propostaId,
-            status_id: propostaStatusId,
+            status: propostaStatus,
             ade: ade,
             ade_2: ade2,
             obs: obs
@@ -251,7 +210,7 @@ function changeProposta() {
     .finally(() => hideLoader())
 }
 
-function bloquearProposta(button, id, status) {
+function bloquearProposta(button, id) {
 
     fetch('/api/propostas-geral/', {
         method: 'PATCH',
@@ -262,8 +221,8 @@ function bloquearProposta(button, id, status) {
         body: JSON.stringify({
             id: id,
             bloqueado: true,
-            status_id: status,
-            obs: 'Proposta bloqueada para edição'
+            status: 'Proposta bloqueada para edição',
+            obs: ''
         })
     })
     .then(res => res.json())
@@ -279,14 +238,14 @@ function bloquearProposta(button, id, status) {
         button.title = 'Desbloquear'
         button.setAttribute(
             'onclick',
-            `bloquearProposta(this, '${id}', '${status}')`
+            `bloquearProposta(this, '${id}')`
         )
     })
     .catch(() => showToast('Erro de conexão com o servidor'))
     .finally(() => hideLoader())
 }
 
-function desbloquearProposta(button, id, status) {
+function desbloquearProposta(button, id) {
 
     fetch('/api/propostas-geral/', {
         method: 'PATCH',
@@ -297,8 +256,8 @@ function desbloquearProposta(button, id, status) {
         body: JSON.stringify({
             id: id,
             bloqueado: false,
-            status_id: status,
-            obs: 'Proposta desbloqueada para edição'
+            status: 'Proposta desbloqueada para edição',
+            obs: ''
         })
     })
     .then(res => res.json())
@@ -315,7 +274,7 @@ function desbloquearProposta(button, id, status) {
         button.title = 'Bloquear'
         button.setAttribute(
             'onclick',
-            `bloquearProposta(this, '${id}', '${status}')`
+            `bloquearProposta(this, '${id}')`
         )
     })
     .catch(() => showToast('Erro de conexão com o servidor'))
@@ -618,14 +577,18 @@ function renderCard(card, color, cardAccordion) {
             <h2 class="accordion-header d-flex align-items-center justify-content-between px-3 py-2">
                 
                 <div class="d-flex align-items-center justify-content-center gap-2">
-                    <button class="btn btn-sm btn-sm-icon btn-success bi bi-gear" 
+                    <div class="btn-group">
+                        <button class="btn btn-sm btn-sm-icon btn-success bi bi-gear" 
                             onclick="openGerenciarModal('${card.id }', '${card.status}', '${card.codigo_interno}')" 
                             title="Gerenciar">
-                    </button>
-                    <button class="btn btn-sm btn-sm-icon btn-warning bi bi-clock-history"
+                        </button>
+                        <button class="btn btn-sm btn-sm-icon btn-warning bi bi-clock-history"
                             onclick="openHistoricoModal('${card.id }')"
                             title="Histórico">
-                    </button>
+                        </button>
+                    </div>
+
+
                     <h6 class="mb-0 text-dark" id="accordion-title">
                         ${card.user__username} - 
                         ${card.codigo_interno} - ${card.cliente__nome} - 
@@ -678,23 +641,24 @@ function renderCard(card, color, cardAccordion) {
     `
 }
 
-function renderButtonPropostaBloqueado(bloqueado, id, status_id){
-    if(bloqueado){
-        return `
-            <button 
-                class="btn btn-sm btn-sm-icon btn-dark bi bi-lock"
-                title="Desbloquear"
-                onclick="desbloquearProposta(this, '${id}', '${status_id}')">
-            </button>
-        `
-    } else {
-        return `
-            <button 
-                class="btn btn-sm btn-sm-icon btn-light bi bi-unlock"
-                title="Bloquear"
-                onclick="bloquearProposta(this, '${id}', '${status_id}')">
-            </button>
-        `
+function renderButtonPropostaBloqueado(bloqueado, id){
+    switch(bloqueado){
+        case true:
+            return `
+                <button 
+                    class="btn btn-sm btn-sm-icon btn-dark bi bi-lock"
+                    title="Desbloquear"
+                    onclick="desbloquearProposta(this, '${id}')">
+                </button>
+            `
+        case false:
+            return `
+                <button 
+                    class="btn btn-sm btn-sm-icon btn-light bi bi-unlock"
+                    title="Bloquear"
+                    onclick="bloquearProposta(this, '${id}')">
+                </button>
+            `
     }
 }
 
@@ -707,14 +671,18 @@ function renderProposta(proposta) {
                 <td class="small">${proposta.tabela__banco__nome}</td>
                 <td class="small">${proposta.tabela__operacao__nome}</td>
                 <td class="small">${proposta.parcela.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL'})}</td>
-                <td class="small" class="text-${proposta.status__cor}">${proposta.status__nome}</td>
+                <td class="small">${proposta.status}</td>
                 <td>
                     <div class="btn-group">
                         ${btn}
                         <button class="btn btn-sm btn-sm-icon btn-warning bi bi-clock-history" title="Histórico" onclick="openHistoricoPropostaModal(${proposta.id})"></button>
                         <button class="btn btn-sm btn-sm-icon btn-primary bi bi bi-files" title="Abrir Proposta" onclick="openProposta(${proposta.id})"></button>
                         <button class="btn btn-sm btn-sm-icon btn-success bi bi-gear" title="Gerenciar" onclick='openConfigModal(${JSON.stringify(proposta)})'></button>
-                        <button class="btn btn-sm btn-sm-icon btn-info bi bi-pen" title="Editar""></button>
+                        <button 
+                            class="btn btn-sm btn-sm-icon btn-info bi bi-pen" 
+                            title="Editar"
+                            data-proposta='${JSON.stringify(proposta).replace(/'/g, "&apos;")}'
+                            onclick="openEditPropostaModal(this)"></button>
                     </div>
                 </td>
             </tr>
@@ -724,236 +692,6 @@ function renderProposta(proposta) {
 function openProposta(id){
     window.open(`/propostas/${id}`, '_blank', 'noopener,noreferrer');
 }
-
-function loadBancosSelect(selected = null) {
-    showLoader();
-    const select = document.getElementById('banco-select')
-    select.innerHTML = `<option value="">Selecione um banco</option>`
-
-    fetch('/api/bancos/')
-        .then(res => res.json())
-        .then(data => {
-            if (data.status !== 'success') {
-                showToast('Erro ao carregar bancos')
-                return
-            }
-
-            data.data.forEach(banco => {
-                const option = document.createElement('option')
-                option.value = banco.id
-                option.textContent = `${banco.codigo} - ${banco.nome}`
-
-                if (selected && selected == banco.id) {
-                    option.selected = true
-                }
-
-                select.appendChild(option)
-            })
-        })
-        .finally(() => hideLoader())
-}
-
-function loadOperacoesSelect(selected = null) {
-    showLoader();
-    const select = document.getElementById('operacoes-select')
-    select.innerHTML = `<option value="">Selecione uma operação</option>`
-
-    fetch('/api/operacoes/')
-        .then(res => res.json())
-        .then(data => {
-            if (data.status !== 'success') {
-                showToast('Erro ao carregar operações')
-                return
-            }
-
-            data.data.forEach(operacao => {
-                const option = document.createElement('option')
-                option.value = operacao.id
-                option.textContent = `${operacao.nome}`
-
-                if (selected && selected == operacao.id) {
-                    option.selected = true
-                }
-
-                select.appendChild(option)
-            })
-        })
-        .finally(() => hideLoader());
-}
-
-function loadTabelasSelect(selected = null) {
-    showLoader();
-    const formProposta = document.getElementById('form-proposta');
-    formProposta.classList.remove('d-none');
-
-    const bancoId = document.getElementById('banco-select').value
-    const operacaoId = document.getElementById('operacoes-select').value
-
-    let params = new URLSearchParams()
-
-    params.append('banco', bancoId)
-    params.append('operacao', operacaoId)
-    params.append('ativo', 'true')
-
-    let url = '/api/tabelas/'
-
-    if ([...params].length) {
-        url += `?${params.toString()}`
-    }
-
-    const select = document.getElementById('tabela-select')
-    select.innerHTML = `<option value="">Selecione uma tabela</option>`
-
-    fetch(url)
-        .then(res => res.json())
-        .then(data => {
-            if (data.status !== 'success') {
-                showToast('Erro ao carregar tabelas para esse banco e operação')
-                return
-            }
-
-            data.data.forEach(tabela => {
-                const option = document.createElement('option')
-                option.value = tabela.id
-                option.textContent = `${tabela.nome} - ${tabela.prazo}x`
-                option.dataset.coeficiente = tabela.coeficiente
-                option.dataset.prazo = tabela.prazo
-                option.dataset.cms = tabela.cms
-
-                if (selected && selected == tabela.id) {
-                    option.selected = true
-                    document.getElementById('coeficiente').value = tabela.coeficiente
-                    document.getElementById('prazo').value = tabela.prazo
-                    document.getElementById('cms').value = tabela.cms
-                }
-
-                select.appendChild(option)
-            })
-        })
-        .finally(() => hideLoader())
-}
-
-function renderPropostaFields(){
-    let formProposta = document.getElementById('form-proposta-fields');
-    const select = document.getElementById('operacoes-select');
-    const selectedText = select.options[select.selectedIndex].text;
-
-    formProposta.innerHTML = '';
-
-    if(selectedText.includes('Margem Livre')){
-        formProposta.innerHTML = `
-        <div class="row mt-3">
-            <div class="col-md-6">
-                <label>Parcela</label>
-                <input type="text" id="parcela" class="form-control" onchange="calcularTroco()" oninput="floatFormat(this)" required maxlength="9">
-            </div>
-            <div class="col-md-6">
-                <label>Troco</label>
-                <input type="text" id="troco" class="form-control" maxlength="9">
-            </div>
-            <div class="col-md-12">
-                <label>Observação</label>
-                <textarea type="text" id="obs" class="form-control"></textarea>
-            </div>
-        </div>
-        `
-    } else if(selectedText.includes('Refinanciamento')){
-        formProposta.innerHTML = `
-        <div class="row mt-3">
-            <div class="col-md-4">
-                <label>Parcela</label>
-                <input type="text" id="parcela" class="form-control" onchange="calcularTroco()" oninput="floatFormat(this)" required maxlength="9">
-            </div>
-            <div class="col-md-4">
-                <label>Saldo Devedor</label>
-                <input type="text" id="saldo_devedor" class="form-control" onchange="calcularTroco()" oninput="floatFormat(this)" required maxlength="9">
-            </div>
-            <div class="col-md-4">
-                <label>Troco</label>
-                <input type="text" id="troco" class="form-control" oninput="floatFormat(this)" maxlength="9">
-            </div>
-            <div class="col-md-12">
-                <label>Observação</label>
-                <textarea type="text" id="obs" class="form-control"></textarea>
-            </div>
-        </div>
-        `
-    } else if(selectedText.includes('Portabilidade')){
-        formProposta.innerHTML = `
-        <div class="row mt-3">
-            <div class="col-md-3">
-                <label>Banco Origem</label>
-                <input type="text" id="banco_origem" class="form-control" required maxlength="3" oninput="formatNumbersOnly(this)">
-            </div>
-            <div class="col-md-6">
-                <label>Nº Contrato</label>
-                <input type="text" id="contrato_portado" class="form-control" required>
-            </div>
-            <div class="col-md-3">
-                <label>Saldo Devedor</label>
-                <input type="text" id="saldo_devedor" class="form-control" onchange="calcularTroco()" oninput="floatFormat(this)" required maxlength="9">
-            </div>
-            <!-- -->
-            <div class="col-md-3">
-                <label>Prazo Original</label>
-                <input type="text" id="prazo_original" class="form-control" required maxlength="3" oninput="formatNumbersOnly(this)">
-            </div>
-            <div class="col-md-3">
-                <label>Prazo Restante</label>
-                <input type="text" id="prazo_restante" class="form-control" required maxlength="3" oninput="formatNumbersOnly(this)">
-            </div>
-            <div class="col-md-3">
-                <label>Parcela</label>
-                <input type="text" id="parcela" class="form-control" onchange="calcularTroco()" oninput="floatFormat(this)" required maxlength="9">
-            </div>
-            <div class="col-md-3">
-                <label>Troco</label>
-                <input type="text" id="troco" class="form-control" oninput="floatFormat(this)" maxlength="9">
-            </div>
-            <div class="col-md-12">
-                <label>Observação</label>
-                <textarea type="text" id="obs" class="form-control"></textarea>
-            </div>
-        </div>
-        `
-    } else if(selectedText.includes('Cartão')){
-        formProposta.innerHTML = `
-        <div class="row mt-3">
-            <div class="col-md-6">
-                <label>Parcela</label>
-                <input type="text" id="parcela" class="form-control" onchange="calcularTroco()" oninput="floatFormat(this)" required maxlength="9">
-            </div>
-            <div class="col-md-6">
-                <label>Saque</label>
-                <input type="text" id="troco" class="form-control" maxlength="9" oninput="floatFormat(this)">
-            </div>
-            <div class="col-md-12">
-                <label>Observação</label>
-                <textarea type="text" id="obs" class="form-control"></textarea>
-            </div>
-        </div>
-        `
-    } else if(selectedText.includes('Saque')){
-        formProposta.innerHTML = `
-        <div class="row mt-3">
-            <div class="col-md-6">
-                <label>Parcela</label>
-                <input type="text" id="parcela" class="form-control" oninput="floatFormat(this)" required maxlength="9">
-            </div>
-            <div class="col-md-6">
-                <label>Saque</label>
-                <input type="text" id="troco" class="form-control" oninput="floatFormat(this)" required maxlength="9">
-            </div>
-            <div class="col-md-12">
-                <label>Observação</label>
-                <textarea type="text" id="obs" class="form-control"></textarea>
-            </div>
-        </div>
-        `
-    }
-}
-
-
 
 /* ===============================
    RENDERS END

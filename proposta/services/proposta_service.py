@@ -21,6 +21,7 @@ def create_or_update_proposta(body, request):
     parcela = body.get('parcela')
     prazo = body.get('prazo')
     troco = body.get('troco')
+    status = body.get('status')
     obs = body.get('obs')
 
     if not cpf:
@@ -62,15 +63,29 @@ def create_or_update_proposta(body, request):
         "cliente": cliente,
         "tabela": tabela,
         "usuario": usuario,
+        "status": status,
         "card_oferta": card_oferta,
     }
 
     # UPDATE
     if proposta_id:
+        
         proposta = get_object_or_404(Proposta, id=proposta_id)
+
+        if proposta.bloqueado:
+            raise ValueError("Proposta Bloqueada para edição")
+
+        HistoricoProposta.objects.create(
+            proposta=proposta,
+            user=request.user,
+            title="Proposta Editada",
+            obs=obs
+        )
 
         for field, value in data.items():
             setattr(proposta, field, value)
+        
+        proposta.bloqueado = True
 
         proposta.save()
         return proposta, False
@@ -121,6 +136,8 @@ def patch_proposta(body, request):
     
     if 'obs' in body:
         obs = body.get('obs')
+    
+    print(body.get('status'))
     
     HistoricoProposta.objects.create(
         proposta=proposta,
@@ -185,6 +202,9 @@ def patch_proposta_geral(body, request):
 
     if 'obs' in body:
         obs = body.get('obs')
+    
+    if 'status' in body:
+        proposta.status = body.get('status')
 
     if 'ade' in body:
         proposta.ade = body.get('ade')

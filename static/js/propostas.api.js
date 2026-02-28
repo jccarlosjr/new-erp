@@ -63,9 +63,8 @@ function openDeletePropostaModal(id, codig_interno, afterSave = null) {
 function openChangePropostaModal(id, codig_interno){
     document.getElementById('change-proposta-id').value = id
     document.getElementById('change-proposta-nome').innerText = codig_interno
-    document.getElementById('obs-change-proposta').innerText = ''
     document.getElementById('status-change-proposta').value = ''
-    document.getElementById('obs-change-proposta').value = ''
+    document.getElementById('obs-change-proposta').innerText = ''
     changePropostaModal.show()
 }
 
@@ -441,7 +440,7 @@ function saveProposta() {
         contrato_portado: document.getElementById('contrato_portado')?.value || null,
         prazo_original: Number(document.getElementById('prazo_original')?.value) || null,
         prazo_restante: Number(document.getElementById('prazo_restante')?.value) || null,
-        status_code: 1 || null,
+        status: "Proposta Editada",
         obs: document.getElementById('obs').value || null,
     };
 
@@ -531,7 +530,7 @@ function changeStatusProposta() {
     const status = document.getElementById('status-change-proposta').value;
     const obs = document.getElementById('obs-change-proposta').value;
 
-    if(!status || !obs) {
+    if(!status) {
         showToast('Preencha todos os campos !', 'danger');
         hideLoader();
         return
@@ -545,8 +544,8 @@ function changeStatusProposta() {
         },
         body: JSON.stringify({ 
             id: id,
-            status_code: status,
-            obs: obs,
+            status: status,
+            obs: obs || '',
             bloqueado: true
         })
     })

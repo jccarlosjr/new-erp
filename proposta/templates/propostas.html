@@ -189,7 +189,7 @@ function loadPropostas() {
                     <td><span class="small">${proposta.codigo_interno}</span></td>
                     <td><span class="small">${proposta.cliente__nome}</span></td>
                     <td><span class="small">${maskCPF(proposta.cliente__cpf)}</span></td>
-                    <td><span class="small">${proposta.status__nome}</span></td>
+                    <td><span class="small">${proposta.status}</span></td>
                     <td class="btn-group">
                         <button class="btn btn-sm btn-sm-icon btn-warning bi bi-clock-history" title="Histórico" onclick="openHistoricoPropostaModal(${proposta.id})"></button>
                         <button class="btn btn-sm btn-sm-icon btn-primary bi bi-files" title="Abrir Propostas" onclick="openProposta(${proposta.id})"></button>
