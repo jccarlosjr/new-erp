@@ -20,7 +20,7 @@ class HistoricoCard(models.Model):
 class HistoricoProposta(models.Model):
     proposta = models.ForeignKey(Proposta, on_delete=models.CASCADE, related_name='proposta')
     user = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, related_name='usuario')
-    status = models.ForeignKey(Status, on_delete=models.SET_NULL, null=True, blank=True, related_name='status')
+    title = models.CharField(max_length=100, null=True, blank=True)
     date = models.DateTimeField(auto_now_add=True)
     obs = models.TextField(null=True, blank=True)
 

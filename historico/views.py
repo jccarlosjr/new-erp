@@ -132,10 +132,7 @@ class HistoricoPropostaAPIView(LoginRequiredMixin, View):
             'obs',
             'proposta_id',
             'proposta_id__codigo_interno',
-            'status__id',
-            'status__codigo',
-            'status__nome',
-            'status__color',
+            'title',
             'user__id',
             'user__username',
         )
@@ -156,14 +153,13 @@ class HistoricoPropostaAPIView(LoginRequiredMixin, View):
             }, status=400)
 
         proposta_id = body.get('proposta_id')
-        status_codigo = body.get('status_codigo')
         obs = body.get('obs')
-        status = get_object_or_404(Status, codigo=status_codigo)
+        title = body.get('title')
 
         if not proposta_id:
             return JsonResponse({
                 "status": "error",
-                "message": "Propposta é obrigatório"
+                "message": "Proposta é obrigatório"
             }, status=400)
 
         proposta = get_object_or_404(Proposta, id=proposta_id)
@@ -171,7 +167,7 @@ class HistoricoPropostaAPIView(LoginRequiredMixin, View):
         historico = HistoricoProposta.objects.create(
             proposta=proposta,
             user=request.user,
-            status=status,
+            title=title,
             obs=obs
         )
 
@@ -181,10 +177,8 @@ class HistoricoPropostaAPIView(LoginRequiredMixin, View):
                 "id": historico.id,
                 "date": historico.date,
                 "obs": historico.obs,
+                "title": historico.title,
                 "proposta_id": proposta.id,
-                "status_id": status.id,
-                "status_codigo": status.codigo,
-                "status_nome": status.nome,
                 "user": request.user.username if request.user else None,
             }
         }, status=201)

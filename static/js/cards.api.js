@@ -1,11 +1,9 @@
 /* ===============================
    EVENTOS
 ================================ */
-let deletePropostaModal;
 let changePropostaModal;
 
 document.addEventListener('DOMContentLoaded', function () {
-    deletePropostaModal = new bootstrap.Modal(document.getElementById('deletePropostaModal'))
     changePropostaModal = new bootstrap.Modal(document.getElementById('changePropostaModal'))
     loadCards()
 })

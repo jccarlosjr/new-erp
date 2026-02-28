@@ -138,7 +138,7 @@ class PropostaAPIView(LoginRequiredMixin, View):
     def post(self, request):
         try:
             body = json.loads(request.body)
-            proposta, created = create_or_update_proposta(body)
+            proposta, created = create_or_update_proposta(body, request)
 
             return JsonResponse({
                 "status": "success",

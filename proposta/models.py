@@ -51,16 +51,14 @@ class Proposta(models.Model):
     prazo_restante = models.PositiveIntegerField(null=True, blank=True)
     contrato_portado = models.CharField(max_length=100, null=True, blank=True)
     banco_origem = models.CharField(max_length=3, null=True, blank=True)
+    status = models.CharField(max_length=100, null=True, blank=True, default="Aberto")
     cliente = models.ForeignKey(Cliente, on_delete=models.PROTECT)
     tabela = models.ForeignKey(Tabela, on_delete=models.PROTECT, null=True, blank=True, related_name='propostas')
     usuario = models.ForeignKey(CustomUser, on_delete=models.PROTECT, null=True, blank=True)
-    status = models.ForeignKey(Status, on_delete=models.PROTECT, null=True, blank=True)
     card_oferta = models.ForeignKey(CardOferta, on_delete=models.PROTECT, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.id:
-            if not self.status:
-                self.status = Status.objects.filter(codigo='1').first()
             super().save(*args, **kwargs)
 
         if not self.codigo_interno:

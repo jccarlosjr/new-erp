@@ -75,7 +75,6 @@ def patch_card(body, request):
         'tabela__banco',
         'tabela__operacao',
         'usuario',
-        'status',
         'card_oferta'
     ).order_by('-ultima_atualizacao')
 

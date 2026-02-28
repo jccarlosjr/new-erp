@@ -1,7 +1,7 @@
 import json
 from django.shortcuts import get_object_or_404
 from django.db import transaction
-from proposta.models import Proposta, Status
+from proposta.models import Proposta
 from cliente.models import Cliente
 from tabela.models import Tabela
 from accounts.models import CustomUser
@@ -10,18 +10,18 @@ from historico.models import HistoricoProposta
 
 
 
-def create_or_update_proposta(body):
+def create_or_update_proposta(body, request):
     proposta_id = body.get('id')
 
     cpf = body.get('cpf')
     tabela_id = body.get('tabela_id')
-    status_id = body.get('status_id')
     usuario_id = body.get('usuario_id')
     card_oferta_id = body.get('card_oferta_id')
 
     parcela = body.get('parcela')
     prazo = body.get('prazo')
     troco = body.get('troco')
+    obs = body.get('obs')
 
     if not cpf:
         raise ValueError("CPF do cliente é obrigatório")
@@ -32,13 +32,11 @@ def create_or_update_proposta(body):
     if parcela is None or prazo is None or troco is None:
         raise ValueError("Parcela, prazo e troco são obrigatórios")
 
+    if not obs:
+        obs = ''
+
     cliente = get_object_or_404(Cliente, cpf=cpf)
     tabela = get_object_or_404(Tabela, id=tabela_id)
-
-    try:
-        status = get_object_or_404(Status, id=status_id)
-    except:
-        status = None
 
     usuario = get_object_or_404(CustomUser, id=usuario_id)
 
@@ -60,9 +58,9 @@ def create_or_update_proposta(body):
         "prazo_restante": body.get('prazo_restante'),
         "contrato_portado": body.get('contrato_portado'),
         "banco_origem": body.get('banco_origem'),
+        "status": body.get('status'),
         "cliente": cliente,
         "tabela": tabela,
-        "status": status,
         "usuario": usuario,
         "card_oferta": card_oferta,
     }
@@ -79,13 +77,18 @@ def create_or_update_proposta(body):
 
     # CREATE
     proposta = Proposta.objects.create(**data)
+    HistoricoProposta.objects.create(
+        proposta=proposta,
+        user=request.user,
+        title=proposta.status,
+        obs=obs
+    )
     return proposta, True
 
 
 @transaction.atomic
 def patch_proposta(body, request):
     proposta_id = body.get('id')
-    status_code = body.get('status_code')
 
     if not proposta_id:
         raise ValueError("ID da proposta é obrigatório")
@@ -106,9 +109,6 @@ def patch_proposta(body, request):
             id=body.get('tabela_id')
         ).first()
 
-    if status_code:
-        proposta.status = Status.objects.filter(codigo=status_code).first()
-
     if 'usuario_id' in body:
         proposta.usuario = CustomUser.objects.filter(
             id=body.get('usuario_id')
@@ -125,7 +125,7 @@ def patch_proposta(body, request):
     HistoricoProposta.objects.create(
         proposta=proposta,
         user=request.user,
-        status=Status.objects.filter(codigo=status_code).first(),
+        title=proposta.status,
         obs=obs
     )
 
@@ -173,11 +173,6 @@ def patch_proposta_geral(body, request):
             id=body.get('tabela_id')
         ).first()
 
-    if 'status_id' in body:
-        proposta.status = Status.objects.filter(
-            id=body.get('status_id')
-        ).first()
-
     if 'usuario_id' in body:
         proposta.usuario = CustomUser.objects.filter(
             id=body.get('usuario_id')
@@ -200,7 +195,7 @@ def patch_proposta_geral(body, request):
     HistoricoProposta.objects.create(
         proposta=proposta,
         user=request.user,
-        status=Status.objects.filter(id=body.get('status_id')).first(),
+        title=proposta.status,
         obs=obs
     )
 

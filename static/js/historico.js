@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
     historicoModal = new bootstrap.Modal(document.getElementById('historicoModal'))
 })
 
-function createPropostaHistorico(propostaId, obs = '', statusCode) {
+function createPropostaHistorico(propostaId, obs = '', title) {
     return fetch('/api/historico-proposta/', {
         method: 'POST',
         headers: {
@@ -14,7 +14,7 @@ function createPropostaHistorico(propostaId, obs = '', statusCode) {
         body: JSON.stringify({
             proposta_id: propostaId,
             obs: obs,
-            status_codigo: statusCode
+            title: title
         })
     })
     .then(res => res.json())
@@ -23,6 +23,7 @@ function createPropostaHistorico(propostaId, obs = '', statusCode) {
 function openHistoricoPropostaModal(propostaId) {
     const list = document.getElementById('historicoList')
     const loading = document.getElementById('historico-loading')
+
     list.innerHTML = ''
     loading.classList.remove('d-none')
 
@@ -35,48 +36,64 @@ function openHistoricoPropostaModal(propostaId) {
 
             if (res.status !== 'success') {
                 list.innerHTML = `
-                    <li class="list-group-item text-danger">
+                    <div class="text-center text-danger py-3">
                         Erro ao carregar histórico
-                    </li>
+                    </div>
                 `
                 return
             }
 
-            if (!res.data.length) {
+            if (!res.data || !res.data.length) {
                 list.innerHTML = `
-                    <li class="list-group-item text-muted text-center">
+                    <div class="text-center text-muted py-3">
                         Nenhum histórico encontrado
-                    </li>
+                    </div>
                 `
                 return
             }
 
-            res.data.forEach(item => {
-                list.insertAdjacentHTML('beforeend', `
-                    <li class="list-group-item mt-2 bg-${item.status__color}-subtle shadow-lg">
-                        <div class="d-flex justify-content-between p-2">
-                            <small class="text-muted">
-                                ${item.user__username ?? 'Sistema'}: <strong class="text-dark">${item.status__nome}</strong> em ${formatDate(item.date)}
-                            </small>
-                        </div>
+            // const historico = [...res.data].reverse()
+            const historico = [...res.data]
 
-                        ${item.obs ? `
-                            <div class="mt-1">
-                            <hr>
-                                <span class="text-dark">${item.obs}</span>
-                            </div>
-                        ` : ''}
-                    </li>
+            historico.forEach((item, index) => {
+
+                const side = index % 2 === 0 ? 'left' : 'right'
+
+                list.insertAdjacentHTML('beforeend', `
+                    <div class="timeline-item ${side}">
+                        <div class="content bg-${item.status__color}-subtle">
+
+                            <span>
+                                <span class="fw-bold text-dark badge bg-primary-subtle">${item.user__username ?? 'Sistema'}</span> - 
+                                <small class="text-muted">${formatDate(item.date)} </small>
+                            </span>
+
+                            ${item.title ? `
+                                <hr>
+                                <div class="text-dark fw-bold mt-2">
+                                    ${item.title.toUpperCase()}
+                                </div>
+                            ` : ''}
+
+                            ${item.obs ? `
+                                <hr>
+                                <div class="text-dark mt-2">
+                                    ${item.obs}
+                                </div>
+                            ` : ''}
+
+                        </div>
+                    </div>
                 `)
             })
         })
         .catch(error => {
-            console.log(error)
+            console.error(error)
             loading.classList.add('d-none')
             list.innerHTML = `
-                <li class="list-group-item text-danger">
+                <div class="text-center text-danger py-3">
                     Erro de conexão
-                </li>
+                </div>
             `
         })
 }
@@ -101,6 +118,7 @@ function createHistorico(cardId, obs = '') {
 function openHistoricoModal(cardId) {
     const list = document.getElementById('historicoList')
     const loading = document.getElementById('historico-loading')
+
     list.innerHTML = ''
     loading.classList.remove('d-none')
 
@@ -113,46 +131,57 @@ function openHistoricoModal(cardId) {
 
             if (res.status !== 'success') {
                 list.innerHTML = `
-                    <li class="list-group-item text-danger">
+                    <div class="text-center text-danger py-3">
                         Erro ao carregar histórico
-                    </li>
+                    </div>
                 `
                 return
             }
 
-            if (!res.data.length) {
+            if (!res.data || !res.data.length) {
                 list.innerHTML = `
-                    <li class="list-group-item text-muted text-center">
+                    <div class="text-center text-muted py-3">
                         Nenhum histórico encontrado
-                    </li>
+                    </div>
                 `
                 return
             }
 
-            res.data.forEach(item => {
-                list.insertAdjacentHTML('beforeend', `
-                    <li class="list-group-item mt-2 shadow-lg">
-                        <div class="d-flex justify-content-between">
-                            <small class="text-muted">
-                                Alterado por ${item.user__username ?? 'Sistema'} em ${formatDate(item.date)}
-                            </small> 
-                        </div>
+            // const historico = [...res.data].reverse()
+            const historico = [...res.data]
 
-                        ${item.obs ? `
-                            <div class="mt-1">
-                                ${item.obs}
-                            </div>
-                        ` : ''}
-                    </li>
+            historico.forEach((item, index) => {
+
+                const side = index % 2 === 0 ? 'left' : 'right'
+
+                list.insertAdjacentHTML('beforeend', `
+                    <div class="timeline-item ${side}">
+                        <div class="content bg-light">
+
+                            <span>
+                                <span class="fw-bold text-dark badge bg-primary-subtle">${item.user__username ?? 'Sistema'}</span> - 
+                                <small class="text-muted">${formatDate(item.date)} </small>
+                            </span>
+
+                            ${item.obs ? `
+                                <hr>
+                                <div class="text-dark mt-2">
+                                    ${item.obs}
+                                </div>
+                            ` : ''}
+
+                        </div>
+                    </div>
                 `)
             })
         })
-        .catch(() => {
+        .catch(error => {
+            console.error(error)
             loading.classList.add('d-none')
             list.innerHTML = `
-                <li class="list-group-item text-danger">
+                <div class="text-center text-danger py-3">
                     Erro de conexão
-                </li>
+                </div>
             `
         })
 }

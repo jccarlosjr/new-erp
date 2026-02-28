@@ -56,6 +56,7 @@ def list_propostas(filters, usuario):
         'banco_origem',
         'bloqueado',
         'ativo',
+        'status',
 
         'cliente__cpf',
         'cliente__nome',
@@ -70,10 +71,6 @@ def list_propostas(filters, usuario):
 
         'usuario__id',
         'usuario__username',
-
-        'status__id',
-        'status__nome',
-        'status__codigo',
 
         'card_oferta__id',
         'card_oferta__codigo_interno',
@@ -137,6 +134,7 @@ def list_propostas_geral(filters):
         'banco_origem',
         'bloqueado',
         'ativo',
+        'status',
 
         'cliente__cpf',
         'cliente__nome',
@@ -151,10 +149,6 @@ def list_propostas_geral(filters):
 
         'usuario__id',
         'usuario__username',
-
-        'status__id',
-        'status__nome',
-        'status__codigo',
 
         'card_oferta__id',
         'card_oferta__status',
@@ -202,6 +196,7 @@ def list_propostas_detail(pk: int):
         "contrato_portado": proposta.contrato_portado,
         "banco_origem": proposta.banco_origem,
         "ativo": proposta.ativo,
+        "status": proposta.status,
 
         "cliente": {
             "cpf": proposta.cliente.cpf,
@@ -248,12 +243,6 @@ def list_propostas_detail(pk: int):
         "usuario": {
             "id": proposta.usuario.id,
             "username": proposta.usuario.username,
-        },
-
-        "status": {
-            "id": proposta.status.id,
-            "nome": proposta.status.nome,
-            "codigo": proposta.status.codigo,
         },
 
         "card_oferta": (

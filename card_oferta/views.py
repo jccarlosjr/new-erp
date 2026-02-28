@@ -162,9 +162,7 @@ class CardOfertaPropostaAPIView(LoginRequiredMixin, View):
             'usuario__id',
             'usuario__username',
 
-            'status__id',
-            'status__nome',
-            'status__codigo',
+            'status',
 
             'card_oferta__id',
         )
@@ -267,9 +265,7 @@ class EsteiraOperacionalAPIView(LoginRequiredMixin, View):
             'usuario__id',
             'usuario__username',
 
-            'status__id',
-            'status__nome',
-            'status__codigo',
+            'status',
 
             'card_oferta__id',
         )

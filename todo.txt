@@ -11,6 +11,7 @@ Configurar opção para edição do card no botão de ações
 #### PROPOSTAS ####
 ###################
 
+Configurar historico para receber os titulos e obs corretamente
 Configurar modal para editar uma proposta
 Adicionar ações para propostas dependendo do status de cada uma
 Adicionar campo para link de formalização

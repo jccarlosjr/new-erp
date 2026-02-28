@@ -50,7 +50,7 @@
                 <button class="btn btn-secondary" data-bs-dismiss="modal">
                     Cancelar
                 </button>
-                <button class="btn btn-primary" onclick="saveProposta()">
+                <button class="btn btn-primary" id="btnSaveProposta" onclick="saveProposta()">
                     Salvar Proposta
                 </button>
             </div>
@@ -75,7 +75,7 @@
                     <div class="spinner-border"></div>
                 </div>
 
-                <ul class="list-group" id="historicoList"></ul>
+                <div id="historicoList" class="timeline"></div>
             </div>
 
             <div class="modal-footer">
@@ -106,7 +106,7 @@
 
       <div class="modal-footer">
         <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button class="btn btn-danger" onclick="deleteProposta()">Excluir</button>
+        <button class="btn btn-danger" id="btnDeleteProposta" onclick="deleteProposta()">Excluir</button>
       </div>
 
     </div>

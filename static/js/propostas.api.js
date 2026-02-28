@@ -3,9 +3,12 @@
 ================================ */ 
 
 let propostaModal;
+let deletePropostaModal;
+let afterSavePropostaCallback = null;
 
 document.addEventListener('DOMContentLoaded', function () {
     propostaModal = new bootstrap.Modal(document.getElementById('propostaModal'))
+    deletePropostaModal = new bootstrap.Modal(document.getElementById('deletePropostaModal'))
 })
 
 document.getElementById("operacoes-select").addEventListener("change", () => {
@@ -46,10 +49,13 @@ document.getElementById("tabela-select").addEventListener("change", function () 
    RENDERS
 ================================ */ 
 
-function openDeletePropostaModal(id, codig_interno) {
+function openDeletePropostaModal(id, codig_interno, afterSave = null) {
     propostaModal.hide()
     document.getElementById('delete-proposta-id').value = id
     document.getElementById('delete-proposta-nome').innerText = codig_interno
+    
+    afterSavePropostaCallback = afterSave;
+
     deletePropostaModal.show()
 }
 
@@ -64,7 +70,7 @@ function openChangePropostaModal(id, codig_interno){
 }
 
 
-function openCreatePropostaModal(cpf, card_id) {
+function openCreatePropostaModal(cpf, card_id, afterSave = null) {
     let formProposta = document.getElementById('form-proposta-fields');
     formProposta.innerHTML = '';
 
@@ -81,6 +87,8 @@ function openCreatePropostaModal(cpf, card_id) {
 
     loadBancosSelect();
     loadOperacoesSelect();
+
+    afterSavePropostaCallback = afterSave;
 
     propostaModal.show();
 }
@@ -460,9 +468,12 @@ function saveProposta() {
                         : "Proposta criada com sucesso",
                     "success"
                 );
-                createPropostaHistorico(propostaId, obs = 'Proposta Editada', 1);
                 propostaModal.hide();
-                loadCards();
+                if (typeof afterSavePropostaCallback === 'function') {
+                    afterSavePropostaCallback();
+                } else {
+                    loadCards();
+                }
             } else {
                 showToast(res.message || "Erro ao salvar proposta", "danger");
             }
@@ -496,7 +507,11 @@ function deleteProposta() {
     .then(() => {
         deletePropostaModal.hide();
         showToast('Proposta excluida com sucesso', 'success')
-        loadCards();
+        if (typeof afterSavePropostaCallback === 'function') {
+            afterSavePropostaCallback();
+        } else {
+            loadCards();
+        }
     })
     .catch(err => {
         if(err.message.includes("Cannot delete some instances of model")){
@@ -544,7 +559,6 @@ function changeStatusProposta() {
     })
     .then(() => {
         changePropostaModal.hide();
-        createPropostaHistorico(id, obs = 'Proposta Editada', status);
         showToast('Status alterado com sucesso', 'success')
         loadCards();
     })
