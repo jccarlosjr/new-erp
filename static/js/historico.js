@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
     historicoModal = new bootstrap.Modal(document.getElementById('historicoModal'))
 })
 
-function createPropostaHistorico(propostaId, obs = '', propostaStatusId) {
+function createPropostaHistorico(propostaId, obs = '', statusCode) {
     return fetch('/api/historico-proposta/', {
         method: 'POST',
         headers: {
@@ -14,7 +14,7 @@ function createPropostaHistorico(propostaId, obs = '', propostaStatusId) {
         body: JSON.stringify({
             proposta_id: propostaId,
             obs: obs,
-            status_codigo: propostaStatusId
+            status_codigo: statusCode
         })
     })
     .then(res => res.json())

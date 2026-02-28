@@ -16,30 +16,6 @@ document.getElementById("filter-btn").addEventListener("click", loadCards);
 /* ===============================
 ================================ */
 
-
-/* ===============================
-   MODAL OPENERS
-================================ */
-
-function openDeletePropostaModal(id, codig_interno) {
-    propostaModal.hide()
-    document.getElementById('delete-proposta-id').value = id
-    document.getElementById('delete-proposta-nome').innerText = codig_interno
-    deletePropostaModal.show()
-}
-
-
-function openChangePropostaModal(id, codig_interno){
-    document.getElementById('change-proposta-id').value = id
-    document.getElementById('change-proposta-nome').innerText = codig_interno
-    document.getElementById('obs-change-proposta').innerText = ''
-    changePropostaModal.show()
-}
-
-
-/* ===============================
-================================ */
-
 /* ===============================
    CONTADORES
 ================================ */

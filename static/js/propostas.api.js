@@ -1,3 +1,7 @@
+/* ===============================
+   EVENTOS
+================================ */ 
+
 let propostaModal;
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -34,6 +38,31 @@ document.getElementById("tabela-select").addEventListener("change", function () 
     document.getElementById('coeficiente').value = selectedOption.dataset.coeficiente
     document.getElementById('prazo').value = selectedOption.dataset.prazo
 });
+
+/* ===============================
+================================ */
+
+/* ===============================
+   RENDERS
+================================ */ 
+
+function openDeletePropostaModal(id, codig_interno) {
+    propostaModal.hide()
+    document.getElementById('delete-proposta-id').value = id
+    document.getElementById('delete-proposta-nome').innerText = codig_interno
+    deletePropostaModal.show()
+}
+
+
+function openChangePropostaModal(id, codig_interno){
+    document.getElementById('change-proposta-id').value = id
+    document.getElementById('change-proposta-nome').innerText = codig_interno
+    document.getElementById('obs-change-proposta').innerText = ''
+    document.getElementById('status-change-proposta').value = ''
+    document.getElementById('obs-change-proposta').value = ''
+    changePropostaModal.show()
+}
+
 
 function openCreatePropostaModal(cpf, card_id) {
     let formProposta = document.getElementById('form-proposta-fields');
@@ -264,7 +293,77 @@ async function loadOperacoesSelect(selected = null) {
     })
 }
 
+function calcularTroco(){
+    const select = document.getElementById('operacoes-select');
+    const selectedText = select.options[select.selectedIndex].text;
 
+    if(selectedText.includes('Cartão')){
+        const coeficiente = Number(document.getElementById('coeficiente').value);
+        const parcela = Number(document.getElementById('parcela').value);
+        const parcelaReal = parcela * 0.7;
+        const troco = (parcelaReal * coeficiente);
+        document.getElementById('troco').value = troco.toFixed(2);
+    } else {
+        const coeficiente = Number(document.getElementById('coeficiente').value);
+        const saldo_devedor = Number(document.getElementById('saldo_devedor')?.value ?? 0);
+        const parcela = Number(document.getElementById('parcela').value);
+        const troco = (parcela / coeficiente) - saldo_devedor;
+        document.getElementById('troco').value = troco.toFixed(2);
+    }
+}
+
+async function openEditPropostaModal(element) {
+    const proposta = JSON.parse(element.dataset.proposta);
+
+    await Promise.all([
+        loadBancosSelect(proposta.tabela__banco__id),
+        loadOperacoesSelect(proposta.tabela__operacao__id),
+    ]);
+
+    await loadTabelasSelect(proposta.tabela__id);
+
+    renderPropostaFields(proposta);
+    renderDataEditModal(proposta);
+    propostaModal.show();
+}
+
+function renderDataEditModal(proposta){
+
+    document.getElementById("proposta-id").value = proposta.id
+    document.getElementById("proposta-modal-card-id").value = proposta.card_oferta__id
+    document.getElementById("proposta-modal-cliente-cpf").value = proposta.cliente__cpf
+
+    if(proposta.tabela__operacao__nome.includes('Margem Livre')){
+        document.getElementById('parcela').value = proposta.parcela.toFixed(2);
+        document.getElementById('troco').value = proposta.troco.toFixed(2);
+    } else if(proposta.tabela__operacao__nome.includes('Refinanciamento')){
+        document.getElementById('parcela').value = proposta.parcela.toFixed(2);
+        document.getElementById('troco').value = proposta.troco.toFixed(2);
+        document.getElementById('saldo_devedor').value = proposta.saldo_devedor.toFixed(2);
+    } else if(proposta.tabela__operacao__nome.includes('Portabilidade')){
+        document.getElementById('banco_origem').value = proposta.banco_origem;
+        document.getElementById('contrato_portado').value = proposta.contrato_portado;
+        document.getElementById('saldo_devedor').value = proposta.saldo_devedor.toFixed(2);
+        document.getElementById('prazo_original').value = proposta.prazo_original;
+        document.getElementById('prazo_restante').value = proposta.prazo_restante;
+        document.getElementById('parcela').value = proposta.parcela.toFixed(2);
+        document.getElementById('troco').value = proposta.troco.toFixed(2);
+        document.getElementById('obs').value = proposta.obs;
+    } else if(proposta.tabela__operacao__nome.includes('Cartão')){
+        document.getElementById('parcela').value = proposta.parcela.toFixed(2);
+        document.getElementById('troco').value = proposta.troco.toFixed(2);
+    } else if(proposta.tabela__operacao__nome.includes('Saque')){
+        document.getElementById('parcela').value = proposta.parcela.toFixed(2);
+        document.getElementById('troco').value = proposta.troco.toFixed(2);
+    }
+
+}
+/* ===============================
+================================ */
+
+/* ===============================
+    REQUESTS
+================================ */
 async function getBancos(){
     try {
         showLoader();
@@ -285,7 +384,6 @@ async function getBancos(){
         hideLoader();
     }
 }
-
 
 async function getOperations(){
     try {
@@ -308,119 +406,42 @@ async function getOperations(){
     }
 }
 
-
-function calcularTroco(){
-    const select = document.getElementById('operacoes-select');
-    const selectedText = select.options[select.selectedIndex].text;
-
-    if(selectedText.includes('Cartão')){
-        const coeficiente = Number(document.getElementById('coeficiente').value);
-        const parcela = Number(document.getElementById('parcela').value);
-        const parcelaReal = parcela * 0.7;
-        const troco = (parcelaReal * coeficiente);
-        document.getElementById('troco').value = troco.toFixed(2);
-    } else {
-        const coeficiente = Number(document.getElementById('coeficiente').value);
-        const saldo_devedor = Number(document.getElementById('saldo_devedor')?.value ?? 0);
-        const parcela = Number(document.getElementById('parcela').value);
-        const troco = (parcela / coeficiente) - saldo_devedor;
-        document.getElementById('troco').value = troco.toFixed(2);
-    }
-}
+/* ===============================
+================================ */
 
 function saveProposta() {
     let card_id = document.getElementById('proposta-modal-card-id').value;
     let cpf = document.getElementById('proposta-modal-cliente-cpf').value;
-    
-    showLoader();
-    if (!cpf) {
-        showToast("Cliente não identificado", "danger");
-        return;
-    }
-
-    if (!card_id) {
-        showToast("Card de oferta não identificado", "danger");
-        return;
-    }
 
     let saldoDevedor = Number(document.getElementById('saldo_devedor')?.value ?? 0);
-    let troco = Number(document.getElementById('troco').value);
+    let troco = Number(document.getElementById('troco').value ?? 0);
     let financiado = saldoDevedor + troco;
+    let propostaId = document.getElementById('proposta-id').value;
 
     const payload = {
-        id: document.getElementById('proposta-id').value || null,
-
+        id: propostaId || null,
         cpf: cpf,
         card_oferta_id: card_id,
         usuario_id: currentUser,
-
-        tabela_id: Number(document.getElementById('tabela-select').value),
-
-        parcela: Number(document.getElementById('parcela').value),
-        saldo_devedor: saldoDevedor,
-        prazo: Number(document.getElementById('prazo').value),
-        troco: troco,
-        financiado: financiado,
-        banco_origem: document.getElementById('banco_origem')?.value ?? null,
-        contrato_portado: document.getElementById('contrato_portado')?.value ?? null,
-        prazo_original: Number(document.getElementById('prazo_original')?.value) ?? null,
-        prazo_restante: Number(document.getElementById('prazo_restante')?.value) ?? null,
-        obs: document.getElementById('obs').value,
+        tabela_id: Number(document.getElementById('tabela-select').value) || null,
+        parcela: Number(document.getElementById('parcela').value) || null,
+        saldo_devedor: saldoDevedor || null,
+        prazo: Number(document.getElementById('prazo').value) || null,
+        troco: troco || null,
+        financiado: financiado || 0,
+        banco_origem: document.getElementById('banco_origem')?.value || null,
+        contrato_portado: document.getElementById('contrato_portado')?.value || null,
+        prazo_original: Number(document.getElementById('prazo_original')?.value) || null,
+        prazo_restante: Number(document.getElementById('prazo_restante')?.value) || null,
+        status_code: 1 || null,
+        obs: document.getElementById('obs').value || null,
     };
 
-    /* ===== VALIDAÇÕES ===== */
-    const select = document.getElementById('operacoes-select');
-    const selectedText = select.options[select.selectedIndex].text;
-
-    /* ===== MARGEM LIVRE ===== */
-    if(selectedText.includes('Margem Livre')) {
-        if(!payload.tabela_id || !payload.parcela){
-            showToast("Tabela e parcela são obrigatórios", "warning");
-            return;
-        }
+    if (!validateFormSaveProposta(payload)) {
+        return;
     }
 
-    /* ===== SAQUE COMPLEMENTAR ===== */
-    if(selectedText.includes('Saque')) {
-        if(!payload.tabela_id || !payload.parcela || !payload.troco){
-            showToast("Tabela, parcela e saque são obrigatórios", "warning");
-            return;
-        }
-    }
-
-    /* ===== REFINANCIAMENTO ===== */
-    if(selectedText.includes('Refinanciamento')) {
-        if(!payload.tabela_id || !payload.parcela || !payload.saldo_devedor){
-            showToast("Tabela, parcela e saldo devedor são obrigatórios", "warning");
-            return;
-        }
-    }
-
-    /* ===== PORTABILIDADE ===== */
-    if (selectedText.includes('Portabilidade')) {
-
-        const camposObrigatorios = {
-            tabela_id: 'Tabela',
-            parcela: 'Parcela',
-            saldo_devedor: 'Saldo devedor',
-            banco_origem: 'Banco de origem',
-            contrato_portado: 'Contrato portado',
-            prazo_original: 'Prazo original',
-            prazo_restante: 'Prazo restante'
-        };
-
-        const faltantes = Object.entries(camposObrigatorios)
-            .filter(([campo]) => !payload[campo])
-            .map(([, label]) => label);
-
-        if (faltantes.length) {
-            showToast(
-                `Campos obrigatórios não preenchidos: ${faltantes.join(', ')}`,
-                'warning'
-            );
-            return;
-        }
-    }
+    showLoader();
 
     fetch('/api/propostas/', {
         method: 'POST',
@@ -433,17 +454,15 @@ function saveProposta() {
         .then(res => res.json())
         .then(res => {
             if (res.status === 'success') {
-
                 showToast(
                     payload.id
                         ? "Proposta atualizada com sucesso"
                         : "Proposta criada com sucesso",
                     "success"
                 );
-
+                createPropostaHistorico(propostaId, obs = 'Proposta Editada', 1);
                 propostaModal.hide();
                 loadCards();
-
             } else {
                 showToast(res.message || "Erro ao salvar proposta", "danger");
             }
@@ -452,7 +471,7 @@ function saveProposta() {
             showToast("Erro de conexão com o servidor", "danger");
             console.error(err);
         })
-        .finally(() => hideLoader())
+        .finally(() => hideLoader());
 }
 
 function deleteProposta() {
@@ -511,7 +530,7 @@ function changeStatusProposta() {
         },
         body: JSON.stringify({ 
             id: id,
-            status_id: status,
+            status_code: status,
             obs: obs,
             bloqueado: true
         })
@@ -525,6 +544,7 @@ function changeStatusProposta() {
     })
     .then(() => {
         changePropostaModal.hide();
+        createPropostaHistorico(id, obs = 'Proposta Editada', status);
         showToast('Status alterado com sucesso', 'success')
         loadCards();
     })
@@ -562,44 +582,70 @@ function cancelarProposta(id, status) {
     .finally(() => hideLoader())
 }
 
-async function openEditPropostaModal(element) {
-    const proposta = JSON.parse(element.dataset.proposta);
+function validateFormSaveProposta(payload) {
 
-    await Promise.all([
-        loadBancosSelect(proposta.tabela__banco__id),
-        loadOperacoesSelect(proposta.tabela__operacao__id),
-    ]);
-
-    await loadTabelasSelect(proposta.tabela__id);
-
-    renderPropostaFields(proposta);
-    renderDataEditModal(proposta);
-    propostaModal.show();
-}
-
-function renderDataEditModal(proposta){
-    if(proposta.tabela__operacao__nome.includes('Margem Livre')){
-        document.getElementById('parcela').value = proposta.parcela.toFixed(2);
-        document.getElementById('troco').value = proposta.troco.toFixed(2);
-    } else if(proposta.tabela__operacao__nome.includes('Refinanciamento')){
-        document.getElementById('parcela').value = proposta.parcela.toFixed(2);
-        document.getElementById('troco').value = proposta.troco.toFixed(2);
-        document.getElementById('saldo_devedor').value = proposta.saldo_devedor.toFixed(2);
-    } else if(proposta.tabela__operacao__nome.includes('Portabilidade')){
-        document.getElementById('banco_origem').value = proposta.banco_origem;
-        document.getElementById('contrato_portado').value = proposta.contrato_portado;
-        document.getElementById('saldo_devedor').value = proposta.saldo_devedor.toFixed(2);
-        document.getElementById('prazo_original').value = proposta.prazo_original;
-        document.getElementById('prazo_restante').value = proposta.prazo_restante;
-        document.getElementById('parcela').value = proposta.parcela.toFixed(2);
-        document.getElementById('troco').value = proposta.troco.toFixed(2);
-        document.getElementById('obs').value = proposta.obs;
-    } else if(proposta.tabela__operacao__nome.includes('Cartão')){
-        document.getElementById('parcela').value = proposta.parcela.toFixed(2);
-        document.getElementById('troco').value = proposta.troco.toFixed(2);
-    } else if(proposta.tabela__operacao__nome.includes('Saque')){
-        document.getElementById('parcela').value = proposta.parcela.toFixed(2);
-        document.getElementById('troco').value = proposta.troco.toFixed(2);
+    if (!payload.cpf) {
+        showToast("Cliente não identificado", "danger");
+        return false;
     }
 
+    if (!payload.card_oferta_id) {
+        showToast("Card de oferta não identificado", "danger");
+        return false;
+    }
+
+    const select = document.getElementById('operacoes-select');
+    const selectedText = select.options[select.selectedIndex].text;
+
+    /* ===== MARGEM LIVRE ===== */
+    if (selectedText.includes('Margem Livre')) {
+        if (!payload.tabela_id || !payload.parcela) {
+            showToast("Tabela e parcela são obrigatórios", "warning");
+            return false;
+        }
+    }
+
+    /* ===== SAQUE COMPLEMENTAR ===== */
+    if (selectedText.includes('Saque')) {
+        if (!payload.tabela_id || !payload.parcela || !payload.troco) {
+            showToast("Tabela, parcela e saque são obrigatórios", "warning");
+            return false;
+        }
+    }
+
+    /* ===== REFINANCIAMENTO ===== */
+    if (selectedText.includes('Refinanciamento')) {
+        if (!payload.tabela_id || !payload.parcela || !payload.saldo_devedor) {
+            showToast("Tabela, parcela e saldo devedor são obrigatórios", "warning");
+            return false;
+        }
+    }
+
+    /* ===== PORTABILIDADE ===== */
+    if (selectedText.includes('Portabilidade')) {
+
+        const camposObrigatorios = {
+            tabela_id: 'Tabela',
+            parcela: 'Parcela',
+            saldo_devedor: 'Saldo devedor',
+            banco_origem: 'Banco de origem',
+            contrato_portado: 'Contrato portado',
+            prazo_original: 'Prazo original',
+            prazo_restante: 'Prazo restante'
+        };
+
+        const faltantes = Object.entries(camposObrigatorios)
+            .filter(([campo]) => !payload[campo])
+            .map(([, label]) => label);
+
+        if (faltantes.length) {
+            showToast(
+                `Campos obrigatórios não preenchidos: ${faltantes.join(', ')}`,
+                'warning'
+            );
+            return false;
+        }
+    }
+
+    return true;
 }

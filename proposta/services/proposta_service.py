@@ -85,6 +85,7 @@ def create_or_update_proposta(body):
 @transaction.atomic
 def patch_proposta(body, request):
     proposta_id = body.get('id')
+    status_code = body.get('status_code')
 
     if not proposta_id:
         raise ValueError("ID da proposta é obrigatório")
@@ -105,10 +106,8 @@ def patch_proposta(body, request):
             id=body.get('tabela_id')
         ).first()
 
-    if 'status_id' in body:
-        proposta.status = Status.objects.filter(
-            id=body.get('status_id')
-        ).first()
+    if status_code:
+        proposta.status = Status.objects.filter(codigo=status_code).first()
 
     if 'usuario_id' in body:
         proposta.usuario = CustomUser.objects.filter(
@@ -126,7 +125,7 @@ def patch_proposta(body, request):
     HistoricoProposta.objects.create(
         proposta=proposta,
         user=request.user,
-        status=Status.objects.filter(id=body.get('status_id')).first(),
+        status=Status.objects.filter(codigo=status_code).first(),
         obs=obs
     )
 
@@ -144,6 +143,7 @@ def patch_proposta(body, request):
         'prazo_restante',
         'contrato_portado',
         'banco_origem',
+        'status',
     ]
 
     for field in fields:
